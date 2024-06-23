@@ -49,16 +49,24 @@ lines!(ga, GeoMakie.coastlines()) # plot coastlines from Natural Earth as a refe
 #scatter!(ga, -120:15:120, -60:7.5:60; color = -60:7.5:60, strokecolor = (:black, 0.2))
 
 # looking at these storms (763-1110) corresponds roughly to the events between 2014-2014.
-p1=763
+p1=1
 p2=1110
 
 xRI = dfRI[p1:p2, :LATITUDE]
 yRI = dfRI[p1:p2, :LONGITUDE]
 yearRI = dfRI[:, :YEAR]
 #scatter(yRI,xRI)
-scatter!(ga, yRI,xRI, markersize = 5, color = :black)
+scatter!(ga, yRI,xRI, markersize = 7, color = :black)
 
 ylims!(ga, -40, 40)
 
-save("tcRIscatter.png", fig)
+# select by basin: 
+dfNA=dfRI[in.(dfRI.BASIN, Ref(["NA"])), :]
+xRI = dfNA[:, :LATITUDE]
+yRI = dfNA[:, :LONGITUDE]
+yearRI = dfNA[:, :YEAR]
+scatter!(ga, yRI,xRI, markersize = 7, color = :black)
+
+
+save("tcRIscatterBlack.png", fig)
 

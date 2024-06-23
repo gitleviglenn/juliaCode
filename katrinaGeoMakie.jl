@@ -28,7 +28,20 @@ lats = [23.1, 23.4, 23.8, 24.5, 25.4, 26.0, 26.1, 26.2, 26.2, 26.0,
         25.7, 26.3, 27.2, 28.2, 29.3, 29.5, 30.2, 31.1, 32.6, 34.1,
         35.6, 37.0, 38.6, 40.1]
 
+lons2 = [-75.1, -75.7, -76.2, -76.5, -76.9, -77.7, -78.4, -79.0,
+        -79.6, -80.1, -80.5, -81.5, -82.2, -82.9, -83.6, -84.3,
+        -84.9, -86.3, -86.9, -87.7, -88.7, -89.6, -89.9, -90.2,
+        -89.6, -89.6, -89.7, -89.9, -89.5, -88.6, -88.0, -87.0,
+        -84.3, -80.9]
+
+lats2 = [23.1, 23.4, 23.8, 24.5, 25.4, 26.0, 26.1, 26.2, 26.2, 26.0,
+        25.9, 25.4, 25.1, 24.9, 24.6, 24.4, 24.4, 24.5, 24.8, 25.2,
+        25.7, 26.3, 27.2, 28.2, 29.3, 29.5, 30.2, 31.1, 32.6, 34.1,
+        35.6, 37.0, 38.6, 40.1]
+
+
 katrina_path = GO.LineString(Point2.(lons, lats))
+katrina_path2 = GO.LineString(Point2.(lons2, lats2))
 
 # We can retrieve the US states from Natural Earth.  This particular feature collection
 # only contains US states.
@@ -40,10 +53,13 @@ filter!(:name_en => !in(("Alaska", "Hawaii")), states_df)
 # In order to get a sense of which states are indirectly affected, we intersect by a buffered version of the linestring!
 # For context, let's see what this looks like:
 buffered_katrina_path = LibGEOS.buffer(katrina_path, 2) # within 2 degrees of the path 
+buffered_katrina_path2 = LibGEOS.buffer(katrina_path2, 2) # within 2 degrees of the path 
 affected_states = view(states_df, GO.intersects.(states_df.geometry, (buffered_katrina_path,)), :)
+affected_states2 = view(states_df, GO.intersects.(states_df.geometry, (buffered_katrina_path2,)), :)
 affected_states.color .= Makie.wong_colors()[end]
 # Finally, we can intersect the states directly:
 direct_states = view(states_df, GO.intersects.(states_df.geometry, (katrina_path,)), :)
+direct_states2 = view(states_df, GO.intersects.(states_df.geometry, (katrina_path2,)), :)
 direct_states.color .= Makie.wong_colors()[end-1]
 # Now, we can plot these.
 fig = Figure()
@@ -57,6 +73,8 @@ fig
 # We can also add the path for clarity:
 lines!(ga, katrina_path; color = Makie.wong_colors()[1])
 poly!(ga, buffered_katrina_path; color = Makie.wong_colors(0.2)[1])
+lines!(ga, katrina_path2; color = Makie.wong_colors()[1])
+poly!(ga, buffered_katrina_path2; color = Makie.wong_colors(0.2)[1])
 
 fig
 # Finally, we add a legend to the figure.
@@ -68,4 +86,4 @@ leg = axislegend(
     framevisible = false
 )
 ga.title = "Hurricane Katrina"
-save("Katrina.png", fig)
+save("Katrina2.png", fig)
