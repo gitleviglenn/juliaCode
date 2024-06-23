@@ -2,6 +2,7 @@ using DataFrames
 using CSV
 using CairoMakie
 using LaTeXStrings
+#using Plots
 #using Statistics
 
 # run with: 
