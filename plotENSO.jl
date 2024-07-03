@@ -37,9 +37,9 @@ decTest  = transpose(parse.(Float64, dff.dec)) # produces a 1x73 elem vect
 fig = Figure()
 
 ax = Axis(fig[1,1];
-    xlabel="x", 
-    ylabel="y",
-    title="title"
+    xlabel="monthly mean values", 
+    ylabel="anomaly",
+    title="ENSO index"
     )
 
 index = 1
@@ -59,6 +59,8 @@ someone = Vector{Float64}(undef, 100)
 #for i in 1:10
 #  global ensoTSa = [janTest[i], febTest[i], marTest[i], aprTest[i], mayTest[i], junTest[i], julTest[i], augTest[i], sepTest[i], octTest[i], novTest[i], decTest[i]]
 #end
+
+# there has to be a better way to do this with a simple loop
 index=60
 i = index+1
 ensoTSa = [janTest[i], febTest[i], marTest[i], aprTest[i], mayTest[i], junTest[i], julTest[i], augTest[i], sepTest[i], octTest[i], novTest[i], decTest[i]]
@@ -93,7 +95,7 @@ describe(someone)
 describe(ensocat)
 
 #lines!(ax, dff.t, linewidth = 3.0)
-lines!(ax, marTest[:], linewidth = 3.0)
+#lines!(ax, marTest[:], linewidth = 3.0)
 #lines!(ax, octTest[:], linewidth = 3.0)
 lines!(ax, ensocat[:], linewidth = 3.0)
 
