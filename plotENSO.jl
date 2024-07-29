@@ -7,7 +7,7 @@ using CairoMakie
 # /Users/silvers/.juliaup/bin/julia script.jl
 
 # data over 73 years
-fileENSO = "/Users/silvers/Downloads/nina34.anom.data"    
+fileENSO = "/Users/silvers/data/enso/nina34.anom.data"    
 
 dfe = CSV.read(fileENSO, header = 4, delim="  ", footerskip = 4, DataFrame)  
 
