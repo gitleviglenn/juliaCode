@@ -1,4 +1,17 @@
-# ENSO
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# plotENSO.jl
+#
+# - plot an ENSO index verses time
+# - initially the nino3.4 index is used but this script should be 
+# - generalized to plot ENSO according to mulitple indices
+#
+# to do: 
+#     - incorporate additiona ENSO indices
+#     - dramatically improve the code that concatinates the data, i 
+#       clearly know nothing about julia at this time 
+#
+# levi silvers                                             august 2024
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 using DataFrames
 using CSV
 using CairoMakie
@@ -14,7 +27,6 @@ dfe = CSV.read(fileENSO, header = 4, delim="  ", footerskip = 4, DataFrame)
 nms = ["year", "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
 
 dff = DataFrame(dfe, nms)
-# diff.jan
 
 # filter may also work well for selecting rows...
 dff.t = parse.(Float64, dff.jan)
@@ -39,7 +51,7 @@ fig = Figure()
 ax = Axis(fig[1,1];
     xlabel="monthly mean values", 
     ylabel="anomaly",
-    title="ENSO index"
+    title="ENSO index over 12 years"
     )
 
 index = 1
@@ -61,7 +73,7 @@ someone = Vector{Float64}(undef, 100)
 #end
 
 # there has to be a better way to do this with a simple loop
-index=60
+index=61
 i = index+1
 ensoTSa = [janTest[i], febTest[i], marTest[i], aprTest[i], mayTest[i], junTest[i], julTest[i], augTest[i], sepTest[i], octTest[i], novTest[i], decTest[i]]
 i = index+2
