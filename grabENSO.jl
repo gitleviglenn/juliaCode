@@ -1,30 +1,52 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# grabENSO.jl
+#
+# - plot an ENSO index verses time
+# - initially the nino3.4 index is used 
+#
+# levi silvers                                              august 2024
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+using DataFrames
+using CSV
+using CairoMakie
+
+fileENSO = "/Users/C823281551/nina34.anom.data"
+dfe = CSV.read(fileENSO, header = 4, delim="  ", footerskip = 4, DataFrame)
+
+nms = ["year", "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
+
+dff = DataFrame(dfe, nms)
+
 
 equals_yr(year::String7) = year == " 2005"
 
 whichy = [1965, 1970, 1975, 1980, 1985]
 
-for i in 1:4
-   print(whichy[i]), print(" ")
-   equals_yr(year::String7) = year == " 2005"
+istart = 63
+iend   = 73
+for i in istart:73
+    if i < istart + 1 
+        global a = collect(dfe[istart-1, 2:13])
+    end
+    b = collect(dfe[i, 2:13]) # grab a row of the DataFrame and convert to vector
+    global c = [a; b] # concatinate two vectors
+    #print(" ",i," ")
+    a = c
 end
 
-# grap a row...
-boo = dfe[4, 2:13]
+#print(sizeof(c))
 
-# I want boo to be a vector, composed of the jan:dec columns... 
-# and then I want to append many vectors onto each other so that 
-# I can end up with a long vector that includes many years one
-# after another.  
+# broadcast (using the '.') the parse function to apply to vector.
+enso34 = parse.(Float64,c)
 
-# but boo is still not a vector, and I don't know how to append
-# vectors.  
+fig = Figure()
+ax = Axis(fig[1,1];
+    xlabel="monthly mean values",
+    ylabel="anomaly",
+    title="ENSO index over 12 years"
+    )
+lines!(ax, enso34[:], linewidth = 3.0)
+#
+save("plotENSOeasy.png",fig)
 
-# if we could put this function in a loop that cycles through the
-# rows of choice, and add up the result of each iteration, I think
-# I might be happy.  
-function grab_a_row(i::String7)
-    j = parse(Int64, i)
-    dfe[j, :]
-end
-
-c = [a; b]
