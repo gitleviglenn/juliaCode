@@ -18,10 +18,13 @@ using CairoMakie
 
 # run with: 
 # /Users/silvers/.juliaup/bin/julia script.jl
+# /Users/C823281551/.juliaup/bin/julia script.jl
+
+# great data source: https://psl.noaa.gov/data/climateindices/list/
 
 # data over 73 years
-fileENSO = "/Users/silvers/data/enso/nina34.anom.data"    
-
+# fileENSO = "/Users/silvers/data/enso/nina34.anom.data"    
+fileENSO = "/Users/C823281551/nina34.anom.data"
 dfe = CSV.read(fileENSO, header = 4, delim="  ", footerskip = 4, DataFrame)  
 
 nms = ["year", "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
