@@ -11,7 +11,8 @@ using DataFrames
 using CSV
 using CairoMakie
 
-fileENSO = "/Users/C823281551/nina34.anom.data"
+fileENSO = "/Users/C823281551/data/obs/nina34.noaa.csv"
+#fileENSO = "/Users/C823281551/data/obs/oni.noaa.csv"
 dfe = CSV.read(fileENSO, header = 4, delim="  ", footerskip = 4, DataFrame)
 
 nms = ["year", "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
@@ -21,11 +22,11 @@ dff = DataFrame(dfe, nms)
 
 equals_yr(year::String7) = year == " 2005"
 
-whichy = [1965, 1970, 1975, 1980, 1985]
+#whichy = [1965, 1970, 1975, 1980, 1985]
 
 istart = 2
 iend   = 73
-for i in istart:73
+for i in istart:iend
     if i < istart + 1 
         global a = collect(dfe[istart-1, 2:13])
     end
