@@ -10,6 +10,9 @@ using DataFrames
 using CSV
 using CairoMakie
 
+# to run this script on luft:
+#/Users/C823281551/.juliaup/bin/julia plotENSOindices.jl
+
 file1 = "/Users/C823281551/data/obs/nina34.noaa.csv"
 file2 = "/Users/C823281551/data/obs/oni.noaa.csv"
 
@@ -56,14 +59,24 @@ print(enso34)
 print("*************************")
 len = size(enso34)
 
-fig = Figure()
+fig = Figure(;
+    size = (700,400),
+    )
 ax = Axis(fig[1,1];
     xlabel="monthly mean values",
     ylabel="anomaly",
+    #xticks=([0:80:800],["1", "2", "3","4","5","6","7","8","9","10"]),
     title="ENSO index comparison"
     )
-lines!(ax, enso34[:], linewidth = 2.0)
-lines!(ax, ensooni[:], linewidth = 2.0)
+lines!(ax, enso34[:], 
+    linewidth = 2.0,
+    label = "Nino 3.4"
+    )
+lines!(ax, ensooni[:], 
+    linewidth = 2.0,
+    label = "Oceanic Nino Index"
+    )
+axislegend("legend"; position=:lt)
 #
 save("plotENSOinds.png",fig)
 
