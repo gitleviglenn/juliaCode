@@ -7,7 +7,9 @@ using DataFrames
 
 # include("/Users/silvers/code/juliaCode/functest.jl")
 
-fileing1 = "/Users/silvers/code/Scythe.jl/Oneway_SWslab_wave2/gridded_out_120.0.csv"
+path2data = "/bell-scratch/lsilvers/scythe_test/"
+fileing1 = path2data*"Twoway_SWslab_wave2/gridded_out_240.0.csv"
+#fileing1 = "/Users/silvers/code/Scythe.jl/Oneway_SWslab_wave2/gridded_out_120.0.csv"
 fileing2 = "/Users/silvers/code/Scythe.jl/Oneway_SWslab_wave2/gridded_out_10200.0.csv"
 fileing3 = "/Users/silvers/code/Scythe.jl/Oneway_SWslab_wave2/gridded_out_30000.0.csv"
 fileing4 = "/Users/silvers/code/Scythe.jl/Oneway_SWslab_wave2/gridded_out_47160.0.csv"
