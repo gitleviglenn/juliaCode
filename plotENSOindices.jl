@@ -25,14 +25,18 @@ using Statistics
 #file4 = "/Users/C823281551/Downloads/cmip5mean_tropicalmean.csv"
 file1 = "/Users/silvers/data/enso/nino34.noaa.csv"
 file2 = "/Users/silvers/data/enso/oni.noaa.csv"
-file3 = "/Users/silvers/Downloads/cmip5mean_nino3.4.csv"
-file4 = "/Users/silvers/Downloads/cmip5mean_tropicalmean.csv"
+file3 = "/Users/silvers/data/enso/cmip5mean_nino3.4.csv"
+file4 = "/Users/silvers/data/enso/cmip5mean_tropicalmean.csv"
+file5 = "/Users/silvers/data/enso/cmip6mean_nino3.4.csv"
+file6 = "/Users/silvers/data/enso/cmip6mean_tropicalmean.csv"
 
 df1 = CSV.read(file1, header = 4, footerskip = 4, DataFrame)
 df2 = CSV.read(file2, header = 2, footerskip = 9, DataFrame)
 #df3 = CSV.read(file3, header = 0, delim="     ", footerskip = 0, DataFrame)
 df3 = CSV.read(file3, header = 0, footerskip = 0, DataFrame) 
 df4 = CSV.read(file4, header = 0, footerskip = 0, DataFrame) # seems like you don't need to specify
+df5 = CSV.read(file5, header = 0, footerskip = 0, DataFrame) 
+df6 = CSV.read(file6, header = 0, footerskip = 0, DataFrame) # seems like you don't need to specify
 # 'delim' if the delimiters are comma's.
 
 nms = ["year", "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
@@ -41,6 +45,8 @@ dfa = DataFrame(df1, nms)
 dfb = DataFrame(df2, nms)
 dfc = DataFrame(df3, nms)
 dfd = DataFrame(df4, nms)
+dfe = DataFrame(df5, nms)
+dff = DataFrame(df6, nms)
 
 #equals_yr(year::String7) = year == " 2005"
 
@@ -59,11 +65,21 @@ println(collect(df3[91, 1:13]))
 println("~~~~~~~~~")
 println(collect(df4[91, 1:13]))
 println("~~~~~~~~~")
+println(collect(df5[102, 1:13]))
+println("~~~~~~~~~")
+println(collect(df6[102, 1:13]))
+println("~~~~cmip5~~~~~")
 println(collect(df3[130, 1:13]))
 println(collect(df3[160, 1:13]))
-println("~~~~~~~~~")
+println("~~~~cmip5~~~~~")
 println(collect(df4[130, 1:13]))
 println(collect(df4[160, 1:13]))
+println("~~~~cmip6~~~~~")
+println(collect(df5[141, 1:13]))
+println(collect(df5[171, 1:13]))
+println("~~~~cmip6~~~~~")
+println(collect(df6[141, 1:13]))
+println(collect(df6[171, 1:13]))
 println("~~~~~~~~~")
 
 istart = 2
@@ -89,7 +105,6 @@ for i in istart:iend
     #a4 = c4
 end
 
-#istart = 2
 istart = 92
 iend   = 239
 for i in istart:iend
@@ -105,15 +120,36 @@ for i in istart:iend
     a4 = c4
 end
 
+istart = 103
+iend   = 250
+for i in istart:iend
+    if i < istart + 1 
+        global a5 = collect(df5[istart-1, 2:13])
+        global a6 = collect(df6[istart-1, 2:13])
+    end
+    b5 = collect(df5[i, 2:13]) # grab a row of the DataFrame and convert to vector
+    b6 = collect(df6[i, 2:13]) # grab a row of the DataFrame and convert to vector
+    global c5 = [a5; b5] # concatinate two vectors
+    global c6 = [a6; b6] # concatinate two vectors
+    a5 = c5
+    a6 = c6
+end
+
 # subtract this mean to get anomalies
 basec3=c3[130:160]
 basec4=c4[130:160]
+basec5=c5[141:171]
+basec6=c6[141:171]
 mnc3 = mean(basec3)
 mnc4 = mean(basec4)
+mnc5 = mean(basec5)
+mnc6 = mean(basec6)
 
 # anomalies
 c3 = c3 .- mnc3
 c4 = c4 .- mnc4
+c5 = c5 .- mnc5
+c6 = c6 .- mnc6
 
 # std (before or after removing seasonal cycle?)
 sig_oni = std(c3)
@@ -121,34 +157,47 @@ sig_diff = std(c3-c4)
 sig_scale = sig_oni/sig_diff
 
 jend = 148*12+12
+jend2 = 148*12+12
 #jend=iend*12
-rmn = zeros(jend)
+
+# create arrays for the running mean time series
+rmn_cm5 = zeros(jend)
+rmn_cm6 = zeros(jend)
 
 # describe(a3)
 # describe(rmn)
 
-# calculate the 3 month running mean of nino34
-istart = 2
-for i in istart:jend-1
-  rmn[i] = (c3[i+1]+c3[i]+c3[i-1])/3
-end
-rmn[1]=rmn[2]
-rmn[jend]=rmn[jend-1]
+## calculate the 3 month running mean of nino34
+#istart = 2
+#for i in istart:jend-1
+#  rmn_cm5[i] = (c3[i+1]+c3[i]+c3[i-1])/3
+#  rmn_cm6[i] = (c5[i+1]+c5[i]+c5[i-1])/3
+#end
+#rmn_cm5[1]=rmn_cm5[2]
+#rmn_cm5[jend]=rmn_cm5[jend-1]
+#rmn_cm6[1]=rmn_cm6[2]
+#rmn_cm6[jend]=rmn_cm6[jend-1]
 
 # get the monthly mean values to remove the seasonal cycle: 
 # df3 --> nino3p4 for cmip5 models
 # df4 --> tropical mean for cmip5 models
 c3nsc = zeros(jend)
 c4nsc = zeros(jend)
+c5nsc = zeros(jend)
+c6nsc = zeros(jend)
 mmn3 = zeros(12)
 mmn3 = [mean(df3[:,i]) for i in 2:13]
 mmn = zeros(12)
 mmn = [mean(df4[:,i]) for i in 2:13]
+mmn_34_cm6 = zeros(12)
+mmn_34_cm6 = [mean(df5[:,i]) for i in 2:13]
+mmn_cm6 = zeros(12)
+mmn_cm6 = [mean(df6[:,i]) for i in 2:13]
 #
 #endpt = 148*12+12
 # remove the seasonal cycle
-#for i in 1:12:2857
 for i in 1:12:jend
+  # cmip5
   c3nsc[i]=c3[i]-mmn3[1]
   c3nsc[i+1]=c3[i+1]-mmn3[2]
   c3nsc[i+2]=c3[i+2]-mmn3[3]
@@ -173,21 +222,54 @@ for i in 1:12:jend
   c4nsc[i+9]=c4[i+9]-mmn[10]
   c4nsc[i+10]=c4[i+10]-mmn[11]
   c4nsc[i+11]=c4[i+11]-mmn[12]
-  #println(i)
-  #i=j
-  #[c3nsc[i]=cs[i]-mmn[i] for i in i:i+11]
-  #i=i+12
+end
+for i in 1:12:jend2
+  # cmip6
+  c5nsc[i]=c5[i]-mmn_34_cm6[1]
+  c5nsc[i+1]=c5[i+1]-mmn_34_cm6[2]
+  c5nsc[i+2]=c5[i+2]-mmn_34_cm6[3]
+  c5nsc[i+3]=c5[i+3]-mmn_34_cm6[4]
+  c5nsc[i+4]=c5[i+4]-mmn_34_cm6[5]
+  c5nsc[i+5]=c5[i+5]-mmn_34_cm6[6]
+  c5nsc[i+6]=c5[i+6]-mmn_34_cm6[7]
+  c5nsc[i+7]=c5[i+7]-mmn_34_cm6[8]
+  c5nsc[i+8]=c5[i+8]-mmn_34_cm6[9]
+  c5nsc[i+9]=c5[i+9]-mmn_34_cm6[10]
+  c5nsc[i+10]=c5[i+10]-mmn_34_cm6[11]
+  c5nsc[i+11]=c5[i+11]-mmn_34_cm6[12]
+  c6nsc[i]=c6[i]-mmn_cm6[1]
+  c6nsc[i+1]=c6[i+1]-mmn_cm6[2]
+  c6nsc[i+2]=c6[i+2]-mmn_cm6[3]
+  c6nsc[i+3]=c6[i+3]-mmn_cm6[4]
+  c6nsc[i+4]=c6[i+4]-mmn_cm6[5]
+  c6nsc[i+5]=c6[i+5]-mmn_cm6[6]
+  c6nsc[i+6]=c6[i+6]-mmn_cm6[7]
+  c6nsc[i+7]=c6[i+7]-mmn_cm6[8]
+  c6nsc[i+8]=c6[i+8]-mmn_cm6[9]
+  c6nsc[i+9]=c6[i+9]-mmn_cm6[10]
+  c6nsc[i+10]=c6[i+10]-mmn_cm6[11]
+  c6nsc[i+11]=c6[i+11]-mmn_cm6[12]
 end
 
 sig_oniB = std(c3nsc)
 sig_diffB = std(c3nsc-c4nsc)
 sig_scaleB = sig_oniB/sig_diffB
 
+sig_oni_cm6   = std(c5nsc)
+sig_diff_cm6  = std(c5nsc-c6nsc)
+sig_scale_cm6 = sig_oni_cm6/sig_diff_cm6
+
+#for i in istart:jend-1
+istart= 2
+jend  = 1788
 for i in istart:jend-1
-  rmn[i] = (c3nsc[i+1]+c3nsc[i]+c3nsc[i-1])/3
+  rmn_cm5[i] = (c3nsc[i+1]+c3nsc[i]+c3nsc[i-1])/3
+  rmn_cm6[i] = (c5nsc[i+1]+c5nsc[i]+c5nsc[i-1])/3
 end
-rmn[1]=rmn[2]
-rmn[jend]=rmn[jend-1]
+rmn_cm5[1]=rmn_cm5[2]
+rmn_cm6[1]=rmn_cm6[2]
+rmn_cm5[jend]=rmn_cm5[jend-1]
+rmn_cm6[jend]=rmn_cm6[jend-1]
 
 # broadcast (using the '.') the parse function to apply to vector.
 #enso34  = parse.(Float64,c1)
@@ -198,13 +280,16 @@ ensooni = c2
 ens34c5 = c3 # parse.(Float64,c3) # nino3p4 index from cmip5 models
 # tropical mean (what latitudes?  was land included?)
 tmean   = c4 # parse.(Float64,c4)
+ens34_cm6 = c5
+tmean_cm6 = c6
 
-roni_raw = ens34c5-tmean
+#roni_raw = ens34c5-tmean
 #roni_t   = c3nsc-c4nsc
 #roni_t   = rmn-tmean
-roni_t   = sig_scaleB.*(rmn-c4nsc)
+roni_t   = sig_scaleB.*(rmn_cm5-c4nsc)
+roni_cm6   = sig_scale_cm6.*(rmn_cm6-c6nsc)
 
-print(enso34)
+#print(enso34)
 print("*************************")
 len = size(enso34)
 
@@ -214,11 +299,11 @@ fig = Figure(;
 ax = Axis(fig[1,1];
     xlabel="monthly mean values",
     ylabel="anomaly",
-    #xticks=([0:80:800],["1", "2", "3","4","5","6","7","8","9","10"]),
-    xticks=([108,228,348,468,588,708,828],["1960","1970","1980","1990","2000","2010","2020"]),
+    #xticks=([108,228,348,468,588,708,828,948],["1960","1970","1980","1990","2000","2010","2020","2030"]),
+    xticks=([108,228,348,468,588,708,828,948,1068,1188,1308,1428,1548],["1960","1970","1980","1990","2000","2010","2020","2030","2040","2050","2060","2070","2080"]),
     title="ENSO index comparison"
     )
-limits!(0, 1000, -3, 6)
+limits!(0, 1700, -4, 7)
 lines!(ax, enso34[:], 
     linewidth = 2.0,
     label = "Nino 3.4"
@@ -229,9 +314,13 @@ lines!(ax, ensooni[:],
     )
 lines!(ax, roni_t[:], 
     linewidth = 1.5,
-    label = "RONI?"
+    label = "RONI cmip5"
     )
-axislegend("legend"; position=:lt)
+lines!(ax, roni_cm6[:], 
+    linewidth = 1.5,
+    label = "RONI cmip6"
+    )
+axislegend("legend"; position=:rb)
 #
-save("plotENSOinds.png",fig)
+save("plotENSOinds_cmip6.png",fig)
 
