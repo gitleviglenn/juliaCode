@@ -10,25 +10,43 @@ using DataFrames
 using CSV
 using CairoMakie
 using Statistics
+using NCDatasets
 
 # to run this script on luft:
 #/Users/C823281551/.juliaup/bin/julia plotENSOindices.jl
 # /Users/silvers/.juliaup/bin/julia plotENSOindices.jl
 
 # include("/Users/silvers/code/juliaCode/plotENSOindices.jl")
-
 #file1 = "/Users/C823281551/data/obs/nina34.noaa.csv"
 #file2 = "/Users/C823281551/data/obs/oni.noaa.csv"
 #file3 = "/Users/C823281551/Downloads/cmip5mean_nino3.4.txt"
 # using Excel, I opened the cmip5mean_nino3.4.txt file and then saved it as a csv file.
 #file3 = "/Users/C823281551/Downloads/cmip5mean_nino3.4test.csv"
 #file4 = "/Users/C823281551/Downloads/cmip5mean_tropicalmean.csv"
-file1 = "/Users/silvers/data/enso/nino34.noaa.csv"
-file2 = "/Users/silvers/data/enso/oni.noaa.csv"
-file3 = "/Users/silvers/data/enso/cmip5mean_nino3.4.csv"
-file4 = "/Users/silvers/data/enso/cmip5mean_tropicalmean.csv"
-file5 = "/Users/silvers/data/enso/cmip6mean_nino3.4.csv"
-file6 = "/Users/silvers/data/enso/cmip6mean_tropicalmean.csv"
+path="/Users/C823281551/"
+#path="/Users/silvers"
+file1 = path*"data/enso/nino34.noaa.csv"
+file2 = path*"data/enso/oni.noaa.csv"
+file3 = path*"data/enso/cmip5_nino3.4.csv"
+file4 = path*"data/enso/cmip5_tropicalmean.csv"
+file5 = path*"data/enso/cmip6_nino3.4.csv"
+file6 = path*"data/enso/cmip6_tropicalmean.csv"
+
+file7 = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
+
+
+ds1 = Dataset(file7)
+ds1.attrib
+
+#sst1 = ds1.tos[:,:,:] # doesn't seem to work for some reason
+#
+sst1 = ds1["tos"]
+# why doesn't describe(sst1) work?  
+# sst1[1:12]
+# sst1[23,10,54]
+
+# typing this in the REPL will output the attributes and meta data:
+# ds1.attrib
 
 df1 = CSV.read(file1, header = 4, footerskip = 4, DataFrame)
 df2 = CSV.read(file2, header = 2, footerskip = 9, DataFrame)
@@ -314,13 +332,13 @@ lines!(ax, ensooni[:],
     )
 lines!(ax, roni_t[:], 
     linewidth = 1.5,
-    label = "RONI cmip5"
+    label = "RONI cmip5 tas"
     )
 lines!(ax, roni_cm6[:], 
     linewidth = 1.5,
-    label = "RONI cmip6"
+    label = "RONI cmip6 tas"
     )
 axislegend("legend"; position=:rb)
 #
-save("plotENSOinds_cmip6.png",fig)
+save("plotENSOinds_cmip6_1.png",fig)
 
