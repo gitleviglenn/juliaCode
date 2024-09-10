@@ -16,6 +16,8 @@ using NCDatasets
 #/Users/C823281551/.juliaup/bin/julia plotENSOindices.jl
 # /Users/silvers/.juliaup/bin/julia plotENSOindices.jl
 
+debugSwitch = 1
+
 # include("/Users/silvers/code/juliaCode/plotENSOindices.jl")
 #file1 = "/Users/C823281551/data/obs/nina34.noaa.csv"
 #file2 = "/Users/C823281551/data/obs/oni.noaa.csv"
@@ -41,8 +43,10 @@ ds1.attrib
 #sst1 = ds1.tos[:,:,:] # doesn't seem to work for some reason
 #
 sst1 = ds1["tos"]
+nclat = ds1["lat"]
+nctime = ds1["time"]
 # why doesn't describe(sst1) work?  
-# sst1[1:12]
+println(sst1[1:12])
 # sst1[23,10,54]
 
 # typing this in the REPL will output the attributes and meta data:
@@ -74,31 +78,33 @@ dff = DataFrame(df6, nms)
 #t3 = collect(df3[1, 2:13])
 #t4 = collect(df4[1, 2:13])
 
-println("~~~~~~~~~")
-println(collect(df1[1, 1:13]))
-println("~~~~~~~~~")
-println(collect(df2[1, 1:13]))
-println("~~~~~~~~~")
-println(collect(df3[91, 1:13]))
-println("~~~~~~~~~")
-println(collect(df4[91, 1:13]))
-println("~~~~~~~~~")
-println(collect(df5[102, 1:13]))
-println("~~~~~~~~~")
-println(collect(df6[102, 1:13]))
-println("~~~~cmip5~~~~~")
-println(collect(df3[130, 1:13]))
-println(collect(df3[160, 1:13]))
-println("~~~~cmip5~~~~~")
-println(collect(df4[130, 1:13]))
-println(collect(df4[160, 1:13]))
-println("~~~~cmip6~~~~~")
-println(collect(df5[141, 1:13]))
-println(collect(df5[171, 1:13]))
-println("~~~~cmip6~~~~~")
-println(collect(df6[141, 1:13]))
-println(collect(df6[171, 1:13]))
-println("~~~~~~~~~")
+if (debugSwitch < 1)
+    println("~~~~~~~~~")
+    println(collect(df1[1, 1:13]))
+    println("~~~~~~~~~")
+    println(collect(df2[1, 1:13]))
+    println("~~~~~~~~~")
+    println(collect(df3[91, 1:13]))
+    println("~~~~~~~~~")
+    println(collect(df4[91, 1:13]))
+    println("~~~~~~~~~")
+    println(collect(df5[102, 1:13]))
+    println("~~~~~~~~~")
+    println(collect(df6[102, 1:13]))
+    println("~~~~cmip5~~~~~")
+    println(collect(df3[130, 1:13]))
+    println(collect(df3[160, 1:13]))
+    println("~~~~cmip5~~~~~")
+    println(collect(df4[130, 1:13]))
+    println(collect(df4[160, 1:13]))
+    println("~~~~cmip6~~~~~")
+    println(collect(df5[141, 1:13]))
+    println(collect(df5[171, 1:13]))
+    println("~~~~cmip6~~~~~")
+    println(collect(df6[141, 1:13]))
+    println(collect(df6[171, 1:13]))
+    println("~~~~~~~~~")
+end
 
 istart = 2
 iend   = 70
