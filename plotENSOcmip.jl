@@ -5,8 +5,25 @@
 # - nino 3.4 region is selected
 # - anomalies are computed relative to a mean over entire time series.
 # - seasonal cycle is removed
-# - a three point running mean is applied
+# - a three point running mean is applied (the oceanic Nino index is 
+#   defined as a 3-month running average of sst anomalies in the 
+#   nino-3.4 region.)
 #
+# - to use the data from MPI-ESM some regridding was necessary, using both
+# - nco and cdo functions: 
+# ncks -d time,0,1979 tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216.nc test_1980ts.nc
+# ncatted -a coordinates,tos,c,c,"latitude longitude" test_1980ts.nc
+# cdo -L remapbil,mygrid -sethalo,-1,-1 test_1980ts.nc test_1980ts_latlon3.nc
+# 
+# using this grid file: 
+# gridtype = lonlat
+# xsize    = 360
+# ysize    = 40
+# xfirst   = -179.5
+# xinc     = 1
+# yfirst   = -19.5
+# yinc     = 1
+
 #
 # levi silvers                                              sep 2024
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -42,7 +59,9 @@ end
 
 path="/Users/C823281551/"
 
-file1 = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
+#file1 = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
+#file1 = path*"data/tos_MPI_hist/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216.nc"
+file1 = path*"data/tos_MPI_hist/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216_regridded.nc"
 
 ds1 = NCDataset(file1)
 ds1.attrib
@@ -50,9 +69,15 @@ ds1.attrib
 # to print meta data for a particular variable: 
 ds1["tos"]
 sst1 = ds1["tos"]
-nclat = ds1["lat"]
-nclon = ds1["lon"]
+ nclat = ds1["lat"]
+ nclon = ds1["lon"]
 nctime = ds1["time"]
+
+# for MPI ESM
+#nclat = ds1["latitude"]
+#nclon = ds1["longitude"]
+#v_lat = ds1["vertices_latitude"]
+
 
 # calculate and plot the Nino 3.4 index
 # according to psl.noaa.gov, the index is the area average from 5S-5N and 170-120W
@@ -132,7 +157,9 @@ ts_rmn[jend]=ts_rmn[jend-1]
 
 #fig_plot(nclat,40)
 #fig_plot(nino34_ts,tlength,"queen bee")
-fig_plot(ts_rmn_nsc,tlength,"Krulle Bol")
+#fig_plot(ts_rmn_nsc,tlength,"Krulle Bol")
+#fig_plot(ts_rmn_nsc,tlength,"After Laughter")
+fig_plot(ts_rmn_nsc,tlength,"Whatever Didi Wants")
 #fig_plot(ts_rmn,tlength,"dance floor")
 
 
