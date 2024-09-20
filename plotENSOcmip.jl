@@ -61,7 +61,8 @@ path="/Users/C823281551/"
 
 #file1 = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
 #file1 = path*"data/tos_MPI_hist/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216.nc"
-file1 = path*"data/tos_MPI_hist/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216_regridded.nc"
+#file1 = path*"data/tos_MPI_hist/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216_regridded.nc"
+file1 = path*"data/tos_CNRM_hist/tos_Omon_CNRM-ESM2-1_historical_r1i1p1f2_gn_18500116-20141216.nc"
 
 ds1 = NCDataset(file1)
 ds1.attrib
@@ -145,21 +146,22 @@ for i in 1:12:tlength
   ts_rmn_nsc[i+11] = ts_rmn[i+11] - ss[12]
 end
 
-# smooth the time series with a running mean
-ts_rmn = zeros(tlength)
-istart= 2
-jend  = tlength
-for i in istart:jend-1
-  ts_rmn[i] = (ts_rmn_nsc[i+1]+ts_rmn_nsc[i]+ts_rmn_nsc[i-1])/3
-end
-ts_rmn[1]=ts_rmn[2]
-ts_rmn[jend]=ts_rmn[jend-1]
+## smooth the time series with a running mean
+#ts_rmn = zeros(tlength)
+#istart= 2
+#jend  = tlength
+#for i in istart:jend-1
+#  ts_rmn[i] = (ts_rmn_nsc[i+1]+ts_rmn_nsc[i]+ts_rmn_nsc[i-1])/3
+#end
+#ts_rmn[1]=ts_rmn[2]
+#ts_rmn[jend]=ts_rmn[jend-1]
 
 #fig_plot(nclat,40)
 #fig_plot(nino34_ts,tlength,"queen bee")
 #fig_plot(ts_rmn_nsc,tlength,"Krulle Bol")
 #fig_plot(ts_rmn_nsc,tlength,"After Laughter")
-fig_plot(ts_rmn_nsc,tlength,"Whatever Didi Wants")
+#fig_plot(ts_rmn_nsc,tlength,"Whatever Didi Wants")
+fig_plot(ts_rmn_nsc,tlength,"Blue Collar Love")
 #fig_plot(ts_rmn,tlength,"dance floor")
 
 
