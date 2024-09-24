@@ -16,7 +16,7 @@ using NCDatasets
 #/Users/C823281551/.juliaup/bin/julia plotENSOindices.jl
 # /Users/silvers/.juliaup/bin/julia plotENSOindices.jl
 
-debugSwitch = 1
+debugSwitch = 0
 
 # include("/Users/silvers/code/juliaCode/plotENSOindices.jl")
 #file1 = "/Users/C823281551/data/obs/nina34.noaa.csv"
@@ -33,8 +33,8 @@ file3 = path*"data/enso/cmip5_nino3.4.csv"
 file4 = path*"data/enso/cmip5_tropicalmean.csv"
 file5 = path*"data/enso/cmip6_nino3.4.csv"
 file6 = path*"data/enso/cmip6_tropicalmean.csv"
-
 file7 = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
+file8 = path*"data/obs/observed_tropicalmean.csv"
 
 
 ds1 = Dataset(file7)
@@ -54,6 +54,7 @@ println(sst1[1:12])
 
 df1 = CSV.read(file1, header = 4, footerskip = 4, DataFrame)
 df2 = CSV.read(file2, header = 2, footerskip = 9, DataFrame)
+df8 = CSV.read(file8, header = 0, footerskip = 0, DataFrame)
 #df3 = CSV.read(file3, header = 0, delim="     ", footerskip = 0, DataFrame)
 df3 = CSV.read(file3, header = 0, footerskip = 0, DataFrame) 
 df4 = CSV.read(file4, header = 0, footerskip = 0, DataFrame) # seems like you don't need to specify
@@ -63,12 +64,13 @@ df6 = CSV.read(file6, header = 0, footerskip = 0, DataFrame) # seems like you do
 
 nms = ["year", "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
 
-dfa = DataFrame(df1, nms)
-dfb = DataFrame(df2, nms)
-dfc = DataFrame(df3, nms)
-dfd = DataFrame(df4, nms)
-dfe = DataFrame(df5, nms)
-dff = DataFrame(df6, nms)
+dfa  = DataFrame(df1, nms)
+dfb  = DataFrame(df2, nms)
+dfc  = DataFrame(df3, nms)
+dfd  = DataFrame(df4, nms)
+dfe  = DataFrame(df5, nms)
+dff  = DataFrame(df6, nms)
+dftm = DataFrame(df8, nms)
 
 #equals_yr(year::String7) = year == " 2005"
 
@@ -83,6 +85,8 @@ if (debugSwitch < 1)
     println(collect(df1[1, 1:13]))
     println("~~~~~~~~~")
     println(collect(df2[1, 1:13]))
+    println("~~~observed trop mn data: ~~~~")
+    println(collect(df8[1, 1:13]))
     println("~~~~~~~~~")
     println(collect(df3[91, 1:13]))
     println("~~~~~~~~~")
@@ -112,23 +116,16 @@ for i in istart:iend
     if i < istart + 1 
         global a1 = collect(df1[istart-1, 2:13])
         global a2 = collect(df2[istart-1, 2:13])
-        #global a3 = collect(df3[istart-1, 2:13])
-        #global a4 = collect(df4[istart-1, 2:13])
     end
     b1 = collect(df1[i, 2:13]) # grab a row of the DataFrame and convert to vector
     b2 = collect(df2[i, 2:13]) # grab a row of the DataFrame and convert to vector
-    #b3 = collect(df3[i, 2:13]) # grab a row of the DataFrame and convert to vector
-    #b4 = collect(df4[i, 2:13]) # grab a row of the DataFrame and convert to vector
     global c1 = [a1; b1] # concatinate two vectors
     global c2 = [a2; b2] # concatinate two vectors
-    #global c3 = [a3; b3] # concatinate two vectors
-    #global c4 = [a4; b4] # concatinate two vectors
     a1 = c1
     a2 = c2
-    #a3 = c3
-    #a4 = c4
 end
 
+# cmip5 data
 istart = 92
 iend   = 239
 for i in istart:iend
@@ -144,6 +141,7 @@ for i in istart:iend
     a4 = c4
 end
 
+# cmip6 data
 istart = 103
 iend   = 250
 for i in istart:iend
@@ -205,10 +203,11 @@ rmn_cm6 = zeros(jend)
 # get the monthly mean values to remove the seasonal cycle: 
 # df3 --> nino3p4 for cmip5 models
 # df4 --> tropical mean for cmip5 models
-c3nsc = zeros(jend)
-c4nsc = zeros(jend)
-c5nsc = zeros(jend)
-c6nsc = zeros(jend)
+c3nsc  = zeros(jend)
+c4nsc  = zeros(jend)
+c5nsc  = zeros(jend)
+c6nsc  = zeros(jend)
+#tr_nsc = zeros(jend)
 mmn3 = zeros(12)
 mmn3 = [mean(df3[:,i]) for i in 2:13]
 mmn = zeros(12)
@@ -217,6 +216,9 @@ mmn_34_cm6 = zeros(12)
 mmn_34_cm6 = [mean(df5[:,i]) for i in 2:13]
 mmn_cm6 = zeros(12)
 mmn_cm6 = [mean(df6[:,i]) for i in 2:13]
+# compute seasonal cycle for the observed tropical mean:
+mmn_tr = zeros(12)
+mmn_tr = [mean(df8[:,i]) for i in 2:13]
 #
 #endpt = 148*12+12
 # remove the seasonal cycle
