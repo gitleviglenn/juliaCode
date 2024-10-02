@@ -8,6 +8,7 @@
 # - a three point running mean is applied (the oceanic Nino index is 
 #   defined as a 3-month running average of sst anomalies in the 
 #   nino-3.4 region.)
+# - a 12 point running mean function is also used
 #
 # - to use the data from MPI-ESM some regridding was necessary, using both
 # - nco and cdo functions: 
@@ -23,13 +24,13 @@
 # xinc     = 1
 # yfirst   = -19.5
 # yinc     = 1
-
 #
 # the ONI and RONI indices are computed using time series of the Nino3.4 and
 # the tropical mean SSTs.  As shown in L'Heureux et al., 2024, the seasonal 
 # cycle needs to be removed from both the Nino-3.4 and the tropical mean 
 # becauase they have different seasonalities.  
 #
+# functions:  fig_plot(), prepare_cmip_ts(), smooth_ts()
 #
 # levi silvers                                              sep 2024
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -91,15 +92,6 @@ function prepare_cmip_ts(inpFile,len)
     size(nino34_full)
     println(nino34_full[:,7,10])
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    #println("~~~~type of trop_full ~~~~~~~~~~~~~~~~~~~~~~~")
-    ##replace(trop_full, NaN32=>missing)
-    #typeof(trop_full)
-    #size(trop_full)
-    #println(trop_full[:,7,10])
-    #println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    #println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    #println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    #println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     
     #tlength = 1980
     tlength = len 
@@ -107,7 +99,6 @@ function prepare_cmip_ts(inpFile,len)
     tropmn_ts = zeros(tlength)
     
     nino34_ts_mn = mean(skipmissing(nino34_full))
-    #tropmn_ts_mn = mean(skipmissing(trop_full))
     tropmn_ts_mn = mean(filter(!isnan, skipmissing(trop_full)))
     
     #println("fury fury fury")
@@ -115,7 +106,6 @@ function prepare_cmip_ts(inpFile,len)
     # compute the anomalies
     for i = 1:tlength
         nino34_ts[i]=mean(skipmissing(nino34_full[:,:,i]))-nino34_ts_mn
-        #tropmn_ts[i]=mean(skipmissing(trop_full[:,:,i]))-tropmn_ts_mn
         tropmn_ts[i]=mean(filter(!isnan, skipmissing(trop_full[:,:,i])))-tropmn_ts_mn
     end
     
@@ -205,16 +195,12 @@ function prepare_cmip_ts(inpFile,len)
     sig_oni   =  std(ts_nino34_rmn)
     sig_diff  =  std(ts_nino34_rmn-ts_tropmn_rmn)
     sig_scale =  sig_oni/sig_diff
-    #sig_scale = 1.   
 
     #print(ts_nino34_rmn)
     #println("fury and hatred")
-    #print(ts_tropmn_rmn)
-    # compute the relative oni index:
+    # compute the relative oni index (RONI):
     ts_rmn = sig_scale.*(ts_nino34_rmn-ts_tropmn_rmn)
     ts_rmn2 = sig_scale.*(ts_nino34_rmn)
-    #ts_rmn = sig_scale.*(ts_tropmn_rmn)
-    #ts_rmn = sig_scale.*(ts_nino34_rmn)
     return ts_rmn 
 end
 
@@ -298,7 +284,6 @@ mn_a = [mean(df1[:,i]) for i in 2:13]
 mn_b = [mean(df2[:,i]) for i in 2:13]
 # one can check the seasonal cycle in the REPL with:
 # lines(mn_a)
-# lines(mn_a)
 jend = 170*12
 
 c1nsc  = zeros(jend)
@@ -337,10 +322,8 @@ for i in 1:12:jend
 end
 
 sig_oni   = std(c1nsc)   # standard deviation of oni
-#sig_oni_b   = std.(c1nsc)   # standard deviation of oni
 sig_dif   = std(c1nsc-c2nsc) # standard deviation of tr mean
 sig_scale = sig_oni/sig_dif
-#roni_a    = c1nsc - c2nsc
 
 # calculate a 3 point running mean
 ts_oni = zeros(2040)
@@ -363,19 +346,16 @@ roni_a = sig_scale.*(ts_oni - tmn_sm)
 timelen = 1980
 inpFile = file1
 prepare_cmip_ts(inpFile,timelen)
-#ba1 = ts_rmn_nsc
 ba1 = ts_rmn
 ba1nn = ts_rmn2
 #
 inpFile = file2
 prepare_cmip_ts(inpFile,timelen)
-#ba2 = ts_rmn_nsc
 ba2 = ts_rmn
 ba2nn = ts_rmn2
 
 inpFile = file3
 prepare_cmip_ts(inpFile,timelen)
-#ba2 = ts_rmn_nsc
 ba3 = ts_rmn
 ba3nn = ts_rmn2
 
@@ -388,7 +368,6 @@ ba2b = ts_rmn
 timelen = 1980
 inpFile = file3
 prepare_cmip_ts(inpFile,timelen)
-#ba3 = ts_rmn_nsc
 ba3 = ts_rmn
 
 A = collect(1854:1/12:2023.92)
@@ -400,14 +379,11 @@ fig = Figure(;
 ax = Axis(fig[1,1];
     xlabel="monthly mean, smoothed",
     ylabel="ENSO index anomalies",
-    #xticks=([108,228,348,468,588,708,828,948,1068,1188,1308,1428,1548],["1960","1970","1980","1990","2000","2010","2020","2030","2040","2050","2060","2070","2080"]),
-    #xticks=([1,120,240,360,480,600,720,840,960,1080,1200,1320,1440,1560,1680,1800,1920,2040],["1850","1860","1870","1880","1890","1900","1910","1920","1930","1940","1950","1960","1970","1980","1990","2000","2010","2020"]),
     xticks=([1850,1860,1870,1880,1890,1900,1910,1920,1930,1940,1950,1960,1970,1980,1990,2000,2010,2020]),
     title="ENSO over the historical period"
     )
 smooth_12_ts(roni_a,2040)
 blah3 = ts_12_sm
-#lines!(ax, roni_a[:], 
 lines!(ax, A,blah3[:], 
     linewidth = 2.5,
     color = "black",
@@ -423,10 +399,6 @@ lines!(ax, B,ba1_sm[:],
     linewidth = 1.5,
     label = "CNRM: RONI"
     )
-lines!(ax, B,ba1nn_sm[:], 
-    linewidth = 1.5,
-    label = "CNRM: ONI"
-    )
 
 smooth_12_ts(ba2,timelen)
 ba2_sm = ts_12_sm
@@ -436,10 +408,6 @@ lines!(ax, B,ba2_sm[:],
     linewidth = 1.5,
     label = "MPI: RONI"
     )
-lines!(ax, B,ba2nn_sm[:], 
-    linewidth = 1.5,
-    label = "MPI: ONI"
-    )
 smooth_12_ts(ba3,timelen)
 ba3_sm = ts_12_sm
 smooth_12_ts(ba3nn,timelen)
@@ -448,10 +416,10 @@ lines!(ax, B,ba3_sm[:],
     linewidth = 1.5,
     label = "GFDL: RONI"
     )
-lines!(ax, B,ba3nn_sm[:], 
-    linewidth = 1.5,
-    label = "GFDL: ONI"
-    )
+#lines!(ax, B,ba3nn_sm[:], 
+#    linewidth = 1.5,
+#    label = "GFDL: ONI"
+#    )
 ##lines!(ax, nino3p4_anom[:], 
 ##    linewidth = 1.5,
 ##    label = "nino 3.4"
