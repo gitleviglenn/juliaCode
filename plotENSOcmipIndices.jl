@@ -107,14 +107,16 @@ function prepare_cmip_ts(inpFile,len)
     tropmn_ts = zeros(tlength)
     
     nino34_ts_mn = mean(skipmissing(nino34_full))
-    tropmn_ts_mn = mean(skipmissing(trop_full))
+    #tropmn_ts_mn = mean(skipmissing(trop_full))
+    tropmn_ts_mn = mean(filter(!isnan, skipmissing(trop_full)))
     
     #println("fury fury fury")
     #println(tropmn_ts_mn) 
     # compute the anomalies
     for i = 1:tlength
         nino34_ts[i]=mean(skipmissing(nino34_full[:,:,i]))-nino34_ts_mn
-        tropmn_ts[i]=mean(skipmissing(trop_full[:,:,i]))-tropmn_ts_mn
+        #tropmn_ts[i]=mean(skipmissing(trop_full[:,:,i]))-tropmn_ts_mn
+        tropmn_ts[i]=mean(filter(!isnan, skipmissing(trop_full[:,:,i])))-tropmn_ts_mn
     end
     
     # remove the seasonal cycle:
@@ -151,65 +153,68 @@ function prepare_cmip_ts(inpFile,len)
       ts_rmn_nsc[i+11] = nino34_ts[i+11] - ss[12]
     end
 
-    #ss1  = zeros(12)
-    #jan = [mean([tropmn_ts[i] for i in 1:12:tlength])]
-    #feb = [mean([tropmn_ts[i] for i in 2:12:tlength])]
-    #mar = [mean([tropmn_ts[i] for i in 3:12:tlength])]
-    #apr = [mean([tropmn_ts[i] for i in 4:12:tlength])]
-    #may = [mean([tropmn_ts[i] for i in 5:12:tlength])]
-    #jun = [mean([tropmn_ts[i] for i in 6:12:tlength])]
-    #jul = [mean([tropmn_ts[i] for i in 7:12:tlength])]
-    #aug = [mean([tropmn_ts[i] for i in 8:12:tlength])]
-    #sep = [mean([tropmn_ts[i] for i in 9:12:tlength])]
-    #oct = [mean([tropmn_ts[i] for i in 10:12:tlength])]
-    #nov = [mean([tropmn_ts[i] for i in 11:12:tlength])]
-    #dec = [mean([tropmn_ts[i] for i in 12:12:tlength])]
-    #
-    #ss1 = [jan feb mar apr may jun jul aug sep oct nov dec]
+    ss1  = zeros(12)
+    jan = [mean([tropmn_ts[i] for i in 1:12:tlength])]
+    feb = [mean([tropmn_ts[i] for i in 2:12:tlength])]
+    mar = [mean([tropmn_ts[i] for i in 3:12:tlength])]
+    apr = [mean([tropmn_ts[i] for i in 4:12:tlength])]
+    may = [mean([tropmn_ts[i] for i in 5:12:tlength])]
+    jun = [mean([tropmn_ts[i] for i in 6:12:tlength])]
+    jul = [mean([tropmn_ts[i] for i in 7:12:tlength])]
+    aug = [mean([tropmn_ts[i] for i in 8:12:tlength])]
+    sep = [mean([tropmn_ts[i] for i in 9:12:tlength])]
+    oct = [mean([tropmn_ts[i] for i in 10:12:tlength])]
+    nov = [mean([tropmn_ts[i] for i in 11:12:tlength])]
+    dec = [mean([tropmn_ts[i] for i in 12:12:tlength])]
+    
+    ss1 = [jan feb mar apr may jun jul aug sep oct nov dec]
 
-    #global ts_trmn_nsc = zeros(tlength)
-    #for i in 1:12:tlength
-    #  ts_trmn_nsc[i]    = tropmn_ts[i]    - ss1[1]
-    #  ts_trmn_nsc[i+1]  = tropmn_ts[i+1]  - ss1[2]
-    #  ts_trmn_nsc[i+2]  = tropmn_ts[i+2]  - ss1[3]
-    #  ts_trmn_nsc[i+3]  = tropmn_ts[i+3]  - ss1[4]
-    #  ts_trmn_nsc[i+4]  = tropmn_ts[i+4]  - ss1[5]
-    #  ts_trmn_nsc[i+5]  = tropmn_ts[i+5]  - ss1[6]
-    #  ts_trmn_nsc[i+6]  = tropmn_ts[i+6]  - ss1[7]
-    #  ts_trmn_nsc[i+7]  = tropmn_ts[i+7]  - ss1[8]
-    #  ts_trmn_nsc[i+8]  = tropmn_ts[i+8]  - ss1[9]
-    #  ts_trmn_nsc[i+9]  = tropmn_ts[i+9]  - ss1[10]
-    #  ts_trmn_nsc[i+10] = tropmn_ts[i+10] - ss1[11]
-    #  ts_trmn_nsc[i+11] = tropmn_ts[i+11] - ss1[12]
-    #end
+    global ts_trmn_nsc = zeros(tlength)
+    for i in 1:12:tlength
+      ts_trmn_nsc[i]    = tropmn_ts[i]    - ss1[1]
+      ts_trmn_nsc[i+1]  = tropmn_ts[i+1]  - ss1[2]
+      ts_trmn_nsc[i+2]  = tropmn_ts[i+2]  - ss1[3]
+      ts_trmn_nsc[i+3]  = tropmn_ts[i+3]  - ss1[4]
+      ts_trmn_nsc[i+4]  = tropmn_ts[i+4]  - ss1[5]
+      ts_trmn_nsc[i+5]  = tropmn_ts[i+5]  - ss1[6]
+      ts_trmn_nsc[i+6]  = tropmn_ts[i+6]  - ss1[7]
+      ts_trmn_nsc[i+7]  = tropmn_ts[i+7]  - ss1[8]
+      ts_trmn_nsc[i+8]  = tropmn_ts[i+8]  - ss1[9]
+      ts_trmn_nsc[i+9]  = tropmn_ts[i+9]  - ss1[10]
+      ts_trmn_nsc[i+10] = tropmn_ts[i+10] - ss1[11]
+      ts_trmn_nsc[i+11] = tropmn_ts[i+11] - ss1[12]
+    end
 
     # smooth the time series with a running mean
     global ts_nino34_rmn = zeros(tlength)
     global ts_tropmn_rmn = zeros(tlength)
     global ts_rmn        = zeros(tlength)
+    global ts_rmn2        = zeros(tlength)
     istart= 2
     jend  = tlength
     for i in istart:jend-1
       ts_nino34_rmn[i] = (ts_rmn_nsc[i+1]+ts_rmn_nsc[i]+ts_rmn_nsc[i-1])/3
-      #ts_tropmn_rmn[i] = (ts_trmn_nsc[i+1]+ts_trmn_nsc[i]+ts_trmn_nsc[i-1])/3
+      ts_tropmn_rmn[i] = (ts_trmn_nsc[i+1]+ts_trmn_nsc[i]+ts_trmn_nsc[i-1])/3
     end
     ts_nino34_rmn[1]=ts_nino34_rmn[2]
     ts_nino34_rmn[jend]=ts_nino34_rmn[jend-1]
-    #ts_tropmn_rmn[1]=ts_tropmn_rmn[2]
-    #ts_tropmn_rmn[jend]=ts_tropmn_rmn[jend-1]
+    ts_tropmn_rmn[1]=ts_tropmn_rmn[2]
+    ts_tropmn_rmn[jend]=ts_tropmn_rmn[jend-1]
 
     # compute the scaling factor
     sig_oni   =  std(ts_nino34_rmn)
-    #sig_diff  =  std(ts_nino34_rmn-ts_tropmn_rmn)
-    #sig_scale =  sig_oni/sig_diff
-    sig_scale = 1.   
+    sig_diff  =  std(ts_nino34_rmn-ts_tropmn_rmn)
+    sig_scale =  sig_oni/sig_diff
+    #sig_scale = 1.   
 
     #print(ts_nino34_rmn)
     #println("fury and hatred")
     #print(ts_tropmn_rmn)
     # compute the relative oni index:
-    #ts_rmn = sig_scale.*(ts_nino34_rmn-ts_tropmn_rmn)
-    ts_rmn = sig_scale.*(ts_nino34_rmn)
+    ts_rmn = sig_scale.*(ts_nino34_rmn-ts_tropmn_rmn)
+    ts_rmn2 = sig_scale.*(ts_nino34_rmn)
+    #ts_rmn = sig_scale.*(ts_tropmn_rmn)
+    #ts_rmn = sig_scale.*(ts_nino34_rmn)
     return ts_rmn 
 end
 
@@ -226,6 +231,7 @@ function smooth_ts(inpTS,len)
 
     return ts_sm
 end
+
 function smooth_12_ts(inpTS,len)
     # smooth the time series with a running mean
     global ts_12_sm = zeros(len)
@@ -359,11 +365,19 @@ inpFile = file1
 prepare_cmip_ts(inpFile,timelen)
 #ba1 = ts_rmn_nsc
 ba1 = ts_rmn
+ba1nn = ts_rmn2
 #
 inpFile = file2
 prepare_cmip_ts(inpFile,timelen)
 #ba2 = ts_rmn_nsc
 ba2 = ts_rmn
+ba2nn = ts_rmn2
+
+inpFile = file3
+prepare_cmip_ts(inpFile,timelen)
+#ba2 = ts_rmn_nsc
+ba3 = ts_rmn
+ba3nn = ts_rmn2
 
 #MPI scenario timeseries...
 timelen2=1032
@@ -385,47 +399,76 @@ fig = Figure(;
     )
 ax = Axis(fig[1,1];
     xlabel="monthly mean, smoothed",
-    ylabel="ENSO index",
+    ylabel="ENSO index anomalies",
     #xticks=([108,228,348,468,588,708,828,948,1068,1188,1308,1428,1548],["1960","1970","1980","1990","2000","2010","2020","2030","2040","2050","2060","2070","2080"]),
     #xticks=([1,120,240,360,480,600,720,840,960,1080,1200,1320,1440,1560,1680,1800,1920,2040],["1850","1860","1870","1880","1890","1900","1910","1920","1930","1940","1950","1960","1970","1980","1990","2000","2010","2020"]),
     xticks=([1850,1860,1870,1880,1890,1900,1910,1920,1930,1940,1950,1960,1970,1980,1990,2000,2010,2020]),
-    title="Relative Oceanic Nino Index"
+    title="ENSO over the historical period"
     )
-limits!(1850, 2030, -4, 4)
-smooth_12_ts(ba1,timelen)
-ba1_sm = ts_12_sm
-lines!(ax, B,ba1_sm[:], 
-    linewidth = 1.5,
-    label = "CNRM"
-    )
-smooth_12_ts(ba2,timelen)
-ba2_sm = ts_12_sm
-lines!(ax, B,ba2_sm[:], 
-    linewidth = 1.5,
-    label = "MPI"
-    )
-smooth_12_ts(ba3,timelen)
-ba3_sm = ts_12_sm
-lines!(ax, B,ba3_sm[:], 
-    linewidth = 1.5,
-    label = "GFDL"
-    )
-#lines!(ax, nino3p4_anom[:], 
-#    linewidth = 1.5,
-#    label = "nino 3.4"
-#    )
-#lines!(ax, ts_oni[:], 
-#    linewidth = 1.5,
-#    label = "oni"
-#    )
 smooth_12_ts(roni_a,2040)
 blah3 = ts_12_sm
 #lines!(ax, roni_a[:], 
 lines!(ax, A,blah3[:], 
-    linewidth = 1.5,
-    label = "Observed"
+    linewidth = 2.5,
+    color = "black",
+    label = "Observed: RONI"
     )
-#axislegend("legend"; position=:rb)
+limits!(1850, 2030, -4, 4)
+
+smooth_12_ts(ba1,timelen)
+ba1_sm = ts_12_sm
+smooth_12_ts(ba1nn,timelen)
+ba1nn_sm = ts_12_sm
+lines!(ax, B,ba1_sm[:], 
+    linewidth = 1.5,
+    label = "CNRM: RONI"
+    )
+lines!(ax, B,ba1nn_sm[:], 
+    linewidth = 1.5,
+    label = "CNRM: ONI"
+    )
+
+smooth_12_ts(ba2,timelen)
+ba2_sm = ts_12_sm
+smooth_12_ts(ba2nn,timelen)
+ba2nn_sm = ts_12_sm
+lines!(ax, B,ba2_sm[:], 
+    linewidth = 1.5,
+    label = "MPI: RONI"
+    )
+lines!(ax, B,ba2nn_sm[:], 
+    linewidth = 1.5,
+    label = "MPI: ONI"
+    )
+smooth_12_ts(ba3,timelen)
+ba3_sm = ts_12_sm
+smooth_12_ts(ba3nn,timelen)
+ba3nn_sm = ts_12_sm
+lines!(ax, B,ba3_sm[:], 
+    linewidth = 1.5,
+    label = "GFDL: RONI"
+    )
+lines!(ax, B,ba3nn_sm[:], 
+    linewidth = 1.5,
+    label = "GFDL: ONI"
+    )
+##lines!(ax, nino3p4_anom[:], 
+##    linewidth = 1.5,
+##    label = "nino 3.4"
+##    )
+##lines!(ax, ts_oni[:], 
+##    linewidth = 1.5,
+##    label = "oni"
+##    )
+##smooth_12_ts(roni_a,2040)
+##blah3 = ts_12_sm
+###lines!(ax, roni_a[:], 
+##lines!(ax, A,blah3[:], 
+##    linewidth = 1.5,
+##    color = "black",
+##    label = "Observed: RONI"
+##    )
+###axislegend("legend"; position=:rb)
 axislegend( position=:lt)
 #
 save("plotENSOcmipInds.png",fig)
