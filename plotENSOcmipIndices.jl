@@ -30,7 +30,13 @@
 # cycle needs to be removed from both the Nino-3.4 and the tropical mean 
 # becauase they have different seasonalities.  
 #
+# eventually we will want to calculate the mean of all the cmip timeseries. 
+# will the zipper function be the best way to combine them before averaging?
+# 
 # functions:  fig_plot(), prepare_cmip_ts(), smooth_ts()
+#
+# cmip6 data was downloaded from the Climate Data Store:
+# https://cds.climate.copernicus.eu/requests?tab=all
 #
 # levi silvers                                              sep 2024
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -77,12 +83,8 @@ function prepare_cmip_ts(inpFile,len)
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     println("~~~~~long points: ~~~~~~~~~~~~~~~~")
     println(nclon[10:61])
-    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     println("~~~~~lat points: ~~~~~~~~~~~~~~~~")
     println(nclat[15:26])
-    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     #
     nino34_full = sst1[10:61, 15:26, :];
     trop_full   = sst1[:, :, :];
@@ -98,14 +100,15 @@ function prepare_cmip_ts(inpFile,len)
     nino34_ts = zeros(tlength)
     tropmn_ts = zeros(tlength)
     
-    nino34_ts_mn = mean(skipmissing(nino34_full))
+    nino34_ts_mn = mean(filter(!isnan, skipmissing(nino34_full)))
     tropmn_ts_mn = mean(filter(!isnan, skipmissing(trop_full)))
     
     #println("fury fury fury")
     #println(tropmn_ts_mn) 
     # compute the anomalies
     for i = 1:tlength
-        nino34_ts[i]=mean(skipmissing(nino34_full[:,:,i]))-nino34_ts_mn
+        #nino34_ts[i]=mean(skipmissing(nino34_full[:,:,i]))-nino34_ts_mn
+        nino34_ts[i]=mean(filter(!isnan, skipmissing(nino34_full[:,:,i])))-nino34_ts_mn
         tropmn_ts[i]=mean(filter(!isnan, skipmissing(trop_full[:,:,i])))-tropmn_ts_mn
     end
     
@@ -234,12 +237,21 @@ end
 
 path="/Users/C823281551/"
 
-#file1 = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
-#file1 = path*"data/tos_MPI_hist/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216.nc"
-file1 = path*"data/tos_CNRM_hist/tos_Omon_CNRM-ESM2-1_historical_r1i1p1f2_gn_18500116-20141216.nc"
-file2 = path*"data/tos_MPI_hist/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216_regridded.nc"
+# CNRM
+file1  = path*"data/tos_CNRM_hist/tos_Omon_CNRM-ESM2-1_historical_r1i1p1f2_gn_18500116-20141216.nc"
+file1b = path*"data/CNRM-CM6_ssp585_20150116-21001216/tos_Omon_CNRM-CM6-1-HR_ssp585_r1i1p1f2_gn_20150116-21001216remapbil.nc"
+# MPI-ESM
+file2  = path*"data/tos_MPI_hist/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216_regridded.nc"
 file2b = path*"data/MPI-ESM1_ssp585_20150116-21001216/tos_Omon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc"
-file3 = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
+# GFDL
+file3  = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
+# E3SM
+file4  = path*"data/E3SM-1-1-ECA_historical_18500116-20141216/tos_Omon_E3SM-1-1-ECA_historical_r1i1p1f1_gr_18500116-20141216.nc"
+file4b  = path*"data/"
+# CESM2
+file5b = path*"data/CESM2_ssp585_20150115-21001215/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
+# HadGEM3
+file6  = path*"data/HadGEM3_historical/tos_Omon_HadGEM3-GC31-LL_historical_r1i1p1f3_gn_18500116-20141216_regridded.nc"
 
 # incoming data in csv format:
 file7 = path*"data/obs/observed_nino3.4.csv"
@@ -359,11 +371,28 @@ prepare_cmip_ts(inpFile,timelen)
 ba3 = ts_rmn
 ba3nn = ts_rmn2
 
+inpFile = file4
+prepare_cmip_ts(inpFile,timelen)
+ba4 = ts_rmn
+
+inpFile = file6
+prepare_cmip_ts(inpFile,timelen)
+ba6 = ts_rmn
+
 #MPI scenario timeseries...
 timelen2=1032
 inpFile = file2b
 prepare_cmip_ts(inpFile,timelen2)
 ba2b = ts_rmn
+
+inpFile = file1b
+prepare_cmip_ts(inpFile,timelen2)
+ba1b = ts_rmn
+
+inpFile = file5b
+prepare_cmip_ts(inpFile,timelen2)
+ba5b = ts_rmn
+
 
 timelen = 1980
 inpFile = file3
@@ -372,6 +401,7 @@ ba3 = ts_rmn
 
 A = collect(1854:1/12:2023.92)
 B = collect(1850.0833333333333:1/12:2015)
+C = collect(2015.083333:1/12:2101)
 
 fig = Figure(;
     size = (700,400),
@@ -379,7 +409,8 @@ fig = Figure(;
 ax = Axis(fig[1,1];
     xlabel="monthly mean, smoothed",
     ylabel="ENSO index anomalies",
-    xticks=([1850,1860,1870,1880,1890,1900,1910,1920,1930,1940,1950,1960,1970,1980,1990,2000,2010,2020]),
+    #xticks=([1850,1860,1870,1880,1890,1900,1910,1920,1930,1940,1950,1960,1970,1980,1990,2000,2010,2020]),
+    xticks=([1850,1870,1890,1910,1930,1950,1970,1990,2010,2030,2050,2070,2090]),
     title="ENSO over the historical period"
     )
 smooth_12_ts(roni_a,2040)
@@ -389,7 +420,7 @@ lines!(ax, A,blah3[:],
     color = "black",
     label = "Observed: RONI"
     )
-limits!(1850, 2030, -4, 4)
+limits!(1850, 2100, -4, 4)
 
 smooth_12_ts(ba1,timelen)
 ba1_sm = ts_12_sm
@@ -399,14 +430,26 @@ lines!(ax, B,ba1_sm[:],
     linewidth = 1.5,
     label = "CNRM: RONI"
     )
+smooth_12_ts(ba1b,timelen2)
+ba1b_sm = ts_12_sm
+lines!(ax, C,ba1b_sm[:], 
+    linewidth = 1.5,
+    label = "CNRMb: RONI"
+    )
 
 smooth_12_ts(ba2,timelen)
 ba2_sm = ts_12_sm
+smooth_12_ts(ba2b,timelen2)
+ba2b_sm = ts_12_sm
 smooth_12_ts(ba2nn,timelen)
 ba2nn_sm = ts_12_sm
 lines!(ax, B,ba2_sm[:], 
     linewidth = 1.5,
     label = "MPI: RONI"
+    )
+lines!(ax, C,ba2b_sm[:], 
+    linewidth = 1.5,
+    label = "MPIb: RONI"
     )
 smooth_12_ts(ba3,timelen)
 ba3_sm = ts_12_sm
@@ -416,6 +459,28 @@ lines!(ax, B,ba3_sm[:],
     linewidth = 1.5,
     label = "GFDL: RONI"
     )
+
+smooth_12_ts(ba4,timelen)
+ba4_sm = ts_12_sm
+lines!(ax, B,ba4_sm[:], 
+    linewidth = 1.5,
+    label = "E3SM: RONI"
+    )
+
+smooth_12_ts(ba5b,timelen2)
+ba5b_sm = ts_12_sm
+lines!(ax, C,ba5b_sm[:], 
+    linewidth = 1.5,
+    label = "CESM2: RONI"
+    )
+
+smooth_12_ts(ba6,timelen)
+ba6_sm = ts_12_sm
+lines!(ax, B,ba6_sm[:], 
+    linewidth = 1.5,
+    label = "HadGEM3: RONI"
+    )
+
 #lines!(ax, B,ba3nn_sm[:], 
 #    linewidth = 1.5,
 #    label = "GFDL: ONI"
