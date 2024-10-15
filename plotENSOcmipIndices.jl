@@ -416,70 +416,96 @@ ax = Axis(fig[1,1];
 smooth_12_ts(roni_a,2040)
 blah3 = ts_12_sm
 lines!(ax, A,blah3[:], 
-    linewidth = 2.5,
+    linewidth = 2.,
     color = "black",
     label = "Observed: RONI"
     )
 limits!(1850, 2100, -4, 4)
 
+# historical
 smooth_12_ts(ba1,timelen)
 ba1_sm = ts_12_sm
-smooth_12_ts(ba1nn,timelen)
-ba1nn_sm = ts_12_sm
+#smooth_12_ts(ba1nn,timelen)
+#ba1nn_sm = ts_12_sm
 lines!(ax, B,ba1_sm[:], 
-    linewidth = 1.5,
-    label = "CNRM: RONI"
+    linewidth = 0.75
+    #label = "CNRM: RONI"
     )
+# ssp585
 smooth_12_ts(ba1b,timelen2)
 ba1b_sm = ts_12_sm
 lines!(ax, C,ba1b_sm[:], 
-    linewidth = 1.5,
-    label = "CNRMb: RONI"
+    linewidth = 0.75
+    #label = "CNRMb: RONI"
     )
 
 smooth_12_ts(ba2,timelen)
-ba2_sm = ts_12_sm
+ba2_sm = ts_12_sm #  historical
 smooth_12_ts(ba2b,timelen2)
-ba2b_sm = ts_12_sm
-smooth_12_ts(ba2nn,timelen)
-ba2nn_sm = ts_12_sm
+ba2b_sm = ts_12_sm # ssp585
+#smooth_12_ts(ba2nn,timelen)
+#ba2nn_sm = ts_12_sm
 lines!(ax, B,ba2_sm[:], 
-    linewidth = 1.5,
-    label = "MPI: RONI"
+    linewidth = 0.75,
+    color = "tomato1"
+    #label = "MPI: RONI"
     )
 lines!(ax, C,ba2b_sm[:], 
-    linewidth = 1.5,
-    label = "MPIb: RONI"
+    linewidth = 0.75,
+    color = "tomato1"
+    #label = "MPIb: RONI"
     )
 smooth_12_ts(ba3,timelen)
-ba3_sm = ts_12_sm
-smooth_12_ts(ba3nn,timelen)
-ba3nn_sm = ts_12_sm
+ba3_sm = ts_12_sm # historical
+#smooth_12_ts(ba3nn,timelen)
+#ba3nn_sm = ts_12_sm
 lines!(ax, B,ba3_sm[:], 
-    linewidth = 1.5,
-    label = "GFDL: RONI"
+    linewidth = 0.75
+    #label = "GFDL: RONI"
     )
 
 smooth_12_ts(ba4,timelen)
-ba4_sm = ts_12_sm
+ba4_sm = ts_12_sm # historical
 lines!(ax, B,ba4_sm[:], 
-    linewidth = 1.5,
-    label = "E3SM: RONI"
+    linewidth = 0.75
+    #label = "E3SM: RONI"
     )
 
 smooth_12_ts(ba5b,timelen2)
-ba5b_sm = ts_12_sm
+ba5b_sm = ts_12_sm # ssp585
 lines!(ax, C,ba5b_sm[:], 
-    linewidth = 1.5,
-    label = "CESM2: RONI"
+    linewidth = 0.75
+    #label = "CESM2: RONI"
     )
 
 smooth_12_ts(ba6,timelen)
-ba6_sm = ts_12_sm
+ba6_sm = ts_12_sm # historical
 lines!(ax, B,ba6_sm[:], 
-    linewidth = 1.5,
-    label = "HadGEM3: RONI"
+    linewidth = 0.75
+    #label = "HadGEM3: RONI"
     )
+
+# ssp585
+tenCent  = [ba1b_sm';ba2b_sm';ba5b_sm']
+mnSSP = mean(tenCent, dims = 1)
+# historical
+lightOut = [ba1_sm';ba2_sm';ba3_sm';ba4_sm';ba6_sm']
+mnH   = mean(lightOut, dims = 1)
+
+#smooth_12_ts(ba6,timelen)
+#ba6_sm = ts_12_sm # historical
+lines!(ax, B,mnH[:], 
+    linewidth = 2.0,
+    color = "red",
+    label = "mn CMIP6"
+    )
+lines!(ax, C,mnSSP[:], 
+    linewidth = 2.0,
+    color = "red"
+    #label = "mn SSP"
+    )
+
+
 
 #lines!(ax, B,ba3nn_sm[:], 
 #    linewidth = 1.5,
@@ -502,9 +528,10 @@ lines!(ax, B,ba6_sm[:],
 ##    label = "Observed: RONI"
 ##    )
 ###axislegend("legend"; position=:rb)
+
 axislegend( position=:lt)
 #
-save("plotENSOcmipInds.png",fig)
+save("plotENSOcmipStupid.png",fig)
 
 
 
