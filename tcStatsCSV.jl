@@ -11,7 +11,8 @@ using LaTeXStrings
 # /Users/silvers/data/hurricane_data/AtlanticTCACE18512023.csv 
 
 # incoming file: 
-filein = "/Users/silvers/data/hurricane_data/AtlanticTCACE18512023.csv"
+#filein = "/Users/silvers/data/hurricane_data/AtlanticTCACE18512023.csv"
+filein = "/Users/C823281551/data/hurricane_data/AtlanticTCACE18512023.csv"
 
 # read a csv file into a dataframe:
 #df1 = DataFrame(CSV.File(filein))

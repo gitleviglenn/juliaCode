@@ -1,12 +1,12 @@
 using DataFrames
 using CSV
 using CairoMakie
-using Plots
+#using Plots
 
 # run with
 # /Users/silvers/.juliaup/bin/julia tcRIhist.jl
 
-filein = "/Users/silvers/data/hurricane_data/FirstRILocationbyStorm.csv"
+filein = "/Users/C823281551/data/hurricane_data/FirstRILocationbyStorm.csv"
 
 dfRI = CSV.read(filein, DataFrame)  
 describe(dfRI) 
