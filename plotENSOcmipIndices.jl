@@ -10,11 +10,14 @@
 #   nino-3.4 region.)
 # - a 12 point running mean function is also used
 #
-# - to use the data from MPI-ESM some regridding was necessary, using both
+# - to use the data from MPI-ESM and HadGEM3, some regridding was necessary, using both
 # - nco and cdo functions: 
 # ncks -d time,0,1979 tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216.nc test_1980ts.nc
 # ncatted -a coordinates,tos,c,c,"latitude longitude" test_1980ts.nc
 # cdo -L remapbil,mygrid -sethalo,-1,-1 test_1980ts.nc test_1980ts_latlon3.nc
+#
+# or:
+# ncks -d time,0,1031 tos_Omon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216.nc test_ssp585ts.nc
 # 
 # using this grid file: 
 # gridtype = lonlat
@@ -240,6 +243,7 @@ path="/Users/C823281551/"
 # CNRM
 file1  = path*"data/tos_CNRM_hist/tos_Omon_CNRM-ESM2-1_historical_r1i1p1f2_gn_18500116-20141216.nc"
 file1b = path*"data/CNRM-CM6_ssp585_20150116-21001216/tos_Omon_CNRM-CM6-1-HR_ssp585_r1i1p1f2_gn_20150116-21001216remapbil.nc"
+file1c = path*"data/CNRM-ESM2_ssp585/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216.nc"
 # MPI-ESM
 file2  = path*"data/tos_MPI_hist/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216_regridded.nc"
 file2b = path*"data/MPI-ESM1_ssp585_20150116-21001216/tos_Omon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc"
@@ -252,6 +256,9 @@ file4b  = path*"data/"
 file5b = path*"data/CESM2_ssp585_20150115-21001215/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
 # HadGEM3
 file6  = path*"data/HadGEM3_historical/tos_Omon_HadGEM3-GC31-LL_historical_r1i1p1f3_gn_18500116-20141216_regridded.nc"
+file6b = path*"data/HadGEM3_ssp585/tos_Omon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridded.nc"
+# ACCESS
+file9b = path*"data/ACCESS-CM2_ssp585/tos_Omon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
 
 # incoming data in csv format:
 file7 = path*"data/obs/observed_nino3.4.csv"
@@ -381,17 +388,28 @@ ba6 = ts_rmn
 
 #MPI scenario timeseries...
 timelen2=1032
+inpFile = file1b
+prepare_cmip_ts(inpFile,timelen2)
+ba1b = ts_rmn
+inpFile = file1c
+prepare_cmip_ts(inpFile,timelen2)
+ba1c = ts_rmn
+
 inpFile = file2b
 prepare_cmip_ts(inpFile,timelen2)
 ba2b = ts_rmn
 
-inpFile = file1b
-prepare_cmip_ts(inpFile,timelen2)
-ba1b = ts_rmn
-
 inpFile = file5b
 prepare_cmip_ts(inpFile,timelen2)
 ba5b = ts_rmn
+
+inpFile = file6b
+prepare_cmip_ts(inpFile,timelen2)
+ba6b = ts_rmn
+
+inpFile = file9b
+prepare_cmip_ts(inpFile,timelen2)
+ba9b = ts_rmn
 
 
 timelen = 1980
@@ -408,19 +426,19 @@ fig = Figure(;
     )
 ax = Axis(fig[1,1];
     xlabel="monthly mean, smoothed",
-    ylabel="ENSO index anomalies",
+    ylabel="ENSO RONI anomalies",
     #xticks=([1850,1860,1870,1880,1890,1900,1910,1920,1930,1940,1950,1960,1970,1980,1990,2000,2010,2020]),
     xticks=([1850,1870,1890,1910,1930,1950,1970,1990,2010,2030,2050,2070,2090]),
-    title="ENSO over the historical period"
+    title="ENSO: historical period and ssp585"
     )
 smooth_12_ts(roni_a,2040)
 blah3 = ts_12_sm
-lines!(ax, A,blah3[:], 
-    linewidth = 2.,
-    color = "black",
-    label = "Observed: RONI"
-    )
-limits!(1850, 2100, -4, 4)
+#lines!(ax, A,blah3[:], 
+#    linewidth = 2.,
+#    color = "black",
+#    label = "Observed: RONI"
+#    )
+#limits!(1850, 2100, -4, 4)
 
 # historical
 smooth_12_ts(ba1,timelen)
@@ -431,12 +449,18 @@ lines!(ax, B,ba1_sm[:],
     linewidth = 0.75
     #label = "CNRM: RONI"
     )
+limits!(1850, 2100, -4, 4)
 # ssp585
 smooth_12_ts(ba1b,timelen2)
 ba1b_sm = ts_12_sm
 lines!(ax, C,ba1b_sm[:], 
     linewidth = 0.75
-    #label = "CNRMb: RONI"
+    )
+smooth_12_ts(ba1c,timelen2)
+ba1c_sm = ts_12_sm
+lines!(ax, C,ba1c_sm[:], 
+    linewidth = 0.75
+    #label = "CNRM: RONI"
     )
 
 smooth_12_ts(ba2,timelen)
@@ -480,13 +504,27 @@ lines!(ax, C,ba5b_sm[:],
 
 smooth_12_ts(ba6,timelen)
 ba6_sm = ts_12_sm # historical
+smooth_12_ts(ba6b,timelen2)
+ba6b_sm = ts_12_sm # ssp585
 lines!(ax, B,ba6_sm[:], 
     linewidth = 0.75
     #label = "HadGEM3: RONI"
     )
+lines!(ax, C,ba6b_sm[:], 
+    linewidth = 0.75
+    #label = "HadGEM3: RONI"
+    )
+
+smooth_12_ts(ba9b,timelen2)
+ba9b_sm = ts_12_sm # ssp585
+lines!(ax, C,ba9b_sm[:], 
+    linewidth = 0.75
+    #label = "ACCESS: RONI"
+    )
+
 
 # ssp585
-tenCent  = [ba1b_sm';ba2b_sm';ba5b_sm']
+tenCent  = [ba1b_sm';ba2b_sm';ba5b_sm';ba9b_sm';ba6b_sm';ba1c_sm']
 mnSSP = mean(tenCent, dims = 1)
 # historical
 lightOut = [ba1_sm';ba2_sm';ba3_sm';ba4_sm';ba6_sm']
@@ -503,6 +541,11 @@ lines!(ax, C,mnSSP[:],
     linewidth = 2.0,
     color = "red"
     #label = "mn SSP"
+    )
+lines!(ax, A,blah3[:], 
+    linewidth = 2.,
+    color = "black",
+    label = "Observed"
     )
 
 
