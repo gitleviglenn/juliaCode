@@ -446,7 +446,8 @@ ba1_sm = ts_12_sm
 #smooth_12_ts(ba1nn,timelen)
 #ba1nn_sm = ts_12_sm
 lines!(ax, B,ba1_sm[:], 
-    linewidth = 0.75
+    linewidth = 0.75,
+    color = "paleturquoise1"
     #label = "CNRM: RONI"
     )
 limits!(1850, 2100, -4, 4)
@@ -454,12 +455,14 @@ limits!(1850, 2100, -4, 4)
 smooth_12_ts(ba1b,timelen2)
 ba1b_sm = ts_12_sm
 lines!(ax, C,ba1b_sm[:], 
-    linewidth = 0.75
+    linewidth = 0.75,
+    color = "paleturquoise2"
     )
 smooth_12_ts(ba1c,timelen2)
 ba1c_sm = ts_12_sm
 lines!(ax, C,ba1c_sm[:], 
-    linewidth = 0.75
+    linewidth = 0.75,
+    color = "paleturquoise3"
     #label = "CNRM: RONI"
     )
 
@@ -471,12 +474,12 @@ ba2b_sm = ts_12_sm # ssp585
 #ba2nn_sm = ts_12_sm
 lines!(ax, B,ba2_sm[:], 
     linewidth = 0.75,
-    color = "tomato1"
+    color = "aquamarine"
     #label = "MPI: RONI"
     )
 lines!(ax, C,ba2b_sm[:], 
     linewidth = 0.75,
-    color = "tomato1"
+    color = "aquamarine"
     #label = "MPIb: RONI"
     )
 smooth_12_ts(ba3,timelen)
@@ -484,21 +487,24 @@ ba3_sm = ts_12_sm # historical
 #smooth_12_ts(ba3nn,timelen)
 #ba3nn_sm = ts_12_sm
 lines!(ax, B,ba3_sm[:], 
-    linewidth = 0.75
+    linewidth = 0.75,
+    color = "lightcyan"
     #label = "GFDL: RONI"
     )
 
 smooth_12_ts(ba4,timelen)
 ba4_sm = ts_12_sm # historical
 lines!(ax, B,ba4_sm[:], 
-    linewidth = 0.75
+    linewidth = 0.75,
+    color = "paleturquoise"
     #label = "E3SM: RONI"
     )
 
 smooth_12_ts(ba5b,timelen2)
 ba5b_sm = ts_12_sm # ssp585
 lines!(ax, C,ba5b_sm[:], 
-    linewidth = 0.75
+    linewidth = 0.75,
+    color = "mistyrose"
     #label = "CESM2: RONI"
     )
 
@@ -507,18 +513,21 @@ ba6_sm = ts_12_sm # historical
 smooth_12_ts(ba6b,timelen2)
 ba6b_sm = ts_12_sm # ssp585
 lines!(ax, B,ba6_sm[:], 
-    linewidth = 0.75
+    linewidth = 0.75,
+    color = "thistle2"
     #label = "HadGEM3: RONI"
     )
 lines!(ax, C,ba6b_sm[:], 
-    linewidth = 0.75
+    linewidth = 0.75,
+    color = "thistle"
     #label = "HadGEM3: RONI"
     )
 
 smooth_12_ts(ba9b,timelen2)
 ba9b_sm = ts_12_sm # ssp585
 lines!(ax, C,ba9b_sm[:], 
-    linewidth = 0.75
+    linewidth = 0.75,
+    color = "lavender"
     #label = "ACCESS: RONI"
     )
 

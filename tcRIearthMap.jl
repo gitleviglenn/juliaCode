@@ -24,7 +24,8 @@ using GeoMakie
 # /Users/silvers/data/hurricane_data/AtlanticTCACE18512023.csv 
 
 # incoming file: 
-filein = "/Users/silvers/data/hurricane_data/FirstRILocationbyStorm.csv"
+#filein = "/Users/silvers/data/hurricane_data/FirstRILocationbyStorm.csv"
+filein = "/Users/C823281551/data/hurricane_data/FirstRILocationbyStorm.csv"
 
 # read a csv file into a dataframe:
 #df1 = DataFrame(CSV.File(filein))
@@ -75,7 +76,6 @@ xRI = dfNA[:, :LATITUDE]
 yRI = dfNA[:, :LONGITUDE]
 yearRI = dfNA[:, :YEAR]
 scatter!(ga, yRI,xRI, markersize = 7, color = :red)
-
 
 save("tcRIearthMap.png", fig)
 

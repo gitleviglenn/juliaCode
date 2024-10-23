@@ -131,6 +131,31 @@ function first_tc_filter(year, wind)::Bool
     test1 && test2
 end
 
+function first_nina_filter(year, basin)::Bool
+    # NH La Nina years: 1998, 1999, 2007, 2010, 2016, 2020
+    #                   2021, 2022
+    # NH El Nino years: 1991, 1994, 1997, 2002, 2004, 2009,
+    #                   2015, 2023
+    #test1 = 2005 == year
+    #nope test1 = (2005 || 2019) == year
+    test1 = (year == 1998) || (year == 1999) || (year == 2007) || (year == 2010) || (year == 2016) || (year == 2020) || (year == 2021) || (year == 2022)
+    test2 = basin == "NA"
+    test1 && test2
+end
+
+function first_nino_filter(year, basin)::Bool
+    test1 = (year == 1991) || (year == 1994) || (year == 1997) || (year == 2002) || (year == 2004) || (year == 2009) || (year == 2015) || (year == 2023)
+    test2 = basin == "NA"
+    test1 && test2
+end
+
+function sec_nino_filter(year, basin, basString::String)::Bool
+    test1 = (year == 1991) || (year == 1994) || (year == 1997) || (year == 2002) || (year == 2004) || (year == 2009) || (year == 2015) || (year == 2023)
+    test2 = basin == basString
+    test1 && test2
+end
+
+
 function make_hist(dfin,tit)
     fig = Figure(;
         figure_padding=(5,5,10,10),
