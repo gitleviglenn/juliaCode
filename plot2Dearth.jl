@@ -12,6 +12,11 @@
 # 
 # what are the junk noisy white areas in the GeoMakie projections?  
 #
+# ] add ColorSchemes
+#
+# https://juliadatascience.io/makie_colors
+# https://docs.makie.org/dev/explanations/colors
+# 
 # the julia data science document I have been relying on doesn't go into 
 # geophysical plotting
 #
@@ -22,6 +27,8 @@ using CairoMakie
 using GeoMakie
 using NCDatasets
 using Statistics
+using ColorSchemes
+#using Plots
 
 filein  = "/Users/C823281551/data/ERA5/era5_nina_2d.nc"
 file2in = "/Users/C823281551/data/ERA5/era5mon1940toPresent_div_U_V.nc"
@@ -88,7 +95,8 @@ function fig_1_plot(inpv,d1,d2,tit)
         title=tit,
         )
         bb = contourf!(ax, d1, d2, inpv, 
-             levels = range(-20, 20, length = 100),
+             levels = range(-20, 20, length = 100), 
+             colormap = :batlow,
         )
         Colorbar(f2[1,2], bb)
     return f2
@@ -121,8 +129,8 @@ end
 #(blah_lon, blah_field) = cshift(lon, v_1, lon_0)
 
 #fig1 = fig_1_plot(sst_a,lon,lat,"SST")
-#fig2 = fig_1_plot(v_1,lon,lat,"velocity")
-fig2 = fig_2_plot(v_1,lon,lat,"velocity")
+fig2 = fig_1_plot(v_1,lon,lat,"velocity")
+#fig2 = fig_2_plot(v_1,lon,lat,"velocity")
 
 
 
