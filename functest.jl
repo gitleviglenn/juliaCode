@@ -13,6 +13,13 @@
 # figure_canvas()   --> creates and opens a png figure.
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+using DataFrames
+using CSV
+using CairoMakie
+using Statistics
+using NCDatasets
+
+
 function add_numbers(x, y)
     return x + y
 end
@@ -155,7 +162,6 @@ function sec_nino_filter(year, basin, basString::String)::Bool
     test1 && test2
 end
 
-
 function make_hist(dfin,tit)
     fig = Figure(;
         figure_padding=(5,5,10,10),
@@ -170,5 +176,17 @@ function make_hist(dfin,tit)
     hist!(ax, dfin, bins=35:5:100)
     fig
 end
+
+function cshift(lons, field, lon_0)
+   shift = @. lons - lon_0 > 180
+   nn = sum(shift)
+   (circshift(lons - 360shift, nn), circshift(field, (nn, 0)))
+end
+
+
+
+
+
+
 
 
