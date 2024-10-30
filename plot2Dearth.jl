@@ -8,7 +8,11 @@
 # plots continent lines
 # changes the default tickmarks for the lat and lon grid that is shown
 #
-# open questions: how can i install the color maps from fabiocrameri?  e.g. batlow?  
+# colortables: 
+#     batlow: a sequential gradient colortable that inclues beach, tan, green, 
+#             and deep green/blue
+#     vik:    a diverging gradient colortable that includes blues and reds (white)
+#             in the middle. 
 # 
 # what are the junk noisy white areas in the GeoMakie projections?  
 #
@@ -90,13 +94,16 @@ function fig_1_plot(inpv,d1,d2,tit)
         size=(600,300),
         )
     ax = Axis(f2[1,1];
+        xticks = -180:30:180, 
+        yticks = -90:30:90,
         xlabel="latitude",
         ylabel="longitude",
         title=tit,
         )
         bb = contourf!(ax, d1, d2, inpv, 
              levels = range(-20, 20, length = 100), 
-             colormap = :batlow,
+             #colormap = :batlow,
+             colormap = :vik,
         )
         Colorbar(f2[1,2], bb)
     return f2
@@ -129,8 +136,8 @@ end
 #(blah_lon, blah_field) = cshift(lon, v_1, lon_0)
 
 #fig1 = fig_1_plot(sst_a,lon,lat,"SST")
-fig2 = fig_1_plot(v_1,lon,lat,"velocity")
-#fig2 = fig_2_plot(v_1,lon,lat,"velocity")
+fig2 = fig_1_plot(v_1,lon,lat,"velocity") # uses equidistant.    
+#fig2 = fig_2_plot(v_1,lon,lat,"velocity") # uses GeoAxis, and doesn't yet look good. 
 
 
 

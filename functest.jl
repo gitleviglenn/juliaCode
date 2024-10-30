@@ -162,6 +162,15 @@ function sec_nino_filter(year, basin, basString::String)::Bool
     test1 && test2
 end
 
+function thd_nino_filter(year)::Bool
+    test1 = (year == 1991) || (year == 1994) || (year == 1997) || (year == 2002) || (year == 2004) || (year == 2009) || (year == 2015) || (year == 2023)
+    #test2 = basin == "NA"
+    #test1 && test2
+end
+function thd_nina_filter(year)::Bool
+    test1 = (year == 1998) || (year == 1999) || (year == 2007) || (year == 2010) || (year == 2016) || (year == 2020) || (year == 2021) || (year == 2022)
+end 
+
 function make_hist(dfin,tit)
     fig = Figure(;
         figure_padding=(5,5,10,10),
