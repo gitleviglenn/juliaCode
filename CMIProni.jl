@@ -178,6 +178,8 @@ end
 path="/Users/C823281551/"
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Beginning of work with observations
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # incoming data in csv format:
 file7 = path*"data/obs/observed_nino3.4.csv"
 file8 = path*"data/obs/observed_tropicalmean.csv"
@@ -225,7 +227,7 @@ jend = 170*12
 
 c1nsc  = zeros(jend)
 c2nsc  = zeros(jend)
-roni_a  = zeros(jend)
+roni   = zeros(jend)
 
 # remove the seasonal cycle before smoothing the time series.  
 # ts_oni     -> nino3p4_anom
@@ -276,15 +278,35 @@ ts_oni[jend] =ts_oni[jend-1]
 tmn_sm[1]    =tmn_sm[2]
 tmn_sm[jend] =tmn_sm[jend-1]
 
-roni_a = sig_scale.*(ts_oni - tmn_sm)
+roni = sig_scale.*(ts_oni - tmn_sm)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# beginning of work with GCM
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Choose which GCM to use: 
 
 # CNRM
 file1  = path*"data/tos_CNRM_hist/tos_Omon_CNRM-ESM2-1_historical_r1i1p1f2_gn_18500116-20141216.nc"
-file1b = path*"data/CNRM-CM6_ssp585_20150116-21001216/tos_Omon_CNRM-CM6-1-HR_ssp585_r1i1p1f2_gn_20150116-21001216remapbil.nc"
-file1c = path*"data/CNRM-ESM2_ssp585/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216.nc"
+file1c = path*"data/CNRM-CM6_ssp585_20150116-21001216/tos_Omon_CNRM-CM6-1-HR_ssp585_r1i1p1f2_gn_20150116-21001216remapbil.nc"
+file1b = path*"data/CNRM-ESM2_ssp585/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216.nc"
+# MPI-ESM
+file1  = path*"data/tos_MPI_hist/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216_regridded.nc"
+#file1b = path*"data/MPI-ESM1_ssp585_20150116-21001216/tos_Omon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc"
+# GFDL
+#file1b  = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
+# E3SM
+#file1  = path*"data/E3SM-1-1-ECA_historical_18500116-20141216/tos_Omon_E3SM-1-1-ECA_historical_r1i1p1f1_gr_18500116-20141216.nc"
+#file1b  = path*"data/"
+## CESM2
+#file1b = path*"data/CESM2_ssp585_20150115-21001215/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
+## HadGEM3
+#file1  = path*"data/HadGEM3_historical/tos_Omon_HadGEM3-GC31-LL_historical_r1i1p1f3_gn_18500116-20141216_regridded.nc"
+#file1b = path*"data/HadGEM3_ssp585/tos_Omon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridded.nc"
+## ACCESS
+file1b = path*"data/ACCESS-CM2_ssp585/tos_Omon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
 
+#
 timelen = 1980
 inpFile = file1
 prepare_cmip_ts(inpFile,timelen)
@@ -293,12 +315,12 @@ ba1nn = ts_rmn2
 #
 #MPI scenario timeseries...
 timelen2=1032
-inpFile = file1b
-prepare_cmip_ts(inpFile,timelen2)
-ba1b = ts_rmn
 inpFile = file1c
 prepare_cmip_ts(inpFile,timelen2)
 ba1c = ts_rmn
+inpFile = file1b
+prepare_cmip_ts(inpFile,timelen2)
+ba1b = ts_rmn
 
 # define thresholds: 
 nino_thresh = zeros(timelen+timelen2) .+ 0.75
@@ -321,9 +343,10 @@ ax = Axis(fig[1,1];
     xticks=([1850,1870,1890,1910,1930,1950,1970,1990,2010,2030,2050,2070,2090]),
     title="ENSO: historical period and ssp585"
     )
-smooth_12_ts(roni_a,2040)
-blah3 = ts_12_sm
+smooth_12_ts(roni,2040)
+roni_sm = ts_12_sm
 
+# plot the threshold lines
 lines!(ax, D,nino_thresh[:],
     color = "red"
     )
@@ -333,10 +356,8 @@ lines!(ax, D,-nino_thresh[:],
 
 # historical
 smooth_12_ts(ba1,timelen)
-ba1_sm = ts_12_sm
-#smooth_12_ts(ba1nn,timelen)
-#ba1nn_sm = ts_12_sm
-lines!(ax, B,ba1_sm[:], 
+gcm_sm1 = ts_12_sm
+lines!(ax, B,gcm_sm1[:], 
     linewidth = 1.25,
     #color = "paleturquoise1"
     color = "black"
@@ -344,116 +365,25 @@ lines!(ax, B,ba1_sm[:],
     )
 limits!(1850, 2100, -4, 4)
 # ssp585
-#smooth_12_ts(ba1b,timelen2)
-#ba1b_sm = ts_12_sm
-#lines!(ax, C,ba1b_sm[:], 
-#    linewidth = 0.75,
-#    color = "black"
-#    )
-smooth_12_ts(ba1c,timelen2)
-ba1c_sm = ts_12_sm
-lines!(ax, C,ba1c_sm[:], 
+smooth_12_ts(ba1b,timelen2)
+gcm_sm2 = ts_12_sm
+lines!(ax, C,gcm_sm2[:], 
     linewidth = 1.25,
     color = "black"
     #color = "paleturquoise3"
     #label = "CNRM: RONI"
     )
-lines!(ax, A,blah3[:], 
+
+# observed RONI
+lines!(ax, A,roni_sm[:], 
     linewidth = 2.,
     color = "brown",
     label = "Observed"
     )
 
-#smooth_12_ts(ba2,timelen)
-#ba2_sm = ts_12_sm #  historical
-#smooth_12_ts(ba2b,timelen2)
-#ba2b_sm = ts_12_sm # ssp585
-##smooth_12_ts(ba2nn,timelen)
-##ba2nn_sm = ts_12_sm
-#lines!(ax, B,ba2_sm[:], 
-#    linewidth = 0.75,
-#    color = "aquamarine"
-#    #label = "MPI: RONI"
-#    )
-#lines!(ax, C,ba2b_sm[:], 
-#    linewidth = 0.75,
-#    color = "aquamarine"
-#    #label = "MPIb: RONI"
-#    )
-#smooth_12_ts(ba3,timelen)
-#ba3_sm = ts_12_sm # historical
-##smooth_12_ts(ba3nn,timelen)
-##ba3nn_sm = ts_12_sm
-#lines!(ax, B,ba3_sm[:], 
-#    linewidth = 0.75,
-#    color = "lightcyan"
-#    #label = "GFDL: RONI"
-#    )
-#
-#smooth_12_ts(ba4,timelen)
-#ba4_sm = ts_12_sm # historical
-#lines!(ax, B,ba4_sm[:], 
-#    linewidth = 0.75,
-#    color = "paleturquoise"
-#    #label = "E3SM: RONI"
-#    )
-#
-#smooth_12_ts(ba5b,timelen2)
-#ba5b_sm = ts_12_sm # ssp585
-#lines!(ax, C,ba5b_sm[:], 
-#    linewidth = 0.75,
-#    color = "mistyrose"
-#    #label = "CESM2: RONI"
-#    )
-#
-#smooth_12_ts(ba6,timelen)
-#ba6_sm = ts_12_sm # historical
-#smooth_12_ts(ba6b,timelen2)
-#ba6b_sm = ts_12_sm # ssp585
-#lines!(ax, B,ba6_sm[:], 
-#    linewidth = 0.75,
-#    color = "thistle2"
-#    #label = "HadGEM3: RONI"
-#    )
-#lines!(ax, C,ba6b_sm[:], 
-#    linewidth = 0.75,
-#    color = "thistle"
-#    #label = "HadGEM3: RONI"
-#    )
-#
-#smooth_12_ts(ba9b,timelen2)
-#ba9b_sm = ts_12_sm # ssp585
-#lines!(ax, C,ba9b_sm[:], 
-#    linewidth = 0.75,
-#    color = "lavender"
-#    #label = "ACCESS: RONI"
-#    )
-#
-#
-## ssp585
-#tenCent  = [ba1b_sm';ba2b_sm';ba5b_sm';ba9b_sm';ba6b_sm';ba1c_sm']
-#mnSSP = mean(tenCent, dims = 1)
-## historical
-#lightOut = [ba1_sm';ba2_sm';ba3_sm';ba4_sm';ba6_sm']
-#mnH   = mean(lightOut, dims = 1)
-#
-##smooth_12_ts(ba6,timelen)
-##ba6_sm = ts_12_sm # historical
-#lines!(ax, B,mnH[:], 
-#    linewidth = 2.0,
-#    color = "red",
-#    label = "mn CMIP6"
-#    )
-#lines!(ax, C,mnSSP[:], 
-#    linewidth = 2.0,
-#    color = "red"
-#    #label = "mn SSP"
-#    )
-
-
 #axislegend( position=:lt)
 #
-save("plotENSOcmip1mod.png",fig)
+save("plotENSOcmip1modB.png",fig)
 
 
 
