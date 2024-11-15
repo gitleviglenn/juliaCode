@@ -13,6 +13,11 @@ using Statistics
 using NCDatasets
 
 function prepare_cmip_ts(inpFile,len)
+  #
+  # checks for missing values and NaNs.
+  # removes the seasonal cycle
+  # compute a 3 point running mean
+  #
     ds1 = NCDataset(inpFile)
     ds1.attrib
     # to print meta data for a particular variable: 
@@ -175,6 +180,31 @@ function smooth_12_ts(inpTS,len)
     return ts_12_sm
 end
 
+function check_thresh(inpFile, inpTS, thshd)
+    ds = NCDataset(inpFile)
+    ds.attrib
+    # to print meta data for a particular variable: 
+    #ds["tos"]
+    nctime = ds["time"]
+    println("~~~~~~~~~Silence~~~~~~~~~~~~~~~~~~")
+    println(nctime[1:10])
+    println("~~~~~~~~~Golden~~~~~~~~~~~~~~~~~~")
+    # for incoming file, get the time dimension 
+    # for the incoming timeseries, check at each index, if the value is greater than 
+    # the treshold, if so return true, otherwise return false.   
+    # or perhaps return 1 or 0.
+    # for i in full lenght, is val >= thshd, grab i value
+    #
+    high = findall(inpTS .> thshd)  
+    #
+    println("~~~~~~~~~Threshold values~~~~~~~~~~~~~~~~~~")
+    println(inpTS[high])
+    println("~~~~~~~~~End Threshold Values~~~~~~~~~~~~~~~~~~")
+    println("~~~~~~~~~Threshold Times     ~~~~~~~~~~~~~~~~~~")
+    println(nctime[high])
+    println("~~~~~~~~~End Threshold Times     ~~~~~~~~~~~~~~~~~~")
+end
+
 path="/Users/C823281551/"
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -292,9 +322,9 @@ file1c = path*"data/CNRM-CM6_ssp585_20150116-21001216/tos_Omon_CNRM-CM6-1-HR_ssp
 file1b = path*"data/CNRM-ESM2_ssp585/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216.nc"
 # MPI-ESM
 file1  = path*"data/tos_MPI_hist/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216_regridded.nc"
-#file1b = path*"data/MPI-ESM1_ssp585_20150116-21001216/tos_Omon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc"
+file1b = path*"data/MPI-ESM1_ssp585_20150116-21001216/tos_Omon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc"
 # GFDL
-#file1b  = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
+#file1  = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
 # E3SM
 #file1  = path*"data/E3SM-1-1-ECA_historical_18500116-20141216/tos_Omon_E3SM-1-1-ECA_historical_r1i1p1f1_gr_18500116-20141216.nc"
 #file1b  = path*"data/"
@@ -304,7 +334,7 @@ file1  = path*"data/tos_MPI_hist/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_1
 #file1  = path*"data/HadGEM3_historical/tos_Omon_HadGEM3-GC31-LL_historical_r1i1p1f3_gn_18500116-20141216_regridded.nc"
 #file1b = path*"data/HadGEM3_ssp585/tos_Omon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridded.nc"
 ## ACCESS
-file1b = path*"data/ACCESS-CM2_ssp585/tos_Omon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
+#file1b = path*"data/ACCESS-CM2_ssp585/tos_Omon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
 
 #
 timelen = 1980
@@ -313,7 +343,8 @@ prepare_cmip_ts(inpFile,timelen)
 ba1 = ts_rmn
 ba1nn = ts_rmn2
 #
-#MPI scenario timeseries...
+
+#scenario timeseries...
 timelen2=1032
 inpFile = file1c
 prepare_cmip_ts(inpFile,timelen2)
@@ -322,8 +353,17 @@ inpFile = file1b
 prepare_cmip_ts(inpFile,timelen2)
 ba1b = ts_rmn
 
+# smooth time series to be checked for threshold
+smooth_12_ts(ba1b,timelen2)
+ba1b_sm1 = ts_12_sm
+
+thshd = 2.0
+inpFile = file1b
+check_thresh(inpFile, ba1b_sm1, thshd)
+
 # define thresholds: 
-nino_thresh = zeros(timelen+timelen2) .+ 0.75
+nino_thresh = zeros(timelen+timelen2) .+ 0.52
+nina_thresh = zeros(timelen+timelen2) .- 0.78
 
 
 # make the plot
@@ -344,13 +384,14 @@ ax = Axis(fig[1,1];
     title="ENSO: historical period and ssp585"
     )
 smooth_12_ts(roni,2040)
-roni_sm = ts_12_sm
+#roni_sm = ts_12_sm
+roni_sm = roni
 
 # plot the threshold lines
 lines!(ax, D,nino_thresh[:],
     color = "red"
     )
-lines!(ax, D,-nino_thresh[:],
+lines!(ax, D,nina_thresh[:],
     color = "red"
     )
 
@@ -363,7 +404,6 @@ lines!(ax, B,gcm_sm1[:],
     color = "black"
     #label = "CNRM: RONI"
     )
-limits!(1850, 2100, -4, 4)
 # ssp585
 smooth_12_ts(ba1b,timelen2)
 gcm_sm2 = ts_12_sm
@@ -380,10 +420,12 @@ lines!(ax, A,roni_sm[:],
     color = "brown",
     label = "Observed"
     )
+#limits!(1850, 2100, -4, 4)
+limits!(1980, 2100, -4, 4)
 
 #axislegend( position=:lt)
 #
-save("plotENSOcmip1modB.png",fig)
+save("plotENSOcmip1modMPI.png",fig)
 
 
 

@@ -94,7 +94,8 @@ function fig_1_plot(inpv,d1,d2,tit)
         size=(600,300),
         )
     ax = Axis(f2[1,1];
-        xticks = -180:30:180, 
+        #xticks = -180:30:180, 
+        xticks = 0:30:360, 
         yticks = -90:30:90,
         xlabel="latitude",
         ylabel="longitude",
