@@ -119,8 +119,8 @@ function fig_2_plot(inpv,d1,d2,tit)
     ax = GeoAxis(f2[1,1]; 
         xticks = -180:30:180, 
         yticks = -90:30:90,
-        xlabel="latitude",
-        ylabel="longitude",
+        xlabel="longitude",
+        ylabel="latitude",
         title=tit,
         )
         bb   = contourf!(ax, d1, d2, inpv, 

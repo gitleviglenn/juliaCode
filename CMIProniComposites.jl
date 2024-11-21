@@ -10,6 +10,9 @@
 #
 # both SST (tos) and RH (hur) fields need to be read into script
 #
+# this should be useful for creating plots with EArth data: 
+# https://forem.julialang.org/gage/creating-nice-simple-geo-plots-from-scratch-using-makiejl-301
+# 
 # levi silvers                                                                nov 2024
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -23,7 +26,7 @@ using NCDatasets
 # grab RH fields when ENSO events are occuring
 # plot the composite RH fields
 
-function check_thresh(inpFile, inpTS, thshd)
+function check_thresh_high(inpFile, inpTS, thshd)
     ds = NCDataset(inpFile)
     ds.attrib
     nctime = ds["time"]
@@ -38,12 +41,32 @@ function check_thresh(inpFile, inpTS, thshd)
     #
     global high = findall(inpTS .> thshd)  
     #
-    println("~~~~~~~~~Threshold values~~~~~~~~~~~~~~~~~~")
+    println("~~~~~~~~~high Threshold values~~~~~~~~~~~~~~~~~~")
     println(inpTS[high])
-    println("~~~~~~~~~End Threshold Values~~~~~~~~~~~~~~~~~~")
-    println("~~~~~~~~~Threshold Times     ~~~~~~~~~~~~~~~~~~")
+    println("~~~~~~~~~End high Threshold Values~~~~~~~~~~~~~~~~~~")
+    println("~~~~~~~~~high Threshold Times     ~~~~~~~~~~~~~~~~~~")
     println(nctime[high])
-    println("~~~~~~~~~End Threshold Times     ~~~~~~~~~~~~~~~~~~")
+    println("~~~~~~~~~End high Threshold Times     ~~~~~~~~~~~~~~~~~~")
+end
+
+function check_thresh_low(inpFile, inpTS, thshd)
+    ds = NCDataset(inpFile)
+    ds.attrib
+    nctime = ds["time"]
+    # for incoming file, get the time dimension 
+    # for the incoming timeseries, check at each index, if the value is greater than 
+    # the treshold, if so return true, otherwise return false.   
+    # or perhaps return 1 or 0.
+    # for i in full lenght, is val >= thshd, grab i value
+    #
+    global low = findall(inpTS .< thshd)  
+    #
+    println("~~~~~~~~~low Threshold values~~~~~~~~~~~~~~~~~~")
+    println(inpTS[low])
+    println("~~~~~~~~~End low Threshold Values~~~~~~~~~~~~~~~~~~")
+    println("~~~~~~~~~low Threshold Times     ~~~~~~~~~~~~~~~~~~")
+    println(nctime[low])
+    println("~~~~~~~~~low End Threshold Times     ~~~~~~~~~~~~~~~~~~")
 end
 
 function prepare_cmip_ts(inpFile,len)
@@ -226,12 +249,14 @@ ba1b = ts_rmn
 smooth_12_ts(ba1b,timelen2)
 ba1b_sm1 = ts_12_sm
 
-thshd = 3.0
+thshd = 2.5
 inpFile = file1b
 # i think the only reason we need to pass in a file is to get the 
 # time dimension from it.   to speed things up we could pass that
 # in instead of dealing with the file within check_thresh()
-check_thresh(inpFile, ba1b_sm1, thshd)
+check_thresh_high(inpFile, ba1b_sm1, thshd) # output is 'high'
+thshd = -2.3
+check_thresh_low(inpFile, ba1b_sm1, thshd)  # output is 'low'
 
 # we need output times from check_thresh() at which to grab RH vals.
 #
@@ -243,7 +268,7 @@ ds.attrib
 nctime = ds["time"]
 println("~~~~~~~~~Silence~~~~~~~~~~~~~~~~~~")
 println(nctime[high[1:10]])
-println("~~~~~~~~~Golden~~~~~~~~~~~~~~~~~~")
+println("~~~~~~~~~Golden~~~~~~~~~~~~~~~~~~~")
 
 #rhhigh = rh[:,:,1,high]
 
@@ -251,6 +276,8 @@ println("~~~~~~~~~Golden~~~~~~~~~~~~~~~~~~")
 
 # instead of 2 the last dimension should be the number of values in high (size(high))
 test_rh = Array{Union{Missing, Float64}, 3}(undef, 288, 84, 2)
+rh_high = Array{Union{Missing, Float64}, 3}(undef, 288, 84, 10)
+rh_low  = Array{Union{Missing, Float64}, 3}(undef, 288, 84, 10)
 
 #test_rh = Matrix{Float64}(undef, 288, 84)
 test_rh[:,:,1] = rh[:,:,1,high[1]]
@@ -259,7 +286,92 @@ test_rh[:,:,2] = rh[:,:,1,high[2]]
 # restults can be plotted in the REPL as: 
 # contourf(test_rh[:,:,1])
 
+rh_high[:,:,1] = rh[:,:,1,high[1]]
+rh_high[:,:,2] = rh[:,:,1,high[2]]
+rh_high[:,:,3] = rh[:,:,1,high[3]]
+rh_high[:,:,4] = rh[:,:,1,high[4]]
+rh_high[:,:,5] = rh[:,:,1,high[5]]
+rh_high[:,:,6] = rh[:,:,1,high[6]]
+rh_high[:,:,7] = rh[:,:,1,high[7]]
+rh_high[:,:,8] = rh[:,:,1,high[8]]
+rh_high[:,:,9] = rh[:,:,1,high[9]]
+rh_high[:,:,10] = rh[:,:,1,high[10]]
+
+rh_low[:,:,1]  = rh[:,:,1,low[1]]
+rh_low[:,:,2]  = rh[:,:,1,low[2]]
+rh_low[:,:,3]  = rh[:,:,1,low[3]]
+rh_low[:,:,4]  = rh[:,:,1,low[4]]
+rh_low[:,:,5]  = rh[:,:,1,low[5]]
+rh_low[:,:,6]  = rh[:,:,1,low[6]]
+rh_low[:,:,7]  = rh[:,:,1,low[7]]
+rh_low[:,:,8]  = rh[:,:,1,low[8]]
+rh_low[:,:,9]  = rh[:,:,1,low[9]]
+rh_low[:,:,10]  = rh[:,:,1,low[10]]
+
+rh_high_mn = mean(rh_high, dims = 3)
+rh_low_mn  = mean(rh_low, dims = 3)
+
+rh_diff = rh_high_mn - rh_low_mn
+
 # get rh fields for positive enso phase (above thshd) 
 # get rh fields for negative enso phase
 # average the rh fields for each phase
 # compute and plot the difference of the fields, El Nino - La Nina
+function fig_1_plot(inpv,d1,d2,tit)
+    f2 = Figure(;
+        figure_padding=(5,5,10,10),
+        backgroundcolor=:snow2,
+        size=(600,300),
+        )
+    ax = Axis(f2[1,1];
+        xticks = -180:30:180, 
+        #xticks = 0:30:360, 
+        yticks = -90:30:90,
+        ylabel="latitude",
+        xlabel="longitude",
+        title=tit,
+        )
+        bb = contourf!(ax, d1, d2, inpv, 
+             levels = range(0, 100, length = 10), 
+             colormap = :Blues_8,
+             #colormap = :navia,
+             #colormap = :batlow,
+             #colormap = :vik,
+        )
+        Colorbar(f2[1,2], bb)
+    return f2
+end
+function fig_anom_plot(inpv,d1,d2,tit)
+    f2 = Figure(;
+        figure_padding=(5,5,10,10),
+        backgroundcolor=:snow2,
+        size=(600,300),
+        )
+    ax = Axis(f2[1,1];
+        xticks = -180:30:180, 
+        #xticks = 0:30:360, 
+        yticks = -90:30:90,
+        xlabel="longitude",
+        ylabel="latitude",
+        title=tit,
+        )
+        bb = contourf!(ax, d1, d2, inpv, 
+             levels = range(-20, 20, length = 100), 
+             #colormap = :batlow,
+             colormap = :vik,
+             extendlow = :auto, extendhigh = :auto
+        )
+        Colorbar(f2[1,2], bb)
+    return f2
+end
+
+rh_2_plot = rh_low_mn[:,:,1]
+fig = fig_1_plot(rh_2_plot,lon,lat,"RH low")
+#rh_2_plot = rh_high_mn[:,:,1]
+#fig = fig_1_plot(rh_2_plot,lon,lat,"RH high")
+
+rh_anom = rh_diff[:,:,1]
+fig = fig_anom_plot(rh_anom,lon,lat,"RH anomaly, CESM ssp585")
+
+
+
