@@ -219,10 +219,12 @@ path="/Users/C823281551/data/"
 
 # historical
 #file1  = path*
-
+modelp="MPI-ESM1-2-LR"
 # SSP585 scenario
 filehur  = path*"cmip6/CESM2/hur_Amon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc"
-file1b  = path*"CESM2_ssp585_20150115-21001215/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
+file1b  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
+#filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216.nc"
+#file1b  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc" 
 
 data  = NCDataset(filehur)
 
@@ -249,13 +251,13 @@ ba1b = ts_rmn
 smooth_12_ts(ba1b,timelen2)
 ba1b_sm1 = ts_12_sm
 
-thshd = 2.5
+thshd = 2.0
 inpFile = file1b
 # i think the only reason we need to pass in a file is to get the 
 # time dimension from it.   to speed things up we could pass that
 # in instead of dealing with the file within check_thresh()
 check_thresh_high(inpFile, ba1b_sm1, thshd) # output is 'high'
-thshd = -2.3
+thshd = -1.5
 check_thresh_low(inpFile, ba1b_sm1, thshd)  # output is 'low'
 
 # we need output times from check_thresh() at which to grab RH vals.
@@ -274,10 +276,15 @@ println("~~~~~~~~~Golden~~~~~~~~~~~~~~~~~~~")
 
 #test_rh = Array{Float64, 3}(undef, 288, 84, 2)
 
-# instead of 2 the last dimension should be the number of values in high (size(high))
-test_rh = Array{Union{Missing, Float64}, 3}(undef, 288, 84, 2)
-rh_high = Array{Union{Missing, Float64}, 3}(undef, 288, 84, 10)
-rh_low  = Array{Union{Missing, Float64}, 3}(undef, 288, 84, 10)
+## instead of 2 the last dimension should be the number of values in high (size(high))
+#test_rh = Array{Union{Missing, Float64}, 3}(undef, 288, 84, 2)
+#rh_high = Array{Union{Missing, Float64}, 3}(undef, 288, 84, 10)
+#rh_low  = Array{Union{Missing, Float64}, 3}(undef, 288, 84, 10)
+dims = size(rh)
+test_rh = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 2)
+#test_rh = Array{Union{Missing, Float64}, 3}(undef, 192, 96, 2)
+rh_high = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 10)
+rh_low  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 10)
 
 #test_rh = Matrix{Float64}(undef, 288, 84)
 test_rh[:,:,1] = rh[:,:,1,high[1]]
@@ -371,7 +378,7 @@ fig = fig_1_plot(rh_2_plot,lon,lat,"RH low")
 #fig = fig_1_plot(rh_2_plot,lon,lat,"RH high")
 
 rh_anom = rh_diff[:,:,1]
-fig = fig_anom_plot(rh_anom,lon,lat,"RH anomaly, CESM ssp585")
+fig = fig_anom_plot(rh_anom,lon,lat,"RH anomaly, MPI ssp585")
 
 
 
