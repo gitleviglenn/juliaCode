@@ -10,6 +10,9 @@
 #
 # both SST (tos) and RH (hur) fields need to be read into script
 #
+# to do: get rid of the asinine white column at 0 degrees longitude.  
+#        
+#
 # this should be useful for creating plots with EArth data: 
 # https://forem.julialang.org/gage/creating-nice-simple-geo-plots-from-scratch-using-makiejl-301
 # 
@@ -221,10 +224,10 @@ path="/Users/C823281551/data/"
 #file1  = path*
 modelp="MPI-ESM1-2-LR"
 # SSP585 scenario
-filehur  = path*"cmip6/CESM2/hur_Amon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc"
-file1b  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
-#filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216.nc"
-#file1b  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc" 
+#filehur  = path*"cmip6/CESM2/hur_Amon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc"
+#file1b  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
+filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
+file1b  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc" 
 
 data  = NCDataset(filehur)
 
@@ -280,41 +283,23 @@ println("~~~~~~~~~Golden~~~~~~~~~~~~~~~~~~~")
 #test_rh = Array{Union{Missing, Float64}, 3}(undef, 288, 84, 2)
 #rh_high = Array{Union{Missing, Float64}, 3}(undef, 288, 84, 10)
 #rh_low  = Array{Union{Missing, Float64}, 3}(undef, 288, 84, 10)
-dims = size(rh)
-test_rh = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 2)
-#test_rh = Array{Union{Missing, Float64}, 3}(undef, 192, 96, 2)
-rh_high = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 10)
-rh_low  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 10)
 
-#test_rh = Matrix{Float64}(undef, 288, 84)
-test_rh[:,:,1] = rh[:,:,1,high[1]]
-#test_rh2 = Matrix{Float64}(undef, 288, 84)
-test_rh[:,:,2] = rh[:,:,1,high[2]]
+dims      = size(rh)
+numfields = 10
+rh_high = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
+rh_low  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
+
 # restults can be plotted in the REPL as: 
+# test_rh = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 2)
+# test_rh[:,:,1] = rh[:,:,1,high[1]]
+# test_rh[:,:,2] = rh[:,:,1,high[2]]
 # contourf(test_rh[:,:,1])
 
-rh_high[:,:,1] = rh[:,:,1,high[1]]
-rh_high[:,:,2] = rh[:,:,1,high[2]]
-rh_high[:,:,3] = rh[:,:,1,high[3]]
-rh_high[:,:,4] = rh[:,:,1,high[4]]
-rh_high[:,:,5] = rh[:,:,1,high[5]]
-rh_high[:,:,6] = rh[:,:,1,high[6]]
-rh_high[:,:,7] = rh[:,:,1,high[7]]
-rh_high[:,:,8] = rh[:,:,1,high[8]]
-rh_high[:,:,9] = rh[:,:,1,high[9]]
-rh_high[:,:,10] = rh[:,:,1,high[10]]
-
-rh_low[:,:,1]  = rh[:,:,1,low[1]]
-rh_low[:,:,2]  = rh[:,:,1,low[2]]
-rh_low[:,:,3]  = rh[:,:,1,low[3]]
-rh_low[:,:,4]  = rh[:,:,1,low[4]]
-rh_low[:,:,5]  = rh[:,:,1,low[5]]
-rh_low[:,:,6]  = rh[:,:,1,low[6]]
-rh_low[:,:,7]  = rh[:,:,1,low[7]]
-rh_low[:,:,8]  = rh[:,:,1,low[8]]
-rh_low[:,:,9]  = rh[:,:,1,low[9]]
-rh_low[:,:,10]  = rh[:,:,1,low[10]]
-
+endi = numfields
+for i in 1:endi
+  rh_low[:,:,i]  = rh[:,:,1,low[i]]
+  rh_high[:,:,i] = rh[:,:,1,high[i]]
+end
 rh_high_mn = mean(rh_high, dims = 3)
 rh_low_mn  = mean(rh_low, dims = 3)
 
@@ -331,8 +316,8 @@ function fig_1_plot(inpv,d1,d2,tit)
         size=(600,300),
         )
     ax = Axis(f2[1,1];
-        xticks = -180:30:180, 
-        #xticks = 0:30:360, 
+        #xticks = -180:30:180, 
+        xticks = 0:30:360, 
         yticks = -90:30:90,
         ylabel="latitude",
         xlabel="longitude",
@@ -348,6 +333,10 @@ function fig_1_plot(inpv,d1,d2,tit)
         Colorbar(f2[1,2], bb)
     return f2
 end
+lon1=-180
+lon2=180
+lat1=-40
+lat2=40
 function fig_anom_plot(inpv,d1,d2,tit)
     f2 = Figure(;
         figure_padding=(5,5,10,10),
@@ -360,14 +349,16 @@ function fig_anom_plot(inpv,d1,d2,tit)
         yticks = -90:30:90,
         xlabel="longitude",
         ylabel="latitude",
+        limits=(lon1,lon2,lat1,lat2),
         title=tit,
         )
         bb = contourf!(ax, d1, d2, inpv, 
-             levels = range(-20, 20, length = 100), 
+             levels = range(-20, 20, length = 100),
              #colormap = :batlow,
              colormap = :vik,
              extendlow = :auto, extendhigh = :auto
         )
+        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
         Colorbar(f2[1,2], bb)
     return f2
 end
