@@ -32,7 +32,6 @@ using GeoMakie
 using NCDatasets
 using Statistics
 using ColorSchemes
-#using Plots
 
 filein  = "/Users/C823281551/data/ERA5/era5_nina_2d.nc"
 file2in = "/Users/C823281551/data/ERA5/era5mon1940toPresent_div_U_V.nc"
@@ -97,15 +96,17 @@ function fig_1_plot(inpv,d1,d2,tit)
         #xticks = -180:30:180, 
         xticks = 0:30:360, 
         yticks = -90:30:90,
-        xlabel="latitude",
-        ylabel="longitude",
+        ylabel="latitude",
+        xlabel="longitude",
         title=tit,
         )
+        #f2, ax = plot_world_map()
         bb = contourf!(ax, d1, d2, inpv, 
              levels = range(-20, 20, length = 100), 
              #colormap = :batlow,
              colormap = :vik,
         )
+        lines!(ax, GeoMakie.coastlines())
         Colorbar(f2[1,2], bb)
     return f2
 end
@@ -119,8 +120,8 @@ function fig_2_plot(inpv,d1,d2,tit)
     ax = GeoAxis(f2[1,1]; 
         xticks = -180:30:180, 
         yticks = -90:30:90,
-        xlabel="longitude",
-        ylabel="latitude",
+        ylabel="longitude",
+        xlabel="latitude",
         title=tit,
         )
         bb   = contourf!(ax, d1, d2, inpv, 
@@ -132,12 +133,19 @@ function fig_2_plot(inpv,d1,d2,tit)
     return f2
 end
 
+#plot_world_map(; kwargs...) -> Figure, Axis
+
 # trying to shift longitude... still not fully working
 #lon_0 = 90.0
 #(blah_lon, blah_field) = cshift(lon, v_1, lon_0)
 
+lonShift = circshift(lon,721)
+
 #fig1 = fig_1_plot(sst_a,lon,lat,"SST")
+
+#fig2 = fig_1_plot(v_1,lonShift,lat,"velocity") # uses equidistant.    
 fig2 = fig_1_plot(v_1,lon,lat,"velocity") # uses equidistant.    
+
 #fig2 = fig_2_plot(v_1,lon,lat,"velocity") # uses GeoAxis, and doesn't yet look good. 
 
 
