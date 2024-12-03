@@ -295,7 +295,7 @@ ba1b = ts_rmn
 smooth_12_ts(ba1b,timelen2)
 ba1b_sm1 = ts_12_sm
 
-ensoDef = 1.0
+ensoDef = 1.7
 thshd = ensoDef
 
 # i think the only reason we need to pass in a file is to get the 
@@ -317,7 +317,7 @@ println("~~~~~~~~~Golden~~~~~~~~~~~~~~~~~~~")
 
 dims      = size(rh)
 dims2     = size(sst)
-numfields = 10
+numfields = 100
 rh_high  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 rh_low   = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 sst_high = Array{Union{Missing, Float64}, 3}(undef, dims2[1], dims2[2], numfields)
@@ -333,7 +333,7 @@ sst_low  = Array{Union{Missing, Float64}, 3}(undef, dims2[1], dims2[2], numfield
 # contourf(test_rh[:,:,1])
 #-------------------------------------------
 
-# do we still need to compute the mean rh between the two levels? 
+# RH is computed as the geometric mean between 2 vertical levels
 endi = numfields
 for i in 1:endi
   rh_low[:,:,i]   = 0.5(rh[:,:,1,low[i]].+rh[:,:,2,low[i]])
@@ -383,6 +383,7 @@ function fig_1_plot(inpv,d1,d2,tit)
         Colorbar(f2[1,2], bb)
     return f2
 end
+# define the limits of the plotted area
 lon1=-180
 lon2=180
 lat1=-40
