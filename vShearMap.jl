@@ -15,6 +15,8 @@ modelp="MPI-ESM1-2-LR"
 filein   = path*"cmip6/CESM2/ua_Amon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_360x180.nc"
 filein2  = path*"cmip6/CESM2/va_Amon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_360x180.nc"
 
+tag = "CESM2"
+
 data   = NCDataset(filein)
 data2  = NCDataset(filein2)
 
@@ -55,7 +57,8 @@ function fig_1_plot(inpv,d1,d2,tit)
         backgroundcolor=:snow2,
         size=(600,300),
         )
-    ax = Axis(f2[1,1];
+    #ax = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
+    ax = GeoAxis(f2[1,1];
         xticks = -180:30:180, 
         #xticks = 0:30:360, 
         yticks = -90:30:90,
@@ -78,5 +81,7 @@ function fig_1_plot(inpv,d1,d2,tit)
 end
 
 fig = fig_1_plot(data_2_plot,lon,lat[lat1:lat2],tit)
-
+filename="vertShear"*tag*".png"
+save(filename, fig)
+#save("vertShear.png", fig)
 

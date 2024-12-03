@@ -78,13 +78,25 @@ function check_thresh_low(inpFile, inpTS, thshd)
     println("~~~~~~~~~low End Threshold Times     ~~~~~~~~~~~~~~~~~~")
 end
 
+function smooth_12_ts(inpTS,len)
+    # smooth the time series with a running mean
+    global ts_12_sm = zeros(len)
+    istart= 6
+    jend  = len
+    for i in istart:jend-6
+      ts_12_sm[i] = (inpTS[i+6]+inpTS[i+5]+inpTS[i+4]+inpTS[i+3]+inpTS[i+2]+inpTS[i+1]+inpTS[i]+inpTS[i-1]+inpTS[i-2]+inpTS[i-3]+inpTS[i-4]+inpTS[i-5])/12
+    end
+
+    return ts_12_sm
+end
+
 function prepare_cmip_ts(inpFile,len)
   #
   # checks for missing values and NaNs.
   # removes the seasonal cycle
   # compute a 3 point running mean
   #
-    ds1 = NCDataset(inpFile)
+    global ds1 = NCDataset(inpFile)
     ds1.attrib
     # to print meta data for a particular variable: 
     ds1["tos"]
@@ -92,14 +104,20 @@ function prepare_cmip_ts(inpFile,len)
     nclat = ds1["lat"]
     nclon = ds1["lon"]
     nctime = ds1["time"]
-    println(nclat[15:26])
+    # for MPI:
+    #l1 = 36
+    #l2 = 45
+    # for CESM2
+    l1 = 86
+    l2 = 95
+    println(nclat[l1:l2])
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     println("~~~~~long points: ~~~~~~~~~~~~~~~~")
     println(nclon[10:61])
     println("~~~~~lat points: ~~~~~~~~~~~~~~~~")
-    println(nclat[15:26])
-    #
-    nino34_full = sst1[10:61, 15:26, :];
+    println(nclat[l1:l2])
+    # nino3p4 should be computed between 5N-5S and 120-170W
+    nino34_full = sst1[10:61, l1:l2, :];
     trop_full   = sst1[:, :, :];
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     println("~~~~type of nino34_full ~~~~~~~~~~~~~~~~~~~~~~~")
@@ -231,7 +249,7 @@ path="/Users/C823281551/data/"
 
 
 #modelp="CESM2"
-filehur  = path*"cmip6/CESM2/hur_Amon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_360x180.nc"
+filehur  = path*"cmip6/CESM2/hur_Amon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_regrid.nc"
 #filetos  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
 # still have to manipulate tos data from CESM since it is from the ocean...
 filetos  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_regrid2.nc" 
@@ -246,6 +264,9 @@ filetos  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215
 #modelp="MPI-ESM1-2-LR"
 #filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
 #filetos  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_pm40b.nc" 
+
+tag = "CESM2"
+#tag = "MPI"
 
 data   = NCDataset(filehur)
 data1  = NCDataset(filetos)
@@ -274,7 +295,7 @@ ba1b = ts_rmn
 smooth_12_ts(ba1b,timelen2)
 ba1b_sm1 = ts_12_sm
 
-ensoDef = 0.5
+ensoDef = 1.0
 thshd = ensoDef
 
 # i think the only reason we need to pass in a file is to get the 
@@ -315,10 +336,11 @@ sst_low  = Array{Union{Missing, Float64}, 3}(undef, dims2[1], dims2[2], numfield
 # do we still need to compute the mean rh between the two levels? 
 endi = numfields
 for i in 1:endi
-  rh_low[:,:,i]   = rh[:,:,1,low[i]]
+  rh_low[:,:,i]   = 0.5(rh[:,:,1,low[i]].+rh[:,:,2,low[i]])
   sst_low[:,:,i]  = sst[:,:,low[i]]
-  rh_high[:,:,i] = rh[:,:,1,high[i]]
+  #rh_high[:,:,i] = rh[:,:,1,high[i]]
   sst_high[:,:,i]  = sst[:,:,high[i]]
+  rh_high[:,:,i]   = 0.5(rh[:,:,1,high[i]].+rh[:,:,2,high[i]])
 end
 
 # average in time
@@ -365,13 +387,13 @@ lon1=-180
 lon2=180
 lat1=-40
 lat2=40
-function fig_anom_plot(inpv,d1,d2,tit)
+function fig_anom_plot(inpv,d1,d2,tit,levs)
     f2 = Figure(;
         figure_padding=(5,5,10,10),
         backgroundcolor=:snow2,
         size=(600,300),
         )
-    ax = Axis(f2[1,1];
+    ax = GeoAxis(f2[1,1];
         xticks = -180:30:180, 
         #xticks = 0:30:360, 
         yticks = -90:30:90,
@@ -381,7 +403,8 @@ function fig_anom_plot(inpv,d1,d2,tit)
         title=tit,
         )
         bb = contourf!(ax, d1, d2, inpv, 
-             levels = range(-20, 20, length = 100),
+             levels = levs,
+             #levels = range(-20, 20, length = 100),
              #colormap = :batlow,
              colormap = :vik,
              extendlow = :auto, extendhigh = :auto
@@ -422,11 +445,22 @@ end
 #rh_2_plot = rh_high_mn[:,:,1]
 #fig = fig_1_plot(rh_2_plot,lon,lat,"RH high")
 
+# figure 1
 rh_anom = rh_diff[:,:,1]
-fig = fig_anom_plot(rh_anom,lon,lat,"!RH anomaly, CESM2 ssp585")
+tit1="RH anomaly, "*tag*" ssp585"
+fig1name=tag*"rh.png"
+level1 = range(-20, 20, length = 100)
+fig = fig_anom_plot(rh_anom,lon,lat,tit1,level1)
+save(fig1name, fig)
+
+# figure 2
 sst_anom = sst_diff[:,:,1]
 #contourf(sst_anom[:,:,1])
-fig = fig_anom_plot(sst_anom,lon,latb,"SST anomaly, MPI ssp585")
+tit2="SST anomaly, "*tag*" ssp585"
+level1 = range(-5, 5, length = 50)
+fig = fig_anom_plot(sst_anom,lon,latb,tit2,level1)
+fig2name=tag*"sst.png"
+save(fig2name, fig)
 
 
 

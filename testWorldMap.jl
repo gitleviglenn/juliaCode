@@ -110,3 +110,5 @@ end
 
 #fig = fig_1_plot(data_2_plot,lon,lat[51:130],"relative humidity")
 fig = fig_1_plot(data_2_plot,lon,lat[lat1:lat2],tit)
+save("testMap.png", fig)
+
