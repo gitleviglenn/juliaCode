@@ -249,10 +249,14 @@ path="/Users/C823281551/data/"
 
 
 #modelp="CESM2"
-filehur  = path*"cmip6/CESM2/hur_Amon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_regrid.nc"
-#filetos  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
-# still have to manipulate tos data from CESM since it is from the ocean...
-filetos  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_regrid2.nc" 
+#filehur  = path*"cmip6/CESM2/hur_Amon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_regrid.nc"
+#filetos  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_regrid2.nc" 
+#tag = "CESM2"
+
+filehur  = path*"cmip6/CNRMESM2/hur_Amon_CNRM-ESM2-1_ssp585_r1i1p1f2_gr_20150116-21001216_regrid.nc"
+filetos  = path*"cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216_regrid2.nc" 
+tag = "CNRMESM2"
+
 
 #file1b  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
 
@@ -261,11 +265,11 @@ filetos  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215
 
 #filetos  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc" 
 
-#modelp="MPI-ESM1-2-LR"
-#filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
+##modelp="MPI-ESM1-2-LR"
+##filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
+#filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded4.nc"
 #filetos  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_pm40b.nc" 
-
-tag = "CESM2"
+##
 #tag = "MPI"
 
 data   = NCDataset(filehur)
@@ -317,7 +321,7 @@ println("~~~~~~~~~Golden~~~~~~~~~~~~~~~~~~~")
 
 dims      = size(rh)
 dims2     = size(sst)
-numfields = 100
+numfields = 50
 rh_high  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 rh_low   = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 sst_high = Array{Union{Missing, Float64}, 3}(undef, dims2[1], dims2[2], numfields)
@@ -391,7 +395,8 @@ lat2=40
 function fig_anom_plot(inpv,d1,d2,tit,levs)
     f2 = Figure(;
         figure_padding=(5,5,10,10),
-        backgroundcolor=:snow2,
+        #backgroundcolor=:snow2,
+        backgroundcolor=:white,
         size=(600,300),
         )
     ax = GeoAxis(f2[1,1];
