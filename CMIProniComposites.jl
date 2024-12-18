@@ -105,11 +105,11 @@ function prepare_cmip_ts(inpFile,len)
     nclon = ds1["lon"]
     nctime = ds1["time"]
     # for MPI:
-    #l1 = 36
-    #l2 = 45
+    l1 = 36
+    l2 = 45
     # for CESM2
-    l1 = 86
-    l2 = 95
+    #l1 = 86
+    #l2 = 95
     println(nclat[l1:l2])
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     println("~~~~~long points: ~~~~~~~~~~~~~~~~")
@@ -253,9 +253,25 @@ path="/Users/C823281551/data/"
 #filetos  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_regrid2.nc" 
 #tag = "CESM2"
 
-filehur  = path*"cmip6/CNRMESM2/hur_Amon_CNRM-ESM2-1_ssp585_r1i1p1f2_gr_20150116-21001216_regrid.nc"
-filetos  = path*"cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216_regrid2.nc" 
-tag = "CNRMESM2"
+##modelp="MPI-ESM1-2-LR"
+##filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
+filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded4.nc"
+filetos  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_pm40b.nc" 
+tag = "MPI"
+
+#filehur  = path*"cmip6/CNRMESM2/hur_Amon_CNRM-ESM2-1_ssp585_r1i1p1f2_gr_20150116-21001216_regrid.nc"
+#filetos  = path*"cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216_regrid2.nc" 
+#tag = "CNRMESM2"
+
+# not done yet
+#filehur  = path*"cmip6/CNRMESM2/hur_Amon_CNRM-ESM2-1_ssp585_r1i1p1f2_gr_20150116-21001216_regrid.nc"
+#filetos  = path*"cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216_regrid2.nc" 
+#tag = "HadGEM3"
+
+#filehur  = path*"cmip6/ACCESS/hur_Amon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc"
+#filetos  = path*"cmip6/ACCESS/tos_Omon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc" 
+#tag = "ACCESS"
+
 
 
 #file1b  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
@@ -264,13 +280,6 @@ tag = "CNRMESM2"
 #file1b  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc" 
 
 #filetos  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc" 
-
-##modelp="MPI-ESM1-2-LR"
-##filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
-#filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded4.nc"
-#filetos  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_pm40b.nc" 
-##
-#tag = "MPI"
 
 data   = NCDataset(filehur)
 data1  = NCDataset(filetos)
@@ -412,7 +421,9 @@ function fig_anom_plot(inpv,d1,d2,tit,levs)
              levels = levs,
              #levels = range(-20, 20, length = 100),
              #colormap = :batlow,
-             colormap = :vik,
+             colormap = :vik, # was default for redish bluish
+             #colormap = :BrBg, # better for RH  browns and greens
+             #colormap = :roma,
              extendlow = :auto, extendhigh = :auto
         )
         lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
@@ -455,7 +466,7 @@ end
 rh_anom = rh_diff[:,:,1]
 tit1="RH anomaly, "*tag*" ssp585"
 fig1name=tag*"rh.png"
-level1 = range(-20, 20, length = 100)
+level1 = range(-10, 10, length = 20)
 fig = fig_anom_plot(rh_anom,lon,lat,tit1,level1)
 save(fig1name, fig)
 

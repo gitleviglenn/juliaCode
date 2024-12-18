@@ -6,7 +6,7 @@ using GeoMakie
 using NCDatasets
 
 path="/Users/C823281551/data/"
-modelp="MPI-ESM1-2-LR" 
+#modelp="MPI-ESM1-2-LR" 
 #filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216.nc" 
 
 #filein  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded3.nc" 
@@ -15,16 +15,19 @@ modelp="MPI-ESM1-2-LR"
 # pick out the model (CESM or MPI) to analyze: 
 #filein   = path*"cmip6/CESM2/ua_Amon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_360x180.nc"
 #filein2  = path*"cmip6/CESM2/va_Amon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_360x180.nc"
-##
 #tag = "CESM2"
 
-#filein   = path*"cmip6/MPIESM/ua_Amon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc"
-#filein2  = path*"cmip6/MPIESM/va_Amon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc"
-#tag = "MPIESM"
+filein   = path*"cmip6/MPIESM/ua_Amon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc"
+filein2  = path*"cmip6/MPIESM/va_Amon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc"
+tag = "MPIESM"
 
-filein   = path*"cmip6/CNRMESM2/ua_Amon_CNRM-ESM2-1_ssp585_r1i1p1f2_gr_20150116-21001216_regrid.nc"
-filein2  = path*"cmip6/CNRMESM2/va_Amon_CNRM-ESM2-1_ssp585_r1i1p1f2_gr_20150116-21001216_regrid.nc"
-tag = "CNRMESM2"
+#filein   = path*"cmip6/CNRMESM2/ua_Amon_CNRM-ESM2-1_ssp585_r1i1p1f2_gr_20150116-21001216_regrid.nc"
+#filein2  = path*"cmip6/CNRMESM2/va_Amon_CNRM-ESM2-1_ssp585_r1i1p1f2_gr_20150116-21001216_regrid.nc"
+#tag = "CNRMESM2"
+
+#filein   = path*"cmip6/ACCESS/ua_Amon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc"
+#filein2  = path*"cmip6/ACCESS/va_Amon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc"
+#tag = "ACCESS"
 
 data   = NCDataset(filein)
 data2  = NCDataset(filein2)
@@ -127,11 +130,12 @@ function fig_1_plot(inpv,d1,d2,tit)
         )
         bb = contourf!(ax, d1, d2, inpv, 
              #levels = range(0, 50, length = 25), # tos
-             levels = range(-20, 20, length = 100), # rh
+             levels = range(-20, 20, length = 20), # rh
              #colormap = :Blues_8,
-             #colormap = :navia,
+             #colormap = :broc,
+             colormap = :bam,
              #colormap = :batlow,
-             colormap = :vik,
+             #colormap = :vik,
              extendlow = :auto, extendhigh = :auto
         )
         lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)

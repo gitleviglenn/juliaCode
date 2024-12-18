@@ -64,20 +64,20 @@ image!(ga, -180..180, -90..90, img; interpolate = false)
 
 # looking at these storms (763-1110) corresponds roughly to the events between 2014-2014.
 p1=1
-#p2=1110
-p2=4490
+p2=1110
+#p2=4490
 
-#xRI = dfRI[p1:p2, :LATITUDE]
-#yRI = dfRI[p1:p2, :LONGITUDE]
-xRI = dfRIe[p1:p2, :USA_LAT]
-yRI = dfRIe[p1:p2, :USA_LON]
+xRI = dfRI[p1:p2, :LATITUDE]
+yRI = dfRI[p1:p2, :LONGITUDE]
+#xRI = dfRIe[p1:p2, :USA_LAT]
+#yRI = dfRIe[p1:p2, :USA_LON]
 zRI = dfRIe[p1:p2, :"24-Hr Intensification Rate"]
 yearRI = dfRI[:, :YEAR]
 #scatter(yRI,xRI)
 #scatter!(ga, yRI,xRI, markersize = 7, color = :black)
 #scatter!(ga, yRI,xRI,color = dfRIe.var"24-Hr Intensification Rate", markersize = 7, colormap =:batlow) # --> still need to couple the magnitude with the 
-#scatter!(ga, yRI,xRI, color=zRI, markersize = 9, colormap =:batlow) # --> still need to couple the magnitude with the 
-scatter!(ga, yRI,xRI, color=zRI, markersize = 9, colormap =:heat) # --> still need to couple the magnitude with the 
+#scatter!(ga, yRI,xRI, color=zRI, markersize = 9, colormap =:heat) # --> still need to couple the magnitude with the 
+scatter!(ga, yRI,xRI, markersize = 9, color = :black) # --> still need to couple the magnitude with the 
 # color somehow.   dfRIe.var"24-Hr Intensification Rate"
 
 ylims!(ga, -30, 40)
