@@ -18,7 +18,7 @@
 #
 # or:
 # ncks -d time,0,1031 tos_Omon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216.nc test_ssp585ts.nc
-# 
+#
 # using this grid file: 
 # gridtype = lonlat
 # xsize    = 360
@@ -55,7 +55,7 @@ function fig_plot(inpv,xx,tit)
     f2 = Figure(;
         figure_padding=(5,5,10,10),
         backgroundcolor=:snow2,
-        size=(1000,300),
+        size=(1000,200),
         )
     ax = Axis(f2[1,1];
         xlabel="time (monthly)",
@@ -73,46 +73,51 @@ function fig_plot(inpv,xx,tit)
     #println(inpv[1:40])
 end
 
-function prepare_cmip_ts(inpFile,len)
+function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
+#function prepare_cmip_ts(inpFile,len)
+    # the seasonal cycle needs to be removed
+    # the tropical mean in L'Heureux are defined as +/-20, it does not 
+    # appear that is being taken into account for potentially different grids.  Check!
     ds1 = NCDataset(inpFile)
     ds1.attrib
     # to print meta data for a particular variable: 
     ds1["tos"]
-    sst1 = ds1["tos"]
+    sst1 = ds1["tos"] # what are the dimensions here?   Should be +/-20 degrees
     nclat = ds1["lat"]
     nclon = ds1["lon"]
     nctime = ds1["time"]
-    println(nclat[15:26])
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    println("~~~~~long points: ~~~~~~~~~~~~~~~~")
-    println(nclon[10:61])
-    println("~~~~~lat points: ~~~~~~~~~~~~~~~~")
-    println(nclat[15:26])
+    println("~~~~~ nino34 long points: ~~~~~~~~~~~~~~~~")
+    #println(nclon[10:61])
+    println(nclon[ln1:ln2])
+    println("~~~~~ nino34 lat points: ~~~~~~~~~~~~~~~~")
+    println(nclat[lt1:lt2])
+    println("~~~~~tropical boundary lat points: ~~~~~~~~~~~~~~~~")
+    println(nclat[troplat1:troplat2])
     #
-    nino34_full = sst1[10:61, 15:26, :];
-    trop_full   = sst1[:, :, :];
+    nino34_full = sst1[ln1:ln2, lt1:lt2, :];
+    trop_mean   = sst1[:, troplat1:troplat2, :];
+    #trop_mean   = sst1[:, :, :];
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    println("~~~~type of nino34_full ~~~~~~~~~~~~~~~~~~~~~~~")
-    typeof(nino34_full)
-    size(nino34_full)
-    println(nino34_full[:,7,10])
-    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    #println("~~~~type of nino34_full ~~~~~~~~~~~~~~~~~~~~~~~")
+    #typeof(nino34_full)
+    #size(nino34_full)
+    #println(nino34_full[:,7,10])
+    #println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     
-    #tlength = 1980
     tlength = len 
     nino34_ts = zeros(tlength)
     tropmn_ts = zeros(tlength)
     
     nino34_ts_mn = mean(filter(!isnan, skipmissing(nino34_full)))
-    tropmn_ts_mn = mean(filter(!isnan, skipmissing(trop_full)))
+    tropmn_ts_mn = mean(filter(!isnan, skipmissing(trop_mean)))
     
-    #println("fury fury fury")
     #println(tropmn_ts_mn) 
     # compute the anomalies
     for i = 1:tlength
         #nino34_ts[i]=mean(skipmissing(nino34_full[:,:,i]))-nino34_ts_mn
-        nino34_ts[i]=mean(filter(!isnan, skipmissing(nino34_full[:,:,i])))-nino34_ts_mn
-        tropmn_ts[i]=mean(filter(!isnan, skipmissing(trop_full[:,:,i])))-tropmn_ts_mn
+        nino34_ts[i]=mean(filter(!isnan, skipmissing(nino34_full[:,:,i])))-nino34_ts_mn;
+        tropmn_ts[i]=mean(filter(!isnan, skipmissing(trop_mean[:,:,i])))-tropmn_ts_mn;
     end
     
     # remove the seasonal cycle:
@@ -189,8 +194,8 @@ function prepare_cmip_ts(inpFile,len)
     istart= 2
     jend  = tlength
     for i in istart:jend-1
-      ts_nino34_rmn[i] = (ts_rmn_nsc[i+1]+ts_rmn_nsc[i]+ts_rmn_nsc[i-1])/3
-      ts_tropmn_rmn[i] = (ts_trmn_nsc[i+1]+ts_trmn_nsc[i]+ts_trmn_nsc[i-1])/3
+      ts_nino34_rmn[i] = (ts_rmn_nsc[i+1]+ts_rmn_nsc[i]+ts_rmn_nsc[i-1])/3;
+      ts_tropmn_rmn[i] = (ts_trmn_nsc[i+1]+ts_trmn_nsc[i]+ts_trmn_nsc[i-1])/3;
     end
     ts_nino34_rmn[1]=ts_nino34_rmn[2]
     ts_nino34_rmn[jend]=ts_nino34_rmn[jend-1]
@@ -205,9 +210,9 @@ function prepare_cmip_ts(inpFile,len)
     #print(ts_nino34_rmn)
     #println("fury and hatred")
     # compute the relative oni index (RONI):
-    ts_rmn = sig_scale.*(ts_nino34_rmn-ts_tropmn_rmn)
-    ts_rmn2 = sig_scale.*(ts_nino34_rmn)
-    return ts_rmn 
+    ts_rmn = sig_scale.*(ts_nino34_rmn-ts_tropmn_rmn);
+    ts_rmn2 = sig_scale.*(ts_nino34_rmn);
+    return ts_rmn;
 end
 
 function smooth_ts(inpTS,len)
@@ -232,7 +237,6 @@ function smooth_12_ts(inpTS,len)
     for i in istart:jend-6
       ts_12_sm[i] = (inpTS[i+6]+inpTS[i+5]+inpTS[i+4]+inpTS[i+3]+inpTS[i+2]+inpTS[i+1]+inpTS[i]+inpTS[i-1]+inpTS[i-2]+inpTS[i-3]+inpTS[i-4]+inpTS[i-5])/12
     end
-
     return ts_12_sm
 end
 
@@ -241,24 +245,28 @@ end
 path="/Users/C823281551/"
 
 # CNRM
+#file1  = path*"data/cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_historical_r1i1p1f2_gn_18500116-20141216.nc" # --> doesn't appear to be regridded
 file1  = path*"data/tos_CNRM_hist/tos_Omon_CNRM-ESM2-1_historical_r1i1p1f2_gn_18500116-20141216.nc"
-file1b = path*"data/CNRM-CM6_ssp585_20150116-21001216/tos_Omon_CNRM-CM6-1-HR_ssp585_r1i1p1f2_gn_20150116-21001216remapbil.nc"
-file1c = path*"data/CNRM-ESM2_ssp585/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216.nc"
+#file1b = path*"data/CNRM-CM6/tos_Omon_CNRM-CM6-1-HR_ssp585_r1i1p1f2_gn_20150116-21001216remapbil.nc"
+#file1c = path*"data/cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216.nc" # --> doesn't appear to be regridded
+#file1c = path*"data/CNRM-ESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216.nc"
+file1c = path*"data/cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216NewRegrid.nc"
 # MPI-ESM
-file2  = path*"data/tos_MPI_hist/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216_regridded.nc"
-file2b = path*"data/MPI-ESM1_ssp585_20150116-21001216/tos_Omon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc"
+file2  = path*"data/MPI-ESM1/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216_regridded.nc"
+file2b = path*"data/MPI-ESM1/tos_Omon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc"
 # GFDL
 file3  = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
 # E3SM
-file4  = path*"data/E3SM-1-1-ECA_historical_18500116-20141216/tos_Omon_E3SM-1-1-ECA_historical_r1i1p1f1_gr_18500116-20141216.nc"
+file4  = path*"data/E3SM/tos_Omon_E3SM-1-1-ECA_historical_r1i1p1f1_gr_18500116-20141216.nc"
 file4b  = path*"data/"
 # CESM2
-file5b = path*"data/CESM2_ssp585_20150115-21001215/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
+#file5b = path*"data/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
+file5b = path*"data/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215full_regrid.nc" 
 # HadGEM3
-file6  = path*"data/HadGEM3_historical/tos_Omon_HadGEM3-GC31-LL_historical_r1i1p1f3_gn_18500116-20141216_regridded.nc"
-file6b = path*"data/HadGEM3_ssp585/tos_Omon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridded.nc"
+file6  = path*"data/cmip6/HadGEM3/tos_Omon_HadGEM3-GC31-LL_historical_r1i1p1f3_gn_18500116-20141216_regridded.nc"
+file6b = path*"data/cmip6/HadGEM3/tos_Omon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridded.nc"
 # ACCESS
-file9b = path*"data/ACCESS-CM2_ssp585/tos_Omon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
+file9b = path*"data/ACCESS-CM2/tos_Omon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
 
 # incoming data in csv format:
 file7 = path*"data/obs/observed_nino3.4.csv"
@@ -364,65 +372,120 @@ roni_a = sig_scale.*(ts_oni - tmn_sm)
 # now deal with the data that is arriving from netcdf files: 
 timelen = 1980
 inpFile = file1
-prepare_cmip_ts(inpFile,timelen)
-ba1 = ts_rmn
-ba1nn = ts_rmn2
-#
+println("~~~~~~~~~~~~~~~~~~file 1~~~~~~~~~~~~~~~~~~~~~~")
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+lat1 = 1
+lat2 = 40
+lon34a = 10
+lon34b = 61
+lat34a = 15
+lat34b = 25
+    #println(nclon[10:61])
+#function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
+prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
+ba1 = ts_rmn;
+ba1nn = ts_rmn2;
+###
 inpFile = file2
-prepare_cmip_ts(inpFile,timelen)
-ba2 = ts_rmn
-ba2nn = ts_rmn2
-
+println("~~~~~~~~~~~~~~~~~~file 2~~~~~~~~~~~~~~~~~~~~~~")
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+#prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon1,lon2);
+prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
+ba2 = ts_rmn;
+ba2nn = ts_rmn2;
+##
 inpFile = file3
-prepare_cmip_ts(inpFile,timelen)
-ba3 = ts_rmn
-ba3nn = ts_rmn2
-
+println("~~~~~~~~~~~~~~~~~~file 3~~~~~~~~~~~~~~~~~~~~~~")
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+#prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon1,lon2);
+prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
+ba3 = ts_rmn;
+ba3nn = ts_rmn2;
+#
+println("~~~~~~~~~~~~~~~~~~file 4~~~~~~~~~~~~~~~~~~~~~~")
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
 inpFile = file4
-prepare_cmip_ts(inpFile,timelen)
+#prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon1,lon2)
+prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba4 = ts_rmn
-
+#
+println("~~~~~~~~~~~~~~~~~~file 5~~~~~~~~~~~~~~~~~~~~~~")
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
 inpFile = file6
-prepare_cmip_ts(inpFile,timelen)
+#prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon1,lon2)
+prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba6 = ts_rmn
-
-#MPI scenario timeseries...
+#
+##MPI scenario timeseries...
 timelen2=1032
-inpFile = file1b
-prepare_cmip_ts(inpFile,timelen2)
-ba1b = ts_rmn
-inpFile = file1c
-prepare_cmip_ts(inpFile,timelen2)
-ba1c = ts_rmn
-
+#inpFile = file1b
+lat1 = 1
+lat2 = 40
+#prepare_cmip_ts(inpFile,timelen2,lat1,lat2)
+#ba1b = ts_rmn
+#inpFile = file1c
+#println("~~~~~~~~~~~~~~~~~~file 1c~~~~~~~~~~~~~~~~~~~~~~")
+#println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+#prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon1,lon2)
+#prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
+#ba1c = ts_rmn
+#
 inpFile = file2b
-prepare_cmip_ts(inpFile,timelen2)
+println("~~~~~~~~~~~~~~~~~~file 2b~~~~~~~~~~~~~~~~~~~~~~")
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+#prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon1,lon2)
+prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba2b = ts_rmn
-
-inpFile = file5b
-prepare_cmip_ts(inpFile,timelen2)
+#
+inpFile = file5b # CESM2
+println("~~~~~~~~~~~~~~~~~~file 5b~~~~~~~~~~~~~~~~~~~~~~")
+println(inpFile)
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+#prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon1,lon2)
+lat1   = 71
+lat2   = 110
+lat34a = 85
+lat34b = 96
+lon34a = 10
+lon34b = 61
+prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba5b = ts_rmn
-
+#
 inpFile = file6b
-prepare_cmip_ts(inpFile,timelen2)
+println("~~~~~~~~~~~~~~~~~~file 6b~~~~~~~~~~~~~~~~~~~~~~")
+println(inpFile)
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+lat1   = 1
+lat2   = 40
+lat34a = 15 
+lat34b = 26
+lon34a = 10
+lon34b = 61
+prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba6b = ts_rmn
-
+#
 inpFile = file9b
-prepare_cmip_ts(inpFile,timelen2)
+println("~~~~~~~~~~~~~~~~~~file 9b~~~~~~~~~~~~~~~~~~~~~~")
+println(inpFile)
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba9b = ts_rmn
-
-
+#
+#
 timelen = 1980
 inpFile = file3
-prepare_cmip_ts(inpFile,timelen)
+println("~~~~~~~~~~~~~~~~~~file 3~~~~~~~~~~~~~~~~~~~~~~")
+println(inpFile)
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba3 = ts_rmn
-
+#
 A = collect(1854:1/12:2023.92)
 B = collect(1850.0833333333333:1/12:2015)
 C = collect(2015.083333:1/12:2101)
 
 fig = Figure(;
-    size = (700,400),
+    size = (800,300),
     )
 ax = Axis(fig[1,1];
     xlabel="monthly mean, smoothed",
@@ -433,25 +496,25 @@ ax = Axis(fig[1,1];
     )
 smooth_12_ts(roni_a,2040)
 blah3 = ts_12_sm
-#lines!(ax, A,blah3[:], 
-#    linewidth = 2.,
-#    color = "black",
-#    label = "Observed: RONI"
-#    )
-#limits!(1850, 2100, -4, 4)
-
-# historical
+##lines!(ax, A,blah3[:], 
+##    linewidth = 2.,
+##    color = "black",
+##    label = "Observed: RONI"
+##    )
+##limits!(1850, 2100, -4, 4)
+#
+## historical
 smooth_12_ts(ba1,timelen)
 ba1_sm = ts_12_sm
-#smooth_12_ts(ba1nn,timelen)
-#ba1nn_sm = ts_12_sm
+##smooth_12_ts(ba1nn,timelen)
+##ba1nn_sm = ts_12_sm
 lines!(ax, B,ba1_sm[:], 
     linewidth = 0.75,
     color = "paleturquoise1"
     #label = "CNRM: RONI"
     )
 limits!(1850, 2100, -4, 4)
-# ssp585
+## ssp585
 smooth_12_ts(ba1b,timelen2)
 ba1b_sm = ts_12_sm
 lines!(ax, C,ba1b_sm[:], 
@@ -465,13 +528,13 @@ lines!(ax, C,ba1c_sm[:],
     color = "paleturquoise3"
     #label = "CNRM: RONI"
     )
-
+#
 smooth_12_ts(ba2,timelen)
 ba2_sm = ts_12_sm #  historical
 smooth_12_ts(ba2b,timelen2)
 ba2b_sm = ts_12_sm # ssp585
-#smooth_12_ts(ba2nn,timelen)
-#ba2nn_sm = ts_12_sm
+##smooth_12_ts(ba2nn,timelen)
+##ba2nn_sm = ts_12_sm
 lines!(ax, B,ba2_sm[:], 
     linewidth = 0.75,
     color = "aquamarine"
@@ -484,8 +547,8 @@ lines!(ax, C,ba2b_sm[:],
     )
 smooth_12_ts(ba3,timelen)
 ba3_sm = ts_12_sm # historical
-#smooth_12_ts(ba3nn,timelen)
-#ba3nn_sm = ts_12_sm
+##smooth_12_ts(ba3nn,timelen)
+##ba3nn_sm = ts_12_sm
 lines!(ax, B,ba3_sm[:], 
     linewidth = 0.75,
     color = "lightcyan"
@@ -499,7 +562,7 @@ lines!(ax, B,ba4_sm[:],
     color = "paleturquoise"
     #label = "E3SM: RONI"
     )
-
+#
 smooth_12_ts(ba5b,timelen2)
 ba5b_sm = ts_12_sm # ssp585
 lines!(ax, C,ba5b_sm[:], 
@@ -507,7 +570,7 @@ lines!(ax, C,ba5b_sm[:],
     color = "mistyrose"
     #label = "CESM2: RONI"
     )
-
+#
 smooth_12_ts(ba6,timelen)
 ba6_sm = ts_12_sm # historical
 smooth_12_ts(ba6b,timelen2)
@@ -522,7 +585,7 @@ lines!(ax, C,ba6b_sm[:],
     color = "thistle"
     #label = "HadGEM3: RONI"
     )
-
+#
 smooth_12_ts(ba9b,timelen2)
 ba9b_sm = ts_12_sm # ssp585
 lines!(ax, C,ba9b_sm[:], 
@@ -530,17 +593,20 @@ lines!(ax, C,ba9b_sm[:],
     color = "lavender"
     #label = "ACCESS: RONI"
     )
-
-
-# ssp585
+#
+#
+## ssp585
 tenCent  = [ba1b_sm';ba2b_sm';ba5b_sm';ba9b_sm';ba6b_sm';ba1c_sm']
+##tenCent  = [ba1b_sm';ba2b_sm';ba5b_sm';ba9b_sm';ba6b_sm']
+##tenCent  = [ba1b_sm']
 mnSSP = mean(tenCent, dims = 1)
-# historical
+## historical
 lightOut = [ba1_sm';ba2_sm';ba3_sm';ba4_sm';ba6_sm']
+##lightOut = [ba2_sm';ba3_sm';ba4_sm';ba6_sm']
 mnH   = mean(lightOut, dims = 1)
-
-#smooth_12_ts(ba6,timelen)
-#ba6_sm = ts_12_sm # historical
+#
+##smooth_12_ts(ba6,timelen)
+##ba6_sm = ts_12_sm # historical
 lines!(ax, B,mnH[:], 
     linewidth = 2.0,
     color = "red",
@@ -556,34 +622,34 @@ lines!(ax, A,blah3[:],
     color = "black",
     label = "Observed"
     )
-
-
-
-#lines!(ax, B,ba3nn_sm[:], 
-#    linewidth = 1.5,
-#    label = "GFDL: ONI"
-#    )
-##lines!(ax, nino3p4_anom[:], 
+#
+#
+#
+##lines!(ax, B,ba3nn_sm[:], 
 ##    linewidth = 1.5,
-##    label = "nino 3.4"
+##    label = "GFDL: ONI"
 ##    )
-##lines!(ax, ts_oni[:], 
-##    linewidth = 1.5,
-##    label = "oni"
-##    )
-##smooth_12_ts(roni_a,2040)
-##blah3 = ts_12_sm
-###lines!(ax, roni_a[:], 
-##lines!(ax, A,blah3[:], 
-##    linewidth = 1.5,
-##    color = "black",
-##    label = "Observed: RONI"
-##    )
-###axislegend("legend"; position=:rb)
-
+###lines!(ax, nino3p4_anom[:], 
+###    linewidth = 1.5,
+###    label = "nino 3.4"
+###    )
+###lines!(ax, ts_oni[:], 
+###    linewidth = 1.5,
+###    label = "oni"
+###    )
+###smooth_12_ts(roni_a,2040)
+###blah3 = ts_12_sm
+####lines!(ax, roni_a[:], 
+###lines!(ax, A,blah3[:], 
+###    linewidth = 1.5,
+###    color = "black",
+###    label = "Observed: RONI"
+###    )
+####axislegend("legend"; position=:rb)
+#
 axislegend( position=:lt)
 #
-save("plotENSOcmipStupid.png",fig)
+save("plotENSOcmipHook.png",fig)
 
 
 

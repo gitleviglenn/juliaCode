@@ -253,7 +253,7 @@ path="/Users/C823281551/data/"
 #filetos  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_regrid2.nc" 
 #tag = "CESM2"
 
-##modelp="MPI-ESM1-2-LR"
+modelp="MPI-ESM1-2-LR"
 ##filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
 filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded4.nc"
 filetos  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_pm40b.nc" 
