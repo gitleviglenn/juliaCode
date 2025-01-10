@@ -352,17 +352,20 @@ end
 
 path="/Users/C823281551/"
 
+# files with data from ssp585 are labelled with a b.   e.g.  file1b, file2b, file5b, file6b, and file9b
 # CNRM
+  # do we have ssp585 for the CNRM-CM6 model?  
 #file1  = path*"data/cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_historical_r1i1p1f2_gn_18500116-20141216.nc" # --> doesn't appear to be regridded
 file1  = path*"data/tos_CNRM_hist/tos_Omon_CNRM-ESM2-1_historical_r1i1p1f2_gn_18500116-20141216.nc"
 #file1b = path*"data/CNRM-CM6/tos_Omon_CNRM-CM6-1-HR_ssp585_r1i1p1f2_gn_20150116-21001216remapbil.nc"
 #file1c = path*"data/cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216.nc" # --> doesn't appear to be regridded
 #file1c = path*"data/CNRM-ESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216.nc"
-file1c = path*"data/cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216NewRegrid.nc"
+file1b = path*"data/cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216NewRegrid.nc"
 # MPI-ESM
 file2  = path*"data/MPI-ESM1/tos_Omon_MPI-ESM1-2-LR_historical_r1i1p1f1_gn_18500116-20141216_regridded.nc"
 file2b = path*"data/MPI-ESM1/tos_Omon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc"
 # GFDL
+  # did GFDL not participate in the ssp simulations? 
 file3  = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
 # E3SM
 file4  = path*"data/E3SM/tos_Omon_E3SM-1-1-ECA_historical_r1i1p1f1_gr_18500116-20141216.nc"
@@ -370,9 +373,12 @@ file4b  = path*"data/"
 # CESM2
 #file5b = path*"data/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
 file5b = path*"data/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215full_regrid.nc" 
-# HadGEM3
+# HadGEM3 (MB Andrews et al., 2020, JAMES?)
+  # LL files have a nominal atmospheric resolution of 135km and an ocean resolution of 1 degrees.
+  # MM files have a nominal atmospheric resolution of 60 km and an ocean resolution of 0.25 degrees.
 file6  = path*"data/cmip6/HadGEM3/tos_Omon_HadGEM3-GC31-LL_historical_r1i1p1f3_gn_18500116-20141216_regridded.nc"
-file6b = path*"data/cmip6/HadGEM3/tos_Omon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridded.nc"
+#file6b = path*"data/cmip6/HadGEM3/tos_Omon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridded.nc"
+file6b = path*"data/cmip6/HadGEM3/tos_Omon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridFull.nc"
 # ACCESS
 file9b = path*"data/ACCESS-CM2/tos_Omon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
 
@@ -481,6 +487,7 @@ roni_a = sig_scale.*(ts_oni - tmn_sm)
 timelen = 1980
 inpFile = file1
 println("~~~~~~~~~~~~~~~~~~file 1~~~~~~~~~~~~~~~~~~~~~~")
+println(inpFile)
 println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
 lat1 = 1
 lat2 = 40
@@ -488,60 +495,72 @@ lon34a = 10
 lon34b = 61
 lat34a = 15
 lat34b = 25
-    #println(nclon[10:61])
-#function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
+
 prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba1 = ts_rmn;
 ba1nn = ts_rmn2;
 ###
 inpFile = file2
 println("~~~~~~~~~~~~~~~~~~file 2~~~~~~~~~~~~~~~~~~~~~~")
+println(inpFile)
 println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
-#prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon1,lon2);
 prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba2 = ts_rmn;
 ba2nn = ts_rmn2;
 ##
 inpFile = file3
 println("~~~~~~~~~~~~~~~~~~file 3~~~~~~~~~~~~~~~~~~~~~~")
+println(inpFile)
 println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
-#prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon1,lon2);
 prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba3 = ts_rmn;
 ba3nn = ts_rmn2;
 #
-println("~~~~~~~~~~~~~~~~~~file 4~~~~~~~~~~~~~~~~~~~~~~")
-println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
 inpFile = file4
-#prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon1,lon2)
+println("~~~~~~~~~~~~~~~~~~file 4~~~~~~~~~~~~~~~~~~~~~~")
+println(inpFile)
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
 prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba4 = ts_rmn
 #
-println("~~~~~~~~~~~~~~~~~~file 5~~~~~~~~~~~~~~~~~~~~~~")
-println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
 inpFile = file6
-#prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon1,lon2)
+println("~~~~~~~~~~~~~~~~~~file 6~~~~~~~~~~~~~~~~~~~~~~")
+println(inpFile)
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
 prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba6 = ts_rmn
 #
-##MPI scenario timeseries...
+##CNRM scenario timeseries...
 timelen2=1032
-#inpFile = file1b
+inpFile = file1b # CNRM-ESM2
 lat1 = 1
 lat2 = 40
-#prepare_cmip_ts(inpFile,timelen2,lat1,lat2)
-#ba1b = ts_rmn
-#inpFile = file1c
-#println("~~~~~~~~~~~~~~~~~~file 1c~~~~~~~~~~~~~~~~~~~~~~")
-#println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+println("~~~~~~~~~~~~~~~~~~file 1b~~~~~~~~~~~~~~~~~~~~~~")
+println(inpFile)
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+lat1   = 71
+lat2   = 110
+lat34a = 85
+lat34b = 96
+lon34a = 10
+lon34b = 61
+prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
+ba1b = ts_rmn
 #prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon1,lon2)
 #prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 #ba1c = ts_rmn
 #
+##MPI scenario timeseries...
 inpFile = file2b
 println("~~~~~~~~~~~~~~~~~~file 2b~~~~~~~~~~~~~~~~~~~~~~")
+println(inpFile)
 println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
-#prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon1,lon2)
+lat1 = 1
+lat2 = 40
+lon34a = 10
+lon34b = 61
+lat34a = 15
+lat34b = 25
 prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba2b = ts_rmn
 #
@@ -561,12 +580,12 @@ ba5b = ts_rmn
 #
 inpFile = file6b
 println("~~~~~~~~~~~~~~~~~~file 6b~~~~~~~~~~~~~~~~~~~~~~")
-println(inpFile)
+println(inpFile)  # HadGEM3
 println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
-lat1   = 1
-lat2   = 40
-lat34a = 15 
-lat34b = 26
+lat1   = 71
+lat2   = 110
+lat34a = 85 
+lat34b = 96 
 lon34a = 10
 lon34b = 61
 prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
@@ -574,8 +593,14 @@ ba6b = ts_rmn
 #
 inpFile = file9b
 println("~~~~~~~~~~~~~~~~~~file 9b~~~~~~~~~~~~~~~~~~~~~~")
-println(inpFile)
+println(inpFile) # ACCESS
 println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+lat1   = 1
+lat2   = 40
+lat34a = 15 
+lat34b = 26
+lon34a = 10
+lon34b = 61
 prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba9b = ts_rmn
 #
@@ -588,6 +613,7 @@ println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
 prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba3 = ts_rmn
 #
+# define time axis for various experiment temporal ranges
 A = collect(1854:1/12:2023.92)
 B = collect(1850.0833333333333:1/12:2015)
 C = collect(2015.083333:1/12:2101)
@@ -612,6 +638,7 @@ blah3 = ts_12_sm
 ##limits!(1850, 2100, -4, 4)
 #
 ## historical
+#
 smooth_12_ts(ba1,timelen)
 ba1_sm = ts_12_sm
 ##smooth_12_ts(ba1nn,timelen)
@@ -622,20 +649,23 @@ lines!(ax, B,ba1_sm[:],
     #label = "CNRM: RONI"
     )
 limits!(1850, 2100, -4, 4)
+#
 ## ssp585
+#
 smooth_12_ts(ba1b,timelen2)
 ba1b_sm = ts_12_sm
 lines!(ax, C,ba1b_sm[:], 
     linewidth = 0.75,
     color = "paleturquoise2"
+    #label = CNRMESM2
     )
-smooth_12_ts(ba1c,timelen2)
-ba1c_sm = ts_12_sm
-lines!(ax, C,ba1c_sm[:], 
-    linewidth = 0.75,
-    color = "paleturquoise3"
-    #label = "CNRM: RONI"
-    )
+#smooth_12_ts(ba1c,timelen2)
+#ba1c_sm = ts_12_sm
+#lines!(ax, C,ba1c_sm[:], 
+#    linewidth = 0.75,
+#    color = "paleturquoise3"
+#    #label = "CNRM: RONI"
+#    )
 #
 smooth_12_ts(ba2,timelen)
 ba2_sm = ts_12_sm #  historical
@@ -651,7 +681,7 @@ lines!(ax, B,ba2_sm[:],
 lines!(ax, C,ba2b_sm[:], 
     linewidth = 0.75,
     color = "aquamarine"
-    #label = "MPIb: RONI"
+    #label = " MPI-ESM1: RONI"
     )
 smooth_12_ts(ba3,timelen)
 ba3_sm = ts_12_sm # historical
@@ -704,10 +734,11 @@ lines!(ax, C,ba9b_sm[:],
 #
 #
 ## ssp585
-tenCent  = [ba1b_sm';ba2b_sm';ba5b_sm';ba9b_sm';ba6b_sm';ba1c_sm']
-##tenCent  = [ba1b_sm';ba2b_sm';ba5b_sm';ba9b_sm';ba6b_sm']
-##tenCent  = [ba1b_sm']
-mnSSP = mean(tenCent, dims = 1)
+#tenCent  = [ba1b_sm';ba2b_sm';ba5b_sm';ba9b_sm';ba6b_sm']
+# plot individual model for ssp585 if desired.
+tenCent  = [ba1b_sm']
+mnSSP = ba6b_sm
+#mnSSP = mean(tenCent, dims = 1)
 ## historical
 lightOut = [ba1_sm';ba2_sm';ba3_sm';ba4_sm';ba6_sm']
 ##lightOut = [ba2_sm';ba3_sm';ba4_sm';ba6_sm']
@@ -757,7 +788,7 @@ lines!(ax, A,blah3[:],
 #
 axislegend( position=:lt)
 #
-save("plotENSOcmipPH.png",fig)
+save("plotENSOcmipHadGEM3.png",fig)
 
 
 

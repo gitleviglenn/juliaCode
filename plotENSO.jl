@@ -10,6 +10,8 @@
 #     - dramatically improve the code that concatinates the data, i 
 #       clearly know nothing about julia at this time 
 #
+# this script is terrible (jan, 2025).
+#   
 # levi silvers                                             august 2024
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 using DataFrames
@@ -76,7 +78,8 @@ someone = Vector{Float64}(undef, 100)
 #end
 
 # there has to be a better way to do this with a simple loop
-index=61
+#index=61
+index=6
 i = index+1
 ensoTSa = [janTest[i], febTest[i], marTest[i], aprTest[i], mayTest[i], junTest[i], julTest[i], augTest[i], sepTest[i], octTest[i], novTest[i], decTest[i]]
 i = index+2

@@ -263,10 +263,9 @@ tag = "MPI"
 #filetos  = path*"cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216_regrid2.nc" 
 #tag = "CNRMESM2"
 
-# not done yet
-#filehur  = path*"cmip6/CNRMESM2/hur_Amon_CNRM-ESM2-1_ssp585_r1i1p1f2_gr_20150116-21001216_regrid.nc"
-#filetos  = path*"cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216_regrid2.nc" 
-#tag = "HadGEM3"
+filehur  = path*"cmip6/HadGEM3/hur_Amon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridFull.nc"
+filetos  = path*"cmip6/HadGEM3/tos_Omon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridFull.nc" 
+tag = "HadGEM3"
 
 #filehur  = path*"cmip6/ACCESS/hur_Amon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc"
 #filetos  = path*"cmip6/ACCESS/tos_Omon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc" 
@@ -308,7 +307,9 @@ ba1b = ts_rmn
 smooth_12_ts(ba1b,timelen2)
 ba1b_sm1 = ts_12_sm
 
-ensoDef = 1.7
+# HadGEM3 has an enso time series that has a strong negative trend...
+ensoDef = 1.0
+# MPI ensoDef = 1.7
 thshd = ensoDef
 
 # i think the only reason we need to pass in a file is to get the 
@@ -466,7 +467,7 @@ end
 rh_anom = rh_diff[:,:,1]
 tit1="RH anomaly, "*tag*" ssp585"
 fig1name=tag*"rh.png"
-level1 = range(-10, 10, length = 20)
+level1 = range(-20, 20, length = 20)
 fig = fig_anom_plot(rh_anom,lon,lat,tit1,level1)
 save(fig1name, fig)
 
