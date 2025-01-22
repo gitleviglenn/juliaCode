@@ -40,9 +40,9 @@ lev  = data["plev"]
 tme = data["time"]
 
 u_var  = data["ua"] # hur(time, plev, lat, lon)
-u_var  = data["ua"] # hur(time, plev, lat, lon)
+#u_var  = data["ua"] # hur(time, plev, lat, lon)
 v_var  = data2["va"] # hur(time, plev, lat, lon)
-v_var  = data2["va"] # hur(time, plev, lat, lon)
+#v_var  = data2["va"] # hur(time, plev, lat, lon)
 tit = "wind: "*tag
 
 # tropics in CESM2
@@ -61,21 +61,24 @@ data_hi  = v_var[:,lat1:lat2,2,tim]
 data_low = v_var[:,lat1:lat2,1,tim]
 vSh      = data_hi - data_low
 
+# numfields is normally defined outside of this script.
+# numfields = 50
+
 dims = size(u_var)
-u_2  = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
-u_1  = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
-uSh_tmp  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
-v_2  = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
-v_1  = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
-vSh_tmp  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
-VWS_low_full  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
+u_2            = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
+u_1            = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
+uSh_tmp        = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
+v_2            = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
+v_1            = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
+vSh_tmp        = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
+VWS_low_full   = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 VWS_high_full  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
-u_2b  = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
-u_1b  = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
-uSh_tmpb  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
-v_2b  = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
-v_1b  = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
-vSh_tmpb  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
+u_2b           = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
+u_1b           = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
+uSh_tmpb       = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
+v_2b           = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
+v_1b           = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
+vSh_tmpb       = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 
 endi = numfields
 # for low values of ENSO timeseries.   Also compute for high values.  
