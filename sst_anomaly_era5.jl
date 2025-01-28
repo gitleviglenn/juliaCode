@@ -63,15 +63,19 @@ sst_mn = mean(sst_var, dims=3)
 nino_mn = mean(sst_nino, dims=3)
 nina_mn = mean(sst_nina, dims=3)
 
+sst_mn1 = mean(sst_mn, dims=1)
+sst_mn2 = mean(sst_mn1, dims=2)
+
+# according to AI, the mean tropical sst is 20C
+sst_ai = 293.
+
+# calculate mean between +/-20 degrees: 
+sst_tr_mn = mean(skipmissing(sst_var[:,70:110,:]))
 nino_composite = nino_mn - nina_mn
 nino_anom      = nino_mn[:,:].-sst_mn[:,:,1]
-#data_2_plot=data_2_plot_nino[:,:,1].-273.15
-data_2_plot=nina_mn[:,:].-273.15
-#data_3_plot=nino_mn[:,:].-273.15
+data_2_plot=nina_mn[:,:].-sst_tr_mn
 data_3_plot=nino_composite
-#data_2_plot=sst_nino[:,:,1].-273.15
-data_2_plot_tot=sst_mn[:,:,1].-273.15
-#data_2_plot=sst_var[:,:,1].-273.15
+data_2_plot_tot=sst_mn[:,:,1].-sst_tr_mn
 
 function fig_anom_plot(inpv,d1,d2,tit)
     f2 = Figure(;
@@ -123,15 +127,16 @@ function fig_tot_plot(inpv,inpv2,inpv3,d1,d2,tit)
         ylabel="latitude",
         xlabel="longitude",
         limits=(-180,180,-40,40),
-        title=tit,
+        title="Tropical Mean anom",
         )
         bb = contourf!(ax, d1, d2, inpv, 
              #levels = range(0, 50, length = 25), # tos
-             levels = range(0, 30, length = 30), # rh
+             levels = range(-6, 6, length = 21), # rh
+             colormap = :vik,
              #colormap = :Blues_8,
              #colormap = :broc,
              #colormap = :bam,
-             colormap = :batlow,
+             #colormap = :batlow,
              #colormap = :vik,
              extendlow = :auto, extendhigh = :auto
         )
@@ -144,12 +149,12 @@ function fig_tot_plot(inpv,inpv2,inpv3,d1,d2,tit)
         ylabel="latitude",
         xlabel="longitude",
         limits=(-180,180,-40,40),
-        title=tit,
+        title="Nino anom",
         )
         bb2 = contourf!(ax2, d1, d2, inpv2, 
              #levels = range(0, 50, length = 25), # tos
-             levels = range(0, 30, length = 30), # rh
-             colormap = :batlow,
+             levels = range(-6, 6, length = 21), # rh
+             colormap = :vik,
              extendlow = :auto, extendhigh = :auto
         )
         lines!(ax2, GeoMakie.coastlines(), color = :black, linewidth=0.75)
@@ -161,62 +166,18 @@ function fig_tot_plot(inpv,inpv2,inpv3,d1,d2,tit)
         ylabel="latitude",
         xlabel="longitude",
         limits=(-180,180,-40,40),
-        title=tit,
+        title="Nino minus Nina",
         )
         bb3 = contourf!(ax3, d1, d2, inpv3, 
              #levels = range(0, 50, length = 25), # tos
-             levels = range(0, 30, length = 30), # rh
-             colormap = :batlow,
+             levels = range(-2, 2, length = 21), # rh
+             colormap = :vik,
              extendlow = :auto, extendhigh = :auto
         )
         lines!(ax2, GeoMakie.coastlines(), color = :black, linewidth=0.75)
-        Colorbar(f2[3,2], bb2)
+        Colorbar(f2[3,2], bb3)
     return f2
 end
-   # ax = GeoAxis(f2[2,1];
-   #     xticks = -180:30:180, 
-   #     #xticks = 0:30:360, 
-   #     yticks = -90:30:90,
-   #     ylabel="latitude",
-   #     xlabel="longitude",
-   #     limits=(-180,180,-40,40),
-   #     title=tit,
-   #     )
-   #     bb = contourf!(ax, d1, d2, inpv2, 
-   #          #levels = range(0, 50, length = 25), # tos
-   #          levels = range(0, 30, length = 30), # rh
-   #          #colormap = :Blues_8,
-   #          #colormap = :broc,
-   #          #colormap = :bam,
-   #          colormap = :batlow,
-   #          #colormap = :vik,
-   #          extendlow = :auto, extendhigh = :auto
-   #     )
-   #     lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
-   #     #Colorbar(f2[1,2], bb)
-    #ax3 = GeoAxis(f2[3,1];
-    #    xticks = -180:30:180, 
-    #    #xticks = 0:30:360, 
-    #    yticks = -90:30:90,
-    #    ylabel="latitude",
-    #    xlabel="longitude",
-    #    limits=(-180,180,-40,40),
-    #    title=tit,
-    #    )
-    #    bb = contourf!(ax, d1, d2, inpdiff, 
-    #         #levels = range(0, 50, length = 25), # tos
-    #         levels = range(0, 10, length = 30), # rh
-    #         #colormap = :Blues_8,
-    #         #colormap = :broc,
-    #         #colormap = :bam,
-    #         colormap = :batlow,
-    #         #colormap = :vik,
-    #         extendlow = :auto, extendhigh = :auto
-    #    )
-    #    lines!(ax3, GeoMakie.coastlines(), color = :black, linewidth=0.75)
-    #    #Colorbar(f2[3,2], bb)
-#    return f2
-#end
 tit="ERA5 SST"
 fig = fig_anom_plot(nino_composite[:,:,1],lon,lat,tit)
 fig1name=tag*"_sst_nino_comp_SH.png"

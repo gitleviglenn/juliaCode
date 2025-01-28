@@ -6,15 +6,18 @@
 using CairoMakie
 using GeoMakie
 using NCDatasets
+using Statistics
 
 #
 # create the indices that correspond to Nino and Nina years/months
+#fig2name = tag*"_rh_SH_test.png"
+fig2name = tag*"_rh_nino_comp_NH_test.png"
 # NH
-#ninoyears = [18 54 90 150 174 234 306 402]
-#ninayears = [102 114 210 246 318 366 378 390]
+ninoyears = [18 54 90 150 174 234 306 402]
+ninayears = [102 114 210 246 318 366 378 390]
 # SH
-ninoyears = [23 35 59 96 155 239 311 347]
-ninayears = [107 119 215 251 263 335 371 383]
+#ninoyears = [23 35 59 96 155 239 311 347]
+#ninayears = [107 119 215 251 263 335 371 383]
 function create_indices(years)
   ensoInd = Matrix{Int64}(undef, 8, 6)
   for i in 1:8
@@ -62,32 +65,52 @@ endi = 48
 low = ninaInd
 high = ninoInd
 
+# select the case determining if rh will be plotted at one level or at the average of two
+pcase = 0# pcase = 0 corresponds to plotting rh on 1 level
 # calculate total rh field, for all times
-for i in 1:408
-  rh_tot[:,lat1:lat2,i]   = (rh_var[:,lat1:lat2,2,i] + rh_var[:,lat1:lat2,1,i])./2
-end
+level=2 # level 2 should correspond to the 700 hPa pressure level. 
+if pcase == 0
+  for i in 1:408
+    rh_tot[:,lat1:lat2,i]   = rh_var[:,lat1:lat2,level,i] 
+  end
+  for i in 1:endi
+    # low values, la nina
+    rh_2[:,lat1:lat2,1,i]   = rh_var[:,lat1:lat2,level,low[i]]
+    rh_low[:,lat1:lat2,i]   = rh_2[:,lat1:lat2,1,i] 
+    # high values, el nino
+    rh_2[:,lat1:lat2,1,i]   = rh_var[:,lat1:lat2,level,high[i]]
+    rh_high[:,lat1:lat2,i]  = rh_2[:,lat1:lat2,1,i] 
+  end
+else
+  for i in 1:408
+    rh_tot[:,lat1:lat2,i]   = (rh_var[:,lat1:lat2,2,i] + rh_var[:,lat1:lat2,1,i])./2
+  end
+  for i in 1:endi
+    # low values, la nina
+    rh_1[:,lat1:lat2,1,i]   = rh_var[:,lat1:lat2,1,low[i]]
+    rh_2[:,lat1:lat2,1,i]   = rh_var[:,lat1:lat2,2,low[i]]
+    rh_low[:,lat1:lat2,i]   = (rh_2[:,lat1:lat2,1,i] + rh_1[:,lat1:lat2,1,i])./2
+    # high values, el nino
+    rh_1[:,lat1:lat2,1,i]   = rh_var[:,lat1:lat2,1,high[i]]
+    rh_2[:,lat1:lat2,1,i]   = rh_var[:,lat1:lat2,2,high[i]]
+    rh_high[:,lat1:lat2,i]  = (rh_2[:,lat1:lat2,1,i] + rh_1[:,lat1:lat2,1,i])./2
+  end
+end 
 
-for i in 1:endi
-  # low values, la nina
-  rh_1[:,lat1:lat2,1,i]   = rh_var[:,lat1:lat2,1,low[i]]
-  rh_2[:,lat1:lat2,1,i]   = rh_var[:,lat1:lat2,2,low[i]]
-  rh_low[:,lat1:lat2,i]   = (rh_2[:,lat1:lat2,1,i] + rh_1[:,lat1:lat2,1,i])./2
-  # high values, el nino
-  rh_1[:,lat1:lat2,1,i]   = rh_var[:,lat1:lat2,1,high[i]]
-  rh_2[:,lat1:lat2,1,i]   = rh_var[:,lat1:lat2,2,high[i]]
-  rh_high[:,lat1:lat2,i]  = (rh_2[:,lat1:lat2,1,i] + rh_1[:,lat1:lat2,1,i])./2
-end
 
 rh_tot_tmn  = mean(rh_tot, dims=3)
 rh_high_tmn = mean(rh_high, dims=3)
 rh_low_tmn  = mean(rh_low, dims=3)
 
+data_2_plot_tot  = rh_tot_tmn
 data_2_plot_anom = rh_high_tmn - rh_low_tmn
 
 function fig_anom_plot(inpv,d1,d2,tit)
     f2 = Figure(;
         figure_padding=(5,5,10,10),
         backgroundcolor=:white,
+        #size=(500,200),
+        #size=(800,300),
         size=(600,300),
         )
     #ax = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
@@ -102,7 +125,8 @@ function fig_anom_plot(inpv,d1,d2,tit)
         )
         bb = contourf!(ax, d1, d2, inpv, 
              #levels = range(0, 50, length = 25), # tos
-             levels = range(-10, 10, length = 21), # rh
+             #levels = range(-10, 10, length = 21), # rh
+             levels = range(-20, 20, length = 21), # rh
              #colormap = :Blues_8,
              #colormap = :broc,
              #colormap = :bam,
@@ -146,8 +170,10 @@ function fig_tot_plot(inpv,d1,d2,tit)
     return f2
 end
 tit="dummy"
-fig2name = tag*"_rh_nino_comp_SH.png"
+#fig2name = tag*"_rh_nino_comp_SHmn.png"
 #fig = fig_tot_plot(data_2_plot_tot[:,:,1],lon,lat,tit)
-#fig = fig_anom_plot(data_2_plot_anom[:,:,1],lon,lat,tit)
-fig = fig_anom_plot(data_2_plot_anom[:,:],lon,lat,tit)
+fig = fig_anom_plot(data_2_plot_anom[:,:,1],lon,lat,tit)
+#lonlon=[1:360;]
+
+#fig = fig_anom_plot(data_2_plot_anom[:,:],lon,lat,tit)
 save(fig2name, fig)
