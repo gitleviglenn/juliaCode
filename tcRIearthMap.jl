@@ -12,7 +12,7 @@
 using DataFrames
 using CSV
 using CairoMakie
-using LaTeXStrings
+#using LaTeXStrings
 using GeoMakie
 
 # see various projection options here: 
@@ -64,8 +64,8 @@ image!(ga, -180..180, -90..90, img; interpolate = false)
 
 # looking at these storms (763-1110) corresponds roughly to the events between 2014-2014.
 p1=1
-p2=1110
-#p2=4490
+#p2=1110
+p2=4490
 
 xRI = dfRI[p1:p2, :LATITUDE]
 yRI = dfRI[p1:p2, :LONGITUDE]

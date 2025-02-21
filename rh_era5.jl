@@ -11,13 +11,14 @@ using Statistics
 #
 # create the indices that correspond to Nino and Nina years/months
 #fig2name = tag*"_rh_SH_test.png"
-fig2name = tag*"_rh_nino_comp_NH_test.png"
 # NH
-ninoyears = [18 54 90 150 174 234 306 402]
-ninayears = [102 114 210 246 318 366 378 390]
+#fig2name = tag*"_rh_nino_comp_NH_test.png"
+#ninoyears = [18 54 90 150 174 234 306 402]
+#ninayears = [102 114 210 246 318 366 378 390]
 # SH
-#ninoyears = [23 35 59 96 155 239 311 347]
-#ninayears = [107 119 215 251 263 335 371 383]
+fig2name = tag*"_rh_nino_comp_SH_test.png"
+ninoyears = [23 35 59 96 155 239 311 347]
+ninayears = [107 119 215 251 263 335 371 383]
 function create_indices(years)
   ensoInd = Matrix{Int64}(undef, 8, 6)
   for i in 1:8
@@ -126,7 +127,8 @@ function fig_anom_plot(inpv,d1,d2,tit)
         bb = contourf!(ax, d1, d2, inpv, 
              #levels = range(0, 50, length = 25), # tos
              #levels = range(-10, 10, length = 21), # rh
-             levels = range(-20, 20, length = 21), # rh
+             #levels = range(-20, 20, length = 21), # rh
+             levels = range(-14, 14, length = 21), # rh
              #colormap = :Blues_8,
              #colormap = :broc,
              #colormap = :bam,
@@ -169,7 +171,7 @@ function fig_tot_plot(inpv,d1,d2,tit)
         Colorbar(f2[1,2], bb)
     return f2
 end
-tit="dummy"
+tit="ERA5 RH Composite (%)"
 #fig2name = tag*"_rh_nino_comp_SHmn.png"
 #fig = fig_tot_plot(data_2_plot_tot[:,:,1],lon,lat,tit)
 fig = fig_anom_plot(data_2_plot_anom[:,:,1],lon,lat,tit)

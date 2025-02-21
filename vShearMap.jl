@@ -1,5 +1,18 @@
 #-----------------------------------------------------------------------------------------------
 # vShearMap.jl
+#
+# ensoFuncs.jl contains many of the functions used in this script and needs to be run before
+# this script will work.
+#
+# defined outside of this script: 
+# numfields, high, low
+#
+# the high and low arrays are created in CMIProniComposites.jl by calling the check_thresh_high
+# and check_thresh_low functions.  if the lat/lon indices defined in CMIProniComposites.jl are
+# not correct then the figures produced with this script will be wrong.   does that sound 
+# complicated enough?  
+#
+# levi                                                                            jan 2025
 #-----------------------------------------------------------------------------------------------
 using CairoMakie
 using GeoMakie
@@ -48,18 +61,18 @@ tit = "wind: "*tag
 # tropics in CESM2
 #lat1=50
 #lat2=130
+
 lat1=1
 lat2=180
 plev=2
 
-tim = 506 # time step at which data will be plotted.
-
-data_hi  = u_var[:,lat1:lat2,2,tim]
-data_low = u_var[:,lat1:lat2,1,tim]
-uSh      = data_hi - data_low
-data_hi  = v_var[:,lat1:lat2,2,tim]
-data_low = v_var[:,lat1:lat2,1,tim]
-vSh      = data_hi - data_low
+#tim = 506 # time step at which data will be plotted.
+#data_hi  = u_var[:,lat1:lat2,2,tim]
+#data_low = u_var[:,lat1:lat2,1,tim]
+##uSh      = data_hi - data_low
+#data_hi  = v_var[:,lat1:lat2,2,tim]
+#data_low = v_var[:,lat1:lat2,1,tim]
+##vSh      = data_hi - data_low
 
 # numfields is normally defined outside of this script.
 # numfields = 50
@@ -133,7 +146,7 @@ function fig_1_plot(inpv,d1,d2,tit)
         )
         bb = contourf!(ax, d1, d2, inpv, 
              #levels = range(0, 50, length = 25), # tos
-             levels = range(-20, 20, length = 20), # rh
+             levels = range(-20, 20, length = 21), # rh
              #colormap = :Blues_8,
              #colormap = :broc,
              colormap = :bam,

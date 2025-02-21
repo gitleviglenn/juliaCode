@@ -8,6 +8,9 @@
 # phase of ENSO, and then based on that timeseries, grab the appropriate times in the 
 # RH fields that correspond to either positive or negative phases of ENSO
 #
+# ensoFuncs.jl contains many of the functions used in this script and needs to be run 
+# before this script will work.  
+#
 # both SST (tos) and RH (hur) fields need to be read into script
 #
 # to do:  1.  get rid of the asinine white column at 0 degrees longitude.  
@@ -53,21 +56,26 @@ modelp="MPI-ESM1-2-LR"
 ##filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
 filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded4.nc"
 filetos  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_pm40b.nc" 
+#filetos  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc" 
+#filetos = path*"MPI-ESM1/tos_Omon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc"
 tag = "MPI"
 
 #filehur  = path*"cmip6/CNRMESM2/hur_Amon_CNRM-ESM2-1_ssp585_r1i1p1f2_gr_20150116-21001216_regrid.nc"
 #filetos  = path*"cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216_regrid2.nc" 
 #tag = "CNRMESM2"
 
-filehur  = path*"cmip6/HadGEM3/hur_Amon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridFull.nc"
-filetos  = path*"cmip6/HadGEM3/tos_Omon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridFull.nc" 
-tag = "HadGEM3"
+#filehur  = path*"cmip6/HadGEM3/hur_Amon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridFull.nc"
+#filetos  = path*"cmip6/HadGEM3/tos_Omon_HadGEM3-GC31-LL_ssp585_r1i1p1f3_gn_20150116-21001216_regridFull.nc" 
+#tag = "HadGEM3"
 
 #filehur  = path*"cmip6/ACCESS/hur_Amon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc"
 #filetos  = path*"cmip6/ACCESS/tos_Omon_ACCESS-CM2_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc" 
 #tag = "ACCESS"
 
-
+###FGOALS
+#filehur = path*"cmip6/FGOALS/hur_Amon_FGOALS-g3_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc"
+#filetos = path*"cmip6/FGOALS/tos_Omon_FGOALS-g3_ssp585_r1i1p1f1_gn_20150116-21001216_regrid.nc"
+#tag = "FGOALS"
 
 #file1b  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215.nc" 
 
@@ -96,15 +104,41 @@ lev  = data["plev"]
 #scenario timeseries
 timelen2=1032
 inpFile = filetos
-println("~~~~~~~~~~~~~~~~~~file 6b~~~~~~~~~~~~~~~~~~~~~~")
-println(inpFile)  # HadGEM3
+#println("~~~~~~~~~~~~~~~~~~file 6b~~~~~~~~~~~~~~~~~~~~~~")
+#println(inpFile)  # HadGEM3
+#println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+#lat1   = 71
+#lat2   = 110
+#lat34a = 85 
+#lat34b = 96 
+#lon34a = 10
+#lon34b = 61
 println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
-lat1   = 71
-lat2   = 110
-lat34a = 85 
-lat34b = 96 
+# MPI
+# these values work for a file that extends between +/-20 degrees
+#lat1 = 1
+#lat2 = 40
+#lon34a = 10
+#lon34b = 61
+#lat34a = 15
+#lat34b = 25
+
+# maybe also MPI?  depends on the file? 
+lat1 = 21 
+lat2 = 60
 lon34a = 10
 lon34b = 61
+lat34a = 35
+lat34b = 46
+
+## FGOALS
+#lat1 = 71 
+#lat2 = 110
+#lon34a = 10
+#lon34b = 61
+#lat34a = 85
+#lat34b = 96
+
 prepare_cmip_ts(inpFile,timelen2,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
 ba1b = ts_rmn
 
@@ -113,7 +147,8 @@ smooth_12_ts(ba1b,timelen2)
 ba1b_sm1 = ts_12_sm
 
 # HadGEM3 has an enso time series that has a strong negative trend...
-ensoDef = 1.0
+# ensoDef = 1.0; HadGEM3
+ensoDef = 1.7
 # MPI ensoDef = 1.7
 thshd = ensoDef
 
@@ -122,6 +157,7 @@ thshd = ensoDef
 # in instead of dealing with the file within check_thresh()
 check_thresh_high(inpFile, ba1b_sm1, thshd) # output is 'high'
 thshd = -ensoDef
+#thshd = -2.0 # FGOALS
 check_thresh_low(inpFile, ba1b_sm1, thshd)  # output is 'low'
 
 # read in RH file
@@ -129,14 +165,16 @@ ds = NCDataset(filehur)
 ds.attrib
 nctime = ds["time"]
 println("~~~~~~~~~Silence~~~~~~~~~~~~~~~~~~")
-println(nctime[high[1:10]])
+println(nctime[high[1:8]])
 println("~~~~~~~~~Golden~~~~~~~~~~~~~~~~~~~")
 
 #rhhigh = rh[:,:,1,high]
 
 dims      = size(rh)
 dims2     = size(sst)
-numfields = 50
+#numfields = 8 # for FGOALS this was 50...  45 seems to work well for MPIESM... 
+numfields = 40
+# thshd = 1.5 and numfields = 8 works best for FGOALS...
 rh_high  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 rh_low   = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 sst_high = Array{Union{Missing, Float64}, 3}(undef, dims2[1], dims2[2], numfields)
@@ -272,7 +310,7 @@ end
 rh_anom = rh_diff[:,:,1]
 tit1="RH anomaly, "*tag*" ssp585"
 fig1name=tag*"rh.png"
-level1 = range(-20, 20, length = 20)
+level1 = range(-20, 20, length = 21)
 fig = fig_anom_plot(rh_anom,lon,lat,tit1,level1)
 save(fig1name, fig)
 
@@ -281,6 +319,7 @@ sst_anom = sst_diff[:,:,1]
 #contourf(sst_anom[:,:,1])
 tit2="SST anomaly, "*tag*" ssp585"
 level1 = range(-5, 5, length = 50)
+#fig = fig_anom_plot(sst_anom,lon,latb,tit2,level1)
 fig = fig_anom_plot(sst_anom,lon,latb,tit2,level1)
 fig2name=tag*"sst.png"
 save(fig2name, fig)

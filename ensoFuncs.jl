@@ -1,6 +1,19 @@
 # storehouse for functions used in the analysis of data for my
 # enso and RI work.  
 
+function find_best_fit(xvals,yvals)
+# taken from julia for Data Science tutorial
+# by Dr. Huda Nassar
+  meanx = mean(xvals)
+  meany = mean(yvals)
+  stdx  = std(xvals)
+  stdy  = std(yvals)
+  r     = cor(xvals,yvals)
+  a     = r*stdy/stdx
+  b     = meany - a*meanx
+  return a,b
+end
+
 function fig_plot(inpv,xx,tit)
     #println(inpv)
     f2 = Figure(;
@@ -63,6 +76,8 @@ end
 #--------------------------------------------------------------------------------
 
 function check_thresh_high(inpFile, inpTS, thshd)
+  # returns array 'high' with indices corresponding to positive ENSO values
+  # that exceed the value of thshd
     ds = NCDataset(inpFile)
     ds.attrib
     nctime = ds["time"]
@@ -90,6 +105,8 @@ end
 #--------------------------------------------------------------------------------
 
 function check_thresh_low(inpFile, inpTS, thshd)
+  # returns array 'low' with indices corresponding to positive ENSO values
+  # that exceeds the magnitude of thshd
     ds = NCDataset(inpFile)
     ds.attrib
     nctime = ds["time"]
@@ -129,7 +146,6 @@ function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
     nctime = ds1["time"]
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     println("~~~~~ nino34 long points: ~~~~~~~~~~~~~~~~")
-    #println(nclon[10:61])
     println(nclon[ln1:ln2])
     println("~~~~~ nino34 lat points: ~~~~~~~~~~~~~~~~")
     println(nclat[lt1:lt2])
@@ -138,15 +154,11 @@ function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
     #
     nino34_full = sst1[ln1:ln2, lt1:lt2, :];
     trop_mean   = sst1[:, troplat1:troplat2, :];
-    #trop_mean   = sst1[:, :, :];
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    #println("~~~~type of nino34_full ~~~~~~~~~~~~~~~~~~~~~~~")
-    #typeof(nino34_full)
-    #size(nino34_full)
-    #println(nino34_full[:,7,10])
-    #println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
-    tlength = len
+    tlength = len # defines length of timeseries
+
+    # define arrays that are needed
     global nino34_ts = zeros(tlength)
     tropmn_ts = zeros(tlength)
 
@@ -163,7 +175,6 @@ function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
         tropmn_ts[i]=mean(filter(!isnan, skipmissing(trop_mean[:,:,i])))-tropmn_ts_mn;
     end
     # remove the seasonal cycle:
-    # note: these months are not necessarily correct.  it depends on what month the ts starts on...
     ss    = zeros(12)
     sst   = zeros(12)
     jan   = [mean([nino34_ts[i] for i in 1:12:tlength])]
@@ -191,11 +202,12 @@ function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
     dec   = [mean([nino34_ts[i] for i in 12:12:tlength])]
     decst = std(nino34_ts[i] for i in 12:12:tlength)
 
+    # these arrays contain the seasonal cycle and the stadard deviation  of each month
     ss    = [jan feb mar apr may jun jul aug sep oct nov dec]
     sst   = [janst febst marst aprst mayst junst julst augst sepst octst novst decst]
 
     # computed ts for nino 3.4 minus seasonal cycle
-    global ts_rmn_nsc = zeros(tlength)
+    global ts_rmn_nsc = zeros(tlength) # time series of nino3.4 without seasonal cycle
     for i in 1:12:tlength
       ts_rmn_nsc[i]    = nino34_ts[i]    - ss[1]
       ts_rmn_nsc[i+1]  = nino34_ts[i+1]  - ss[2]
@@ -237,6 +249,7 @@ function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
     decst_oni = std(ts_oni_cmip[i] for i in 12:12:tlength)
     st_oni    = [janst_oni febst_oni marst_oni aprst_oni mayst_oni junst_oni julst_oni augst_oni sepst_oni octst_oni novst_oni decst_oni]
 
+    # ts_oni_st is the standard deviation of ONI: sigma(oni)
     global ts_oni_st = zeros(tlength)
     for i in 1:12:tlength
       ts_oni_st[i]     = st_oni[1]
@@ -252,10 +265,7 @@ function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
       ts_oni_st[i+10]  = st_oni[11]
       ts_oni_st[i+11]  = st_oni[12]
     end
-    # ts_oni_st is the standard deviation of ONI: sigma(oni)
 #-------------------------------------------------------------------------- 
-
-
     ss1  = zeros(12)
     jan = [mean([tropmn_ts[i] for i in 1:12:tlength])]
     feb = [mean([tropmn_ts[i] for i in 2:12:tlength])]
@@ -307,12 +317,12 @@ function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
     ts_tropmn_rmn[jend]=ts_tropmn_rmn[jend-1]
 
     #--------------------------------------------------
-    # compute the unscaled RONI
+    # compute the unscaled RONI: ONI minus the tropical mean
     oniMtpm = ts_oni_cmip .- ts_tropmn_rmn
     #--------------------------------------------------
 
     #--------------------------------------------------
-    # compute the standard deviation of oni - tropmn
+    # compute the standard deviation of each month in oni - tropmn
     st_oniMtm    = zeros(12)
     janst_oniMtm = std(oniMtpm[i] for i in 1:12:tlength)
     febst_oniMtm = std(oniMtpm[i] for i in 2:12:tlength)
@@ -328,6 +338,7 @@ function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
     decst_oniMtm = std(oniMtpm[i] for i in 12:12:tlength)
     st_oniMtm    = [janst_oniMtm febst_oniMtm marst_oniMtm aprst_oniMtm mayst_oniMtm junst_oniMtm julst_oniMtm augst_oniMtm sepst_oniMtm octst_oniMtm novst_oniMtm decst_oniMtm]
 
+    # expand st_oniMtmn to be the full length of the timeseries
     global tsoniMtm_st = zeros(tlength)
     for i in 1:12:tlength
       tsoniMtm_st[i]     = st_oniMtm[1]
@@ -351,7 +362,7 @@ function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
     sig_diff  =  std(ts_nino34_rmn-ts_tropmn_rmn)
     sig_scale =  sig_oni/sig_diff
 
-    sigma     =  ts_oni_st./tsoniMtm_st
+    global sigma     =  ts_oni_st./tsoniMtm_st
 
     #print(ts_nino34_rmn)
     #println("fury and hatred")
