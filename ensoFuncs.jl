@@ -37,6 +37,65 @@ function fig_plot(inpv,xx,tit)
     #println(inpv[1:40])
 end
 
+function fig_anom_plot(inpv,d1,d2,tit,levs)
+    f2 = Figure(;
+        figure_padding=(5,5,10,10),
+        #backgroundcolor=:snow2,
+        backgroundcolor=:white,
+        size=(600,300),
+        )
+    ax = GeoAxis(f2[1,1];
+        xticks = -180:30:180,
+        #xticks = 0:30:360, 
+        yticks = -90:30:90,
+        xlabel="longitude",
+        ylabel="latitude",
+        limits=(-180,180,-40,40),
+        #limits=(lon1,lon2,lat1,lat2),
+        title=tit,
+        )
+        bb = contourf!(ax, d1, d2, inpv,
+             levels = levs,
+             #levels = range(-20, 20, length = 100),
+             #colormap = :batlow,
+             #colormap = :bam, # default for shear plot (greens and pinks)
+             colormap = :vik, # was default for redish bluish
+             #colormap = :BrBg, # better for RH  browns and greens
+             #colormap = :roma,
+             extendlow = :auto, extendhigh = :auto
+        )
+        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
+        Colorbar(f2[1,2], bb)
+    return f2
+end
+
+function fig_1_plot(inpv,d1,d2,tit,levs)
+    f2 = Figure(;
+        figure_padding=(5,5,10,10),
+        backgroundcolor=:white,
+        size=(600,300),
+        )
+    #ax = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
+    ax = GeoAxis(f2[1,1];
+        xticks = -180:30:180,
+        #xticks = 0:30:360, 
+        yticks = -90:30:90,
+        ylabel="latitude",
+        xlabel="longitude",
+        limits=(-180,180,-40,40),
+        title=tit,
+        )
+        bb = contourf!(ax, d1, d2, inpv,
+             #levels = range(-20, 20, length = 21), # rh
+             levels = levs,
+             colormap = :batlow,
+             extendlow = :auto, extendhigh = :auto
+        )
+        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
+        Colorbar(f2[1,2], bb)
+    return f2
+end
+
 #--------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------
@@ -166,6 +225,8 @@ function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
     nino34_ts_mn = mean(filter(!isnan, skipmissing(nino34_full)))
     tropmn_ts_mn = mean(filter(!isnan, skipmissing(trop_mean)))
 
+    #push!(reverse(nino34_ts),nino34_ts[1])
+
     # compute the anomalies
     # nino3.4 index --> nino34_ts
     # ONI           --> 3 month runnign mean of nino34_ts
@@ -174,6 +235,15 @@ function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
         nino34_ts[i]=mean(filter(!isnan, skipmissing(nino34_full[:,:,i])))-nino34_ts_mn;
         tropmn_ts[i]=mean(filter(!isnan, skipmissing(trop_mean[:,:,i])))-tropmn_ts_mn;
     end
+
+    # in the case of CESM2 data, I had to delete the first time step of the sst field
+    # so the effective tlength is 1031, but we need it to be 1032.  so here i replicate
+    # the first value twice.  
+    #push!(reverse(nino34_ts),nino34_ts[1])
+
+    # i think the above is not a good solution.   i probably need to use nco functions
+    # to change the first time stamp of CESM data rather than delete it.  
+
     # remove the seasonal cycle:
     ss    = zeros(12)
     sst   = zeros(12)
@@ -362,14 +432,14 @@ function prepare_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
     sig_diff  =  std(ts_nino34_rmn-ts_tropmn_rmn)
     sig_scale =  sig_oni/sig_diff
 
-    global sigma     =  ts_oni_st./tsoniMtm_st
+    global sigma     =  ts_oni_st./tsoniMtm_st   # this has a seasonal cycle, as in L'Heureux et al., 2024
 
     #print(ts_nino34_rmn)
     #println("fury and hatred")
     # compute the relative oni index (RONI):
     #ts_rmn = sig_scale.*(ts_nino34_rmn-ts_tropmn_rmn);
     ts_rmn = sigma.*oniMtpm;
-    ts_rmn2 = sig_scale.*(ts_nino34_rmn);
+    #ts_rmn2 = sig_scale.*(ts_nino34_rmn);  # this was originally used, but the scaling is not the best.
     return ts_rmn;
 end
 

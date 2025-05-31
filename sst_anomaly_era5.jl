@@ -3,6 +3,27 @@
 #
 # plot sst from era5
 #
+# Northern Hemisphere:
+# El Nino years:
+# 1991, 1994, 1997, 2002, 2004, 2009, 2015, 2023
+#
+# La Nina years: 
+# 1998, 1999, 2007, 2010, 2016, 2020, 2021, 2022
+#
+# Southern Hemisphere: 
+# El Nino years: 
+# 1992, 1993, 1995, 1998, 2003, 2010, 2016, 2019
+#
+# La Nina years: 
+# 1999, 2000, 2008, 2011, 2012, 2018, 2021, 2022
+#
+# when selecting months for the TC season, in the NH the months of interest are: June-November
+# in the SH the months of interest are: November-April 
+#
+# in the southern hemisphere, a TC season is labeled with the second year.  so for monthly 
+# data that starts in january of 1990, the 1992 season in the SH will begin with the 23rd
+# index at extend through the 28th index
+#
 # levi silvers                                                                  jan 2025
 #-----------------------------------------------------------------------------------------------
 
