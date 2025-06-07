@@ -45,11 +45,12 @@ tme = data["valid_time"]
 sst_var = data["sst"]
 
 # create indices to select nino and nina years
-#ninoyears = [18 54 90 150 174 234 306 402]
-#ninayears = [102 114 210 246 318 366 378 390]
+# NH
+ninoyears = [18 54 90 150 174 234 306 402]
+ninayears = [102 114 210 246 318 366 378 390]
 # SH
-ninoyears = [23 35 59 96 155 239 311 347]
-ninayears = [107 119 215 251 263 335 371 383]
+#ninoyears = [23 35 59 96 155 239 311 347]
+#ninayears = [107 119 215 251 263 335 371 383]
 function create_indices(years)
   ensoInd = Matrix{Int64}(undef, 8, 6)
   for i in 1:8
@@ -68,41 +69,70 @@ dims = size(sst_var)
 numfields = 48
 sst_nino          = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 sst_nina          = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
+sst_tot           = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], dims[3])
+sst_nina          = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
+sst_trm_nina      = Array{Union{Missing, Float64}, 1}(undef, numfields)
+sst_trm_nino      = Array{Union{Missing, Float64}, 1}(undef, numfields)
+sst_trm           = Array{Union{Missing, Float64}, 1}(undef, dims[3])
 
 lat1 = 50
 lat2 = 130
 
-for i in 1:48
-  sst_nino[:,lat1:lat2,i] = sst_var[:,lat1:lat2,ninoInd[i]]
-  sst_nina[:,lat1:lat2,i] = sst_var[:,lat1:lat2,ninaInd[i]]
-end
-
-
-sst_mn = mean(sst_var, dims=3)
-#sst_mn = mean.(skipmissing(sst_var, dims=3))
-
-nino_mn = mean(sst_nino, dims=3)
-nina_mn = mean(sst_nina, dims=3)
-
-sst_mn1 = mean(sst_mn, dims=1)
-sst_mn2 = mean(sst_mn1, dims=2)
-
-# according to AI, the mean tropical sst is 20C
-sst_ai = 293.
+latN = 120
+latS = 60
 
 # calculate mean between +/-20 degrees: 
-sst_tr_mn = mean(skipmissing(sst_var[:,70:110,:]))
-nino_composite = nino_mn - nina_mn
-nino_anom      = nino_mn[:,:].-sst_mn[:,:,1]
-data_2_plot=nina_mn[:,:].-sst_tr_mn
-data_3_plot=nino_composite
-data_2_plot_tot=sst_mn[:,:,1].-sst_tr_mn
+for i in 1:48
+  sst_trm_nina[i] = mean(skipmissing(sst_var[:,latS:latN,ninaInd[i]]))
+  sst_trm_nino[i] = mean(skipmissing(sst_var[:,latS:latN,ninoInd[i]]))
+end 
 
-function fig_anom_plot(inpv,d1,d2,tit)
+for i in 1:48
+  sst_nino[:,lat1:lat2,i] = sst_var[:,lat1:lat2,ninoInd[i]] .- sst_trm_nino[i]
+  sst_nina[:,lat1:lat2,i] = sst_var[:,lat1:lat2,ninaInd[i]] .- sst_trm_nina[i]
+end
+
+for i in 1:dims[3]
+  sst_trm[i] = mean(skipmissing(sst_var[:,latS:latN,i]))
+end 
+
+for i in 1:dims[3]
+  sst_tot[:,:,i] = sst_var[:,:,i] .- sst_trm[i]
+end
+
+#sst_mn = mean(sst_var, dims=3)
+##sst_mn = mean.(skipmissing(sst_var, dims=3))
+#
+#nino_mn = mean(sst_nino, dims=3)
+#nina_mn = mean(sst_nina, dims=3)
+#
+#sst_mn1 = mean(sst_mn, dims=1)
+#sst_mn2 = mean(sst_mn1, dims=2)
+#
+## according to AI, the mean tropical sst is 20C
+#sst_ai = 293.
+#
+### calculate mean between +/-20 degrees: 
+#sst_tr_mn = mean(skipmissing(sst_var[:,70:110,:]))
+#
+#nino_composite = nino_mn - nina_mn
+nino_composite = sst_nino - sst_nina
+##nino_anom      = nino_mn[:,:].-sst_mn[:,:,1]
+#data_2_plot=nina_mn[:,:].-sst_tr_mn
+#data_3_plot=nino_composite
+#data_2_plot_tot=sst_mn[:,:,1].-sst_tr_mn
+
+# compute the time mean fields
+rel_sst_mn      = mean(sst_tot, dims=3)
+rel_sst_nino_mn = mean(nino_composite, dims=3)
+
+function fig_anom_plot(inpv,d1,d2,tit,levs)
     f2 = Figure(;
-        figure_padding=(5,5,10,10),
+        #figure_padding=(5,5,10,10),
+        figure_padding=(10,15,10,10),
         backgroundcolor=:white,
-        size=(600,300),
+        #size=(600,300),
+        size=(900,400),
         )
     #ax = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
     ax = GeoAxis(f2[1,1];
@@ -115,8 +145,8 @@ function fig_anom_plot(inpv,d1,d2,tit)
         title=tit,
         )
         bb = contourf!(ax, d1, d2, inpv, 
-             #levels = range(0, 50, length = 25), # tos
-             levels = range(-2, 2, length = 21), # rh
+             #levels = range(-2, 2, length = 21), # rh
+             levels = levs, 
              #colormap = :Blues_8,
              #colormap = :broc,
              #colormap = :bam,
@@ -195,18 +225,26 @@ function fig_tot_plot(inpv,inpv2,inpv3,d1,d2,tit)
              colormap = :vik,
              extendlow = :auto, extendhigh = :auto
         )
-        lines!(ax2, GeoMakie.coastlines(), color = :black, linewidth=0.75)
+        lines!(ax3, GeoMakie.coastlines(), color = :black, linewidth=0.75)
         Colorbar(f2[3,2], bb3)
     return f2
 end
-tit="ERA5 SST"
-fig = fig_anom_plot(nino_composite[:,:,1],lon,lat,tit)
-fig1name=tag*"_sst_nino_comp_SH.png"
+levs = range(-10, 10, length = 21) 
+tit="ERA5 Relative SST"
+#fig = fig_anom_plot(sst_tot[:,:,10],lon,lat,tit)
+fig = fig_anom_plot(rel_sst_mn[:,:,1],lon,lat,tit,levs)
+fig1name=tag*"_RelSST_total.png"
+save(fig1name, fig)
+#
+levs = range(-2, 2, length = 21) 
+tit="ERA5 Relative ENSO composite SST"
+fig = fig_anom_plot(rel_sst_nino_mn[:,:,1],lon,lat,tit,levs)
+fig1name=tag*"_RelSST_enso_comp_NH.png"
 save(fig1name, fig)
 ##inpAnom = data_2_plot_tot - data_2_plot
-##fig = fig_tot_plot(data_2_plot_tot,data_2_plot,data_3_plot,lon,lat,tit)
-fig = fig_tot_plot(data_2_plot_tot,data_2_plot,data_3_plot[:,:,1],lon,lat,tit)
-#
-#fig = fig_tot_plot(data_2_plot_tot,lon,lat,tit)
-fig2name=tag*"_sst_anom_SH.png"
-save(fig2name, fig)
+###fig = fig_tot_plot(data_2_plot_tot,data_2_plot,data_3_plot,lon,lat,tit)
+#fig = fig_tot_plot(data_2_plot_tot,data_2_plot,data_3_plot[:,:,1],lon,lat,tit)
+##
+##fig = fig_tot_plot(data_2_plot_tot,lon,lat,tit)
+#fig2name=tag*"_sst_anom_NH.png"
+#save(fig2name, fig)

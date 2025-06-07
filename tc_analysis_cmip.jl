@@ -43,7 +43,7 @@ file2   = lpath*"MRI-ESM2-0/MPI_MRI-ESM2_full_output.nc"
 #tag = "MPI_ESM"
 #tag = "ACCESS_CM2"
 #tag = "MIROC6"
-tag = "MRI_ESM2"
+tag = "MRI_ESM2_pylis"
 
 inpFile = file1 
 
@@ -248,6 +248,29 @@ figname=tag*"_mpi.png"
 save(figname, fig)
 
 
+#----------------------------------------------------------------------------
+## save output to a netcdf file
+ds = NCDataset("test.nc","c")
 
+defDim(ds,"lon",144)
+defDim(ds,"lat",73)
+defDim(ds,"time",1)
 
+ds.attrib["title"] = "this is a test file"
 
+#v1 = defVar(ds,"MPI",Float32,("lon","lat","time"))
+v2 = defVar(ds,"lat1",Float32,("lat"))
+#v3 = defVar(ds,"lon",Float32,("lon"))
+
+PI_comp_mn_nan = nomissing(PI_comp_mn,NaN)
+
+#v1[:,:,:] = PI_comp_mn_nan
+
+v2[:]     = lat
+#v3[:]     = lon
+
+v1.attrib["units"] = "meters per second"
+v1.attrib["commments"] = "this is the time avegage maximum potential intensity for TCs"
+#v1.attrib["_FillValue"] = "Missing"
+
+close(ds)
