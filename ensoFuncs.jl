@@ -14,6 +14,25 @@ function find_best_fit(xvals,yvals)
   return a,b
 end
 
+function padding(data)
+# this fucntion creates an array that includes 6 times more
+# indices than the input array 'data'.   the original purpose
+# is to input an array of indices, then surround those indices
+# with several additional indices so that for each 'event' in 
+# the data array, there will be additional indices surrounding
+# that array.
+    pad_array = []
+    for i in 1:length(data)
+        push!(pad_array,data[i]-3)
+        push!(pad_array,data[i]-2)
+        push!(pad_array,data[i]-1)
+        push!(pad_array,data[i])
+        push!(pad_array,data[i]+1)
+        push!(pad_array,data[i]+2)
+    end 
+    return pad_array
+end
+
 function fig_plot(inpv,xx,tit)
     #println(inpv)
     f2 = Figure(;
