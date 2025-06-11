@@ -216,36 +216,6 @@ data_2_plot_anom = VWS_high_tmn - VWS_low_tmn
 data_2_plot_tot = VWS_tot_tm
 
 ##
-#function fig_anom_plot(inpv,d1,d2,tit)
-#    f2 = Figure(;
-#        figure_padding=(5,5,10,10),
-#        backgroundcolor=:white,
-#        size=(600,300),
-#        )
-#    #ax = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
-#    ax = GeoAxis(f2[1,1];
-#        xticks = -180:30:180, 
-#        #xticks = 0:30:360, 
-#        yticks = -90:30:90,
-#        ylabel="latitude",
-#        xlabel="longitude",
-#        limits=(-180,180,-40,40),
-#        title=tit,
-#        )
-#        bb = contourf!(ax, d1, d2, inpv, 
-#             #levels = range(0, 50, length = 25), # tos
-#             levels = range(-20, 20, length = 21), # rh
-#             #colormap = :Blues_8,
-#             #colormap = :broc,
-#             colormap = :bam,
-#             #colormap = :batlow,
-#             #colormap = :vik,
-#             extendlow = :auto, extendhigh = :auto
-#        )
-#        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
-#        Colorbar(f2[1,2], bb)
-#    return f2
-#end
 function fig_tot_plot(inpv,d1,d2,tit)
     f2 = Figure(;
         figure_padding=(5,5,10,10),
