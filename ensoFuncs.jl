@@ -58,10 +58,11 @@ end
 
 function fig_anom_plot(inpv,d1,d2,tit,levs)
     f2 = Figure(;
-        figure_padding=(5,5,10,10),
-        #backgroundcolor=:snow2,
+        #figure_padding=(5,5,10,10),
+        figure_padding=(10,15,10,10),
         backgroundcolor=:white,
-        size=(600,300),
+        size=(900,400),
+        #size=(600,300),
         )
     ax = GeoAxis(f2[1,1];
         xticks = -180:30:180,
@@ -70,12 +71,10 @@ function fig_anom_plot(inpv,d1,d2,tit,levs)
         xlabel="longitude",
         ylabel="latitude",
         limits=(-180,180,-40,40),
-        #limits=(lon1,lon2,lat1,lat2),
         title=tit,
         )
         bb = contourf!(ax, d1, d2, inpv,
              levels = levs,
-             #levels = range(-20, 20, length = 100),
              #colormap = :batlow,
              #colormap = :bam, # default for shear plot (greens and pinks)
              colormap = :vik, # was default for redish bluish
