@@ -53,11 +53,13 @@ lpath="/Users/C823281551/data/cmip6/potInt/"
 #file1b  = lpath*"MPIESM/potInt/tos_Omon_MPI-ESM1-2-LR_ssp585_r10i1p1f1_gn_201501-210012_summer.73x144.nc"
 #file2   = lpath*"MPIESM/potInt/MPI_ESM1_full_output.nc"
 
+# Access-CM2
 ##file1   = lpath*"ACCESS-CM2/tos_73x144_pp.nc"
 ##file1b  = lpath*"ACCESS-CM2/tos_73x144_pp_summer.nc"
 #file1   = lpath*"ACCESS_CM2_full_output_summer.nc"
 #file2   = lpath*"ACCESS_CM2_full_output_record.nc"
 
+# MIROC6
 ##file1   = lpath*"MIROC6/tos_73x144_pp.nc"
 ##file1b  = lpath*"MIROC6/tos_73x144_pp_summer.nc"
 #file1   = lpath*"MIROC6_full_output_summer.nc"
@@ -162,35 +164,6 @@ enso_low    = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfiel
 #rel_nina  = Array{Union{Missing, Float64}, 2}(undef, dims[1], 61)
 #rel_nino  = Array{Union{Missing, Float64}, 2}(undef, dims[1], 61)
 
-##-------------------------------------------------------------------------------
-## work on the ralative change of SST using linear regression
-#for i in 1:dims2[3]
-#    sst_tr_mean[i] = mean(skipmissing(sst_summer[:,tropS:tropN,i]))
-#end
-#
-## loop over longitude and latitude:
-## find the linear best fit regression at every grid-point
-#for i in 1:dims[1]
-#    for j in 1:dims[2]
-#    #for j in 60:120
-#        #agrid[i,j],bgrid[i,j] = find_best_fit(sst_tr_mean[:],sst_summer[i,j,:])
-#        agrid[i,j],bgrid[i,j]   = find_best_fit(timeAxis[:],sst_summer[i,j,:])
-#        a_full[i,j],b_full[i,j] = find_best_fit(timeAxisFull[:],sst_var[i,j,:])
-#    end
-#end
-#
-## timeAxis should be a monthly time series, but with only 6 months per year.
-## find slope of tropical mean sst, in celcius per year
-#a,b = find_best_fit(timeAxis,sst_tr_mean)
-#slopePerCentury = a*6*100
-#relSST = agrid*6*100 .- slopePerCentury   
-#
-#println("**************************************")
-#print("max value is: ",maximum(skipmissing(relSST)))
-#print("min value is: ",minimum(skipmissing(relSST)))
-#println("**************************************")
-#print("slope Per Century is: ",slopePerCentury)
-#println("**************************************")
 
 #-------------------------------------------------------------------------------
 # work on the MPI calculation
@@ -218,6 +191,10 @@ ensoPlotn = zeros(1032) .- ensoDef
 forest = find_best_fit(bb,ts_roni_sm)
 forNew = collect(bb).*forest[1] .+ forest[2]; # this is the slops that we want 
 # to save for each model
+
+println("**************************************")
+println("slope of time series is: ",forest[1])
+println("**************************************")
 
 # check thresholds for ENSO phases: 
 ## This method grabs a given number of point that are above the threshold
@@ -280,13 +257,7 @@ a,b = find_best_fit(timeAxis,sst_tr_mean)
 slopePerCentury = a*6*100
 relSST = agrid*6*100 .- slopePerCentury   
 
-# computing a 'relative' enso sst probably doesn't make sense.   what should the 
-# independent variable be?
-#relNinoSST = a_nino*600 .- slopePerCentury
-#relNinaSST = a_nina*600 .- slopePerCentury
-
 # compute the composite ENSO SST field:
-#rel_ENSO_comp = relNinoSST .- relNinaSST
 enso_high_mn  = mean(enso_high, dims=3);
 enso_low_mn   = mean(enso_low, dims=3);
 sst_ENSO_comp = enso_high_mn .- enso_low_mn
@@ -298,20 +269,6 @@ println("**************************************")
 print("slope Per Century is: ",slopePerCentury)
 println("**************************************")
 
-#--------------------------------------------
-
-## create arrays for the composites of the PI
-#dims3     = size(vmax)
-#pi_high  = Array{Union{Missing, Float64}, 3}(undef, dims3[1], dims3[2], numfields)
-#pi_low   = Array{Union{Missing, Float64}, 3}(undef, dims3[1], dims3[2], numfields)
-#
-#for i in 1:numfields
-#  pi_low[:,:,i]  = vmax[:,:,low[i]]    # La Nina months
-#  pi_high[:,:,i] = vmax[:,:,high[i]]   # El Nino months
-#end
-#
-#blackbird = pi_high .- pi_low;
-#PI_comp_mn = mean(blackbird, dims=3)
 
 #----------------------------------------------------------------------------------
 ## work on plots
@@ -321,7 +278,8 @@ titsuf = "Nino - Nina"
 #tit = tag * titsuf
 tit = "MPI: " * titsuf
 fig = Figure(;
-    size = (800,900),
+    size = (900,1100), # width by height
+    #size = (800,900),
     )
     ax = GeoAxis(fig[2,1];
       xticks = -180:30:180,

@@ -81,12 +81,13 @@ lat2 = 130
 latN = 120
 latS = 60
 
-# calculate mean between +/-20 degrees: 
+# calculate mean between +/-30 degrees: 
 for i in 1:48
   sst_trm_nina[i] = mean(skipmissing(sst_var[:,latS:latN,ninaInd[i]]))
   sst_trm_nino[i] = mean(skipmissing(sst_var[:,latS:latN,ninoInd[i]]))
 end 
 
+# compute relative SST between +/-40 degrees: 
 for i in 1:48
   sst_nino[:,lat1:lat2,i] = sst_var[:,lat1:lat2,ninoInd[i]] .- sst_trm_nino[i]
   sst_nina[:,lat1:lat2,i] = sst_var[:,lat1:lat2,ninaInd[i]] .- sst_trm_nina[i]
