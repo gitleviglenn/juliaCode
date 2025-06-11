@@ -87,8 +87,12 @@
 #-----------------------------------------------------------------------------------------------
 
 using CairoMakie
+#using Plotly
 using GeoMakie
 using NCDatasets
+using Statistics
+
+include("ensoFuncs.jl")
 
 #
 # create the indices that correspond to Nino and Nina years/months
@@ -96,9 +100,9 @@ using NCDatasets
 #ninoyears = [18 54 90 150 174 234 306 402]
 #ninayears = [102 114 210 246 318 366 378 390]
 # SH
-#ninoyears = [30 42 66 102 162 246 318 354]
+####ninoyears = [30 42 66 102 162 246 318 354]
 ninoyears = [23 35 59 96 155 239 311 347]
-#ninayears = [114 126 222 258 270 342 378 390]
+####ninayears = [114 126 222 258 270 342 378 390]
 ninayears = [107 119 215 251 263 335 371 383]
 function create_indices(years)
   ensoInd = Matrix{Int64}(undef, 8, 6)
@@ -211,37 +215,37 @@ VWS_tot_tm = mean(VWS_tot, dims = 3)
 data_2_plot_anom = VWS_high_tmn - VWS_low_tmn
 data_2_plot_tot = VWS_tot_tm
 
-#
-function fig_anom_plot(inpv,d1,d2,tit)
-    f2 = Figure(;
-        figure_padding=(5,5,10,10),
-        backgroundcolor=:white,
-        size=(600,300),
-        )
-    #ax = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
-    ax = GeoAxis(f2[1,1];
-        xticks = -180:30:180, 
-        #xticks = 0:30:360, 
-        yticks = -90:30:90,
-        ylabel="latitude",
-        xlabel="longitude",
-        limits=(-180,180,-40,40),
-        title=tit,
-        )
-        bb = contourf!(ax, d1, d2, inpv, 
-             #levels = range(0, 50, length = 25), # tos
-             levels = range(-20, 20, length = 21), # rh
-             #colormap = :Blues_8,
-             #colormap = :broc,
-             colormap = :bam,
-             #colormap = :batlow,
-             #colormap = :vik,
-             extendlow = :auto, extendhigh = :auto
-        )
-        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
-        Colorbar(f2[1,2], bb)
-    return f2
-end
+##
+#function fig_anom_plot(inpv,d1,d2,tit)
+#    f2 = Figure(;
+#        figure_padding=(5,5,10,10),
+#        backgroundcolor=:white,
+#        size=(600,300),
+#        )
+#    #ax = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
+#    ax = GeoAxis(f2[1,1];
+#        xticks = -180:30:180, 
+#        #xticks = 0:30:360, 
+#        yticks = -90:30:90,
+#        ylabel="latitude",
+#        xlabel="longitude",
+#        limits=(-180,180,-40,40),
+#        title=tit,
+#        )
+#        bb = contourf!(ax, d1, d2, inpv, 
+#             #levels = range(0, 50, length = 25), # tos
+#             levels = range(-20, 20, length = 21), # rh
+#             #colormap = :Blues_8,
+#             #colormap = :broc,
+#             colormap = :bam,
+#             #colormap = :batlow,
+#             #colormap = :vik,
+#             extendlow = :auto, extendhigh = :auto
+#        )
+#        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
+#        Colorbar(f2[1,2], bb)
+#    return f2
+#end
 function fig_tot_plot(inpv,d1,d2,tit)
     f2 = Figure(;
         figure_padding=(5,5,10,10),
@@ -273,8 +277,10 @@ function fig_tot_plot(inpv,d1,d2,tit)
     return f2
 end
 tit="dummy"
+levs = range(-20., 20, length = 21)
 fig2name = tag*"_vShear_nino_comp_SH.png"
 #fig = fig_tot_plot(data_2_plot_tot[:,:,1],lon,lat,tit)
 #fig = fig_anom_plot(data_2_plot_anom[:,:,1],lon,lat,tit)
-fig = fig_anom_plot(data_2_plot_anom[:,:],lon,lat,tit)
+fig = fig_anom_plot(data_2_plot_anom[:,:],lon,lat,tit,levs)
+#fig = fig_anom_plot(data_2_plot_anom[:,:],lon,lat,tit)
 save(fig2name, fig)

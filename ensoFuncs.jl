@@ -58,11 +58,11 @@ end
 
 function fig_anom_plot(inpv,d1,d2,tit,levs)
     f2 = Figure(;
-        #figure_padding=(5,5,10,10),
-        figure_padding=(10,15,10,10),
+        figure_padding=(5,5,10,10),
+        #figure_padding=(10,15,10,10),
         backgroundcolor=:white,
         size=(900,400),
-        #size=(600,300),
+        #size=(600,300), # this increases tickfont size, but doesn't print -30S!!#$%
         )
     ax = GeoAxis(f2[1,1];
         xticks = -180:30:180,
@@ -72,13 +72,16 @@ function fig_anom_plot(inpv,d1,d2,tit,levs)
         ylabel="latitude",
         limits=(-180,180,-40,40),
         title=tit,
+        xticklabelsize = 22, # 14,16 are pretty reasonable sizes
+        yticklabelsize = 22, # 22 used for 8 panel figure that needs larger font
         )
         bb = contourf!(ax, d1, d2, inpv,
              levels = levs,
              #colormap = :batlow,
              #colormap = :bam, # default for shear plot (greens and pinks)
-             colormap = :vik, # was default for redish bluish
-             #colormap = :BrBg, # better for RH  browns and greens
+             #colormap = :seismic, # colors are a bit harsh
+             #colormap = :vik, # was default for redish bluish
+             colormap = :BrBg, # better for RH  browns and greens
              #colormap = :roma,
              extendlow = :auto, extendhigh = :auto
         )
