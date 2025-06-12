@@ -33,6 +33,8 @@ using GeoMakie
 using Statistics 
 using NCDatasets
 
+include("ensoFuncs.jl")
+
 # calculate RONI
 # based on a threshold of RONI determine ENSO events
 # grab RH fields when ENSO events are occuring
@@ -47,18 +49,18 @@ path="/Users/C823281551/data/"
 # simply changing the model name will not be good enough
 
 
-#modelp="CESM2"
-#filehur  = path*"cmip6/CESM2/hur_Amon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_regrid.nc"
-#filetos  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_regrid2.nc" 
-#tag = "CESM2"
+modelp="CESM2"
+filehur  = path*"cmip6/CESM2/hur_Amon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_regrid.nc"
+filetos  = path*"cmip6/CESM2/tos_Omon_CESM2_ssp585_r4i1p1f1_gn_20150115-21001215_regrid2.nc" 
+tag = "CESM2"
 
-modelp="MPI-ESM1-2-LR"
-##filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
-filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded4.nc"
-filetos  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_pm40b.nc" 
-#filetos  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc" 
-#filetos = path*"MPI-ESM1/tos_Omon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc"
-tag = "MPI"
+#modelp="MPI-ESM1-2-LR"
+###filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded.nc"
+#filehur  = path*"cmip6/MPIESM/hur_Amon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_regridded4.nc"
+#filetos  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_pm40b.nc" 
+##filetos  = path*"cmip6/MPIESM/tos_Omon_"*modelp*"_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc" 
+##filetos = path*"MPI-ESM1/tos_Omon_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_20150116-21001216_latlon.nc"
+#tag = "MPI"
 
 #filehur  = path*"cmip6/CNRMESM2/hur_Amon_CNRM-ESM2-1_ssp585_r1i1p1f2_gr_20150116-21001216_regrid.nc"
 #filetos  = path*"cmip6/CNRMESM2/tos_Omon_CNRM-ESM2-1_ssp585_r1i1p1f2_gn_20150116-21001216_regrid2.nc" 
@@ -107,12 +109,12 @@ inpFile = filetos
 #println("~~~~~~~~~~~~~~~~~~file 6b~~~~~~~~~~~~~~~~~~~~~~")
 #println(inpFile)  # HadGEM3
 #println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
-#lat1   = 71
-#lat2   = 110
-#lat34a = 85 
-#lat34b = 96 
-#lon34a = 10
-#lon34b = 61
+lat1   = 71
+lat2   = 110
+lat34a = 85 
+lat34b = 96 
+lon34a = 10
+lon34b = 61
 println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
 # MPI
 # these values work for a file that extends between +/-20 degrees
@@ -123,13 +125,13 @@ println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
 #lat34a = 15
 #lat34b = 25
 
-# maybe also MPI?  depends on the file? 
-lat1 = 21 
-lat2 = 60
-lon34a = 10
-lon34b = 61
-lat34a = 35
-lat34b = 46
+## works for MPI for +/-40 degrees 
+#lat1 = 21 
+#lat2 = 60
+#lon34a = 10
+#lon34b = 61
+#lat34a = 35
+#lat34b = 46
 
 ## FGOALS
 #lat1 = 71 

@@ -140,7 +140,7 @@ lon1d = data1["lon"]
 # these values only work on a 144x73 grid
 tropS = 21
 tropN = 53
-
+/Users/C823281551/code/juliaCode/GFDL_ESM4_testplot_slope.png 
 println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1")
 println(lat1d[tropS:tropN])
 println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1")
