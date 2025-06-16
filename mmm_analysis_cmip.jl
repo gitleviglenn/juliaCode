@@ -125,16 +125,16 @@ lpath="/Users/C823281551/data/cmip6/potInt/"
 # CESM2-WACCM      Eleventh Model
 #file2    = lpath*"MPI_CESM2-WACCM_full_output.nc"
 
-# CESM2-FV2
+# CESM2-FV2        Twelfth Model
 #file2   = lpath*""
 
-# EC-Earth3
+# EC-Earth3        Thirteenth Model
 #file2   = lpath*"ECEarth3_full_output.nc"
 
-# Access-ESMl-5
+# Access-ESMl-5    Fourteenth Model
 #file2   = lpath*"ACCESS_ESM15_full_output.nc"
 
-# UKESM1-0-LL
+# UKESM1-0-LL      Fifteenth Model
 #file2   = lpath*"MPI_UKESM1-0-LL_full_output.nc"
 
 # NorESM2-LM --> still need to run analysis on casper
@@ -232,7 +232,7 @@ forest = find_best_fit(bb,ts_roni_sm)
 forNew = collect(bb).*forest[1] .+ forest[2]; # this is the slope that we want 
 # to save for each model
 
-RoniSlope1 = forNew
+#RoniSlope1 = forNew
 
 println("**************************************")
 println("slope of time series is: ",forest[1])
@@ -289,7 +289,7 @@ end
 nino_composite  = sst_nino .- sst_nina
 RelSST_comp_mn = mean(nino_composite, dims=3)
 
-RelSST_comp_mn1 = RelSST_comp_mn
+#RelSST_comp_mn1 = RelSST_comp_mn
 
 ## I think that I need to compute the relative sst change for Nino and Nina 
 ## separately, then subtract the slopePerCentury, and then take the difference
@@ -390,7 +390,6 @@ rh_comp = rhH .- rhL
 # these magnitudes don't make sense to me at all...
 RelRH_comp_mn = 1000000 .* mean(rh_comp, dims=4)
 
-RelRH_comp_mn1 = RelRH_comp_mn
 ## test against values from Huang for saturation pressure for 
 ## temperatures below freezing: 
 #tempTa = [-100, -80, -60, -40, -20, 0]
@@ -417,6 +416,13 @@ fig = fig_anom_plot(PI_comp_mn[:,:,1],lon,lat,tit,levs)
 figname=tag*"_MPI.png"
 save(figname, fig)
 
+#forNew = collect(bb).*forest[1] .+ forest[2]; # this is the slope that we want 
+# to save for each model
+
+Slope1     = forest[1]
+RoniSlope1 = forNew
+RelSST_comp_mn1 = RelSST_comp_mn
+RelRH_comp_mn1 = RelRH_comp_mn
 PI_comp_mn_1 = PI_comp_mn
 
 #println("relative humidity is: ",RelRH_comp_mn[:,10,1])
@@ -507,6 +513,7 @@ forest = find_best_fit(bb,ts_roni_sm)
 forNew = collect(bb).*forest[1] .+ forest[2]; # this is the slope that we want 
 # to save for each model
 
+Slope2     = forest[1]
 RoniSlope2 = forNew
 
 println("**************************************")
@@ -615,6 +622,7 @@ forest = find_best_fit(bb,ts_roni_sm)
 forNew = collect(bb).*forest[1] .+ forest[2]; # this is the slope that we want 
 # to save for each model
 
+Slope3     = forest[1]
 RoniSlope3 = forNew
 
 println("**************************************")
@@ -785,6 +793,7 @@ forest = find_best_fit(bb,ts_roni_sm)
 forNew = collect(bb).*forest[1] .+ forest[2]; # this is the slope that we want 
 # to save for each model
 
+Slope4     = forest[1]
 RoniSlope4 = forNew
 
 println("**************************************")
@@ -1036,6 +1045,7 @@ rh_comp = rhH .- rhL
 RelRH_comp_mn = 1000000 .* mean(rh_comp, dims=4)
 
 # save fields from this model:
+Slope5     = forest[1]
 RoniSlope5     = forNew
 PI_comp_mn5    = PI_comp_mn
 RelRH_comp_mn5 = RelRH_comp_mn
@@ -1198,6 +1208,7 @@ rh_comp = rhH .- rhL
 RelRH_comp_mn = 1000000 .* mean(rh_comp, dims=4)
 
 # save fields from this model:
+Slope6     = forest[1]
 RoniSlope6     = forNew
 PI_comp_mn6    = PI_comp_mn
 RelRH_comp_mn6 = RelRH_comp_mn
@@ -1364,6 +1375,7 @@ rh_comp = rhH .- rhL
 RelRH_comp_mn = 1000000 .* mean(rh_comp, dims=4)
 
 # save fields from this model:
+Slope7         = forest[1]
 RoniSlope7     = forNew
 PI_comp_mn7    = PI_comp_mn
 RelRH_comp_mn7 = RelRH_comp_mn
@@ -1539,6 +1551,7 @@ rh_comp = rhH .- rhL
 RelRH_comp_mn = 1000000 .* mean(rh_comp, dims=4)
 
 # save fields from this model:
+Slope8         = forest[1]
 roni_ts8       = ts_roni_sm
 RoniSlope8     = forNew
 PI_comp_mn8    = PI_comp_mn
@@ -1697,6 +1710,7 @@ rh_comp = rhH .- rhL
 RelRH_comp_mn = 1000000 .* mean(rh_comp, dims=4)
 
 # save fields from this model:
+Slope9         = forest[1]
 roni_ts9       = ts_roni_sm
 RoniSlope9     = forNew
 PI_comp_mn9    = PI_comp_mn
@@ -1856,6 +1870,7 @@ rh_comp = rhH .- rhL
 RelRH_comp_mn = 1000000 .* mean(rh_comp, dims=4)
 
 # save fields from this model:
+Slope10         = forest[1]
 roni_ts10       = ts_roni_sm
 RoniSlope10     = forNew
 PI_comp_mn10    = PI_comp_mn
@@ -2012,6 +2027,7 @@ rh_comp = rhH .- rhL
 RelRH_comp_mn = 1000000 .* mean(rh_comp, dims=4)
 
 # save fields from this model:
+Slope11         = forest[1]
 roni_ts11       = ts_roni_sm
 RoniSlope11     = forNew
 PI_comp_mn11    = PI_comp_mn
@@ -2026,7 +2042,428 @@ save(figname, fig)
 println("Done with the Eleventh model: ",tag)
 println("**************************************")
 
+#------------------------------#
+# Twelfth MODEL
+#------------------------------#
+
+# CESM2-FV2
+tag = "CESM2-FV2"  #    Twelfth Model
+file2    = lpath*"MPI_CESM2-FV2_full_output.nc"
+
+# load the data
+data2 = NCDataset(file2)
+vmax  = data2["vmax"]
+shum  = data2["q"] # specific humidity (144, 73, 19, 1032) (kg/kg)
+temp  = data2["t"] # air temperature (K)
+lat   = data2["lat"]
+lon   = data2["lon"]
+lev   = data2["plev"]
+
+sst_var     = data2["sst"]
+dims        = size(sst_var)
+
+#sst_tr_mean = Array{Union{Missing, Float64}, 1}(undef, dims2[3])
+agrid       = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+bgrid       = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+a_full      = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+b_full      = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+pi_high     = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+pi_low      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+enso_high   = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+enso_low    = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+
+#-------------------------------------------------------------------------------
+# RONI:
+inpFile = file2 
+println("~~~~~~~~~~~~~~~~~~file 2b~~~~~~~~~~~~~~~~~~~~~~")
+println(" working on MPI calculation")
+println(inpFile)
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+
+# call function to process cmip data and compute RONI:
+calc_roni_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
+#prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
+ts_roni = ts_rmn
+
+# choose to use, or not, a running mean filter to smooth the timeseries.
+#smooth_12_ts(ts_roni,timelen)
+#ts_roni_sm = ts_12_sm
+ts_roni_sm = ts_roni
+
+# calculate the best fit line
+bb = collect(0:1031);
+ensoPlotp = zeros(1032) .+ ensoDef
+ensoPlotn = zeros(1032) .- ensoDef
+forest = find_best_fit(bb,ts_roni_sm)
+forNew = collect(bb).*forest[1] .+ forest[2]; # this is the slope that we want 
+# to save for each model
+
+println("**************************************")
+println("slope of time series is: ",forest[1])
+println("**************************************")
+
+## This method identifies a number of ENSO events and then the function 
+## padding selects 6 indices for each event.  
+local_max_indices = find_local_maxima(ts_roni_sm,ensoDef,numOfevents)
+local_min_indices = find_local_minima(ts_roni_sm,-ensoDef,numOfevents)
+
+pad_ind_nino = padding(local_max_indices)
+pad_ind_nina = padding(local_min_indices)
+println("pad_indices_Nina: ",pad_ind_nina[:])
+
+for i in 1:numfields
+  pi_low[:,:,i]  = vmax[:,:,pad_ind_nina[i]]    # La Nina months
+  pi_high[:,:,i] = vmax[:,:,pad_ind_nino[i]]   # El Nino months
+end   
+
+# compute the composite MPI field: 
+pi_high_mn = mean(pi_high, dims=3);
+pi_low_mn  = mean(pi_low, dims=3);
+PI_comp_mn = pi_high_mn .- pi_low_mn;
+
+#------------------------------------------------------------------------------------
+# relative humidity
+println(" working on relative humidity calculation")
+include("spec2relHumidity.jl") # output is relHcomp
+spec2relComp(lpath,file2,pad_ind_nino,pad_ind_nina)
+RelRH_comp_mn = relHcomp
+
+#------------------------------------------------------------------------------------
+# save fields from this model:
+Slope12         = forest[1]
+roni_ts12       = ts_roni_sm
+RoniSlope12     = forNew
+PI_comp_mn12    = PI_comp_mn
+RelRH_comp_mn12 = RelRH_comp_mn
+
+println("Done with the Twelfth model: ",tag)
+println("**************************************")
+
+#------------------------------#
+# Thirteenth MODEL
+#------------------------------#
+
+tag = "EC-Earth3"  #    Thirteenth Model
+file2   = lpath*"ECEarth3_full_output.nc"
+
+# load the data
+data2 = NCDataset(file2)
+vmax  = data2["vmax"]
+shum  = data2["q"] # specific humidity (144, 73, 19, 1032) (kg/kg)
+temp  = data2["t"] # air temperature (K)
+lat   = data2["lat"]
+lon   = data2["lon"]
+lev   = data2["plev"]
+
+sst_var     = data2["sst"]
+dims        = size(sst_var)
+
+#sst_tr_mean = Array{Union{Missing, Float64}, 1}(undef, dims2[3])
+agrid       = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+bgrid       = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+a_full      = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+b_full      = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+pi_high     = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+pi_low      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+enso_high   = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+enso_low    = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+
+#-------------------------------------------------------------------------------
+# RONI:
+inpFile = file2 
+println("~~~~~~~~~~~~~~~~~~file 2b~~~~~~~~~~~~~~~~~~~~~~")
+println(" working on MPI calculation")
+println(inpFile)
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+
+# call function to process cmip data and compute RONI:
+calc_roni_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
+#prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
+ts_roni = ts_rmn
+
+# choose to use, or not, a running mean filter to smooth the timeseries.
+#smooth_12_ts(ts_roni,timelen)
+#ts_roni_sm = ts_12_sm
+ts_roni_sm = ts_roni
+
+# calculate the best fit line
+bb = collect(0:1031);
+ensoPlotp = zeros(1032) .+ ensoDef
+ensoPlotn = zeros(1032) .- ensoDef
+forest = find_best_fit(bb,ts_roni_sm)
+forNew = collect(bb).*forest[1] .+ forest[2]; # this is the slope that we want 
+# to save for each model
+
+println("**************************************")
+println("slope of time series is: ",forest[1])
+println("**************************************")
+
+## This method identifies a number of ENSO events and then the function 
+## padding selects 6 indices for each event.  
+local_max_indices = find_local_maxima(ts_roni_sm,ensoDef,numOfevents)
+local_min_indices = find_local_minima(ts_roni_sm,-ensoDef,numOfevents)
+
+pad_ind_nino = padding(local_max_indices)
+pad_ind_nina = padding(local_min_indices)
+println("pad_indices_Nina: ",pad_ind_nina[:])
+
+for i in 1:numfields
+  pi_low[:,:,i]  = vmax[:,:,pad_ind_nina[i]]    # La Nina months
+  pi_high[:,:,i] = vmax[:,:,pad_ind_nino[i]]   # El Nino months
+end   
+
+# compute the composite MPI field: 
+pi_high_mn = mean(pi_high, dims=3);
+pi_low_mn  = mean(pi_low, dims=3);
+PI_comp_mn = pi_high_mn .- pi_low_mn;
+
+#------------------------------------------------------------------------------------
+# relative humidity
+println(" working on relative humidity calculation")
+include("spec2relHumidity.jl") # output is relHcomp
+spec2relComp(lpath,file2,pad_ind_nino,pad_ind_nina)
+RelRH_comp_mn = relHcomp
+
+#------------------------------------------------------------------------------------
+# save fields from this model:
+Slope13         = forest[1]
+roni_ts13       = ts_roni_sm
+RoniSlope13     = forNew
+PI_comp_mn13    = PI_comp_mn
+RelRH_comp_mn13 = RelRH_comp_mn
+
+println("Done with the Thirteenth model: ",tag)
+println("**************************************")
+
+#------------------------------#
+# Fourteenth MODEL
+#------------------------------#
+
+tag     = "Access-ESMl-5"     #  Fourteenth Model
+file2   = lpath*"ACCESS_ESM15_full_output.nc"
+
+# load the data
+data2 = NCDataset(file2)
+vmax  = data2["vmax"]
+shum  = data2["q"] # specific humidity (144, 73, 19, 1032) (kg/kg)
+temp  = data2["t"] # air temperature (K)
+lat   = data2["lat"]
+lon   = data2["lon"]
+lev   = data2["plev"]
+
+sst_var     = data2["sst"]
+dims        = size(sst_var)
+
+#sst_tr_mean = Array{Union{Missing, Float64}, 1}(undef, dims2[3])
+agrid       = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+bgrid       = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+a_full      = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+b_full      = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+pi_high     = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+pi_low      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+enso_high   = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+enso_low    = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+
+#-------------------------------------------------------------------------------
+# RONI:
+inpFile = file2 
+println("~~~~~~~~~~~~~~~~~~file 2b~~~~~~~~~~~~~~~~~~~~~~")
+println(" working on MPI calculation")
+println(inpFile)
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+
+# call function to process cmip data and compute RONI:
+calc_roni_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
+#prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
+ts_roni = ts_rmn
+
+# choose to use, or not, a running mean filter to smooth the timeseries.
+#smooth_12_ts(ts_roni,timelen)
+#ts_roni_sm = ts_12_sm
+ts_roni_sm = ts_roni
+
+# calculate the best fit line
+bb = collect(0:1031);
+ensoPlotp = zeros(1032) .+ ensoDef
+ensoPlotn = zeros(1032) .- ensoDef
+forest = find_best_fit(bb,ts_roni_sm)
+forNew = collect(bb).*forest[1] .+ forest[2]; # this is the slope that we want 
+# to save for each model
+
+println("**************************************")
+println("slope of time series is: ",forest[1])
+println("**************************************")
+
+## This method identifies a number of ENSO events and then the function 
+## padding selects 6 indices for each event.  
+local_max_indices = find_local_maxima(ts_roni_sm,ensoDef,numOfevents)
+local_min_indices = find_local_minima(ts_roni_sm,-ensoDef,numOfevents)
+
+pad_ind_nino = padding(local_max_indices)
+pad_ind_nina = padding(local_min_indices)
+println("pad_indices_Nina: ",pad_ind_nina[:])
+
+for i in 1:numfields
+  pi_low[:,:,i]  = vmax[:,:,pad_ind_nina[i]]    # La Nina months
+  pi_high[:,:,i] = vmax[:,:,pad_ind_nino[i]]   # El Nino months
+end   
+
+# compute the composite MPI field: 
+pi_high_mn = mean(pi_high, dims=3);
+pi_low_mn  = mean(pi_low, dims=3);
+PI_comp_mn = pi_high_mn .- pi_low_mn;
+
+#------------------------------------------------------------------------------------
+# relative humidity
+println(" working on relative humidity calculation")
+include("spec2relHumidity.jl") # output is relHcomp
+spec2relComp(lpath,file2,pad_ind_nino,pad_ind_nina)
+RelRH_comp_mn = relHcomp
+
+#------------------------------------------------------------------------------------
+# save fields from this model:
+Slope14         = forest[1]
+roni_ts14       = ts_roni_sm
+RoniSlope14     = forNew
+PI_comp_mn14    = PI_comp_mn
+RelRH_comp_mn14 = RelRH_comp_mn
+
+println("Done with the Fourteenth model: ",tag)
+println("**************************************")
+
+#------------------------------#
+# Fifteenth MODEL
+#------------------------------#
+
+tag = "UKESM1-0-LL"   #    Fifteenth Model
+file2   = lpath*"MPI_UKESM1-0-LL_full_output.nc"
+
+# load the data
+data2 = NCDataset(file2)
+vmax  = data2["vmax"]
+shum  = data2["q"] # specific humidity (144, 73, 19, 1032) (kg/kg)
+temp  = data2["t"] # air temperature (K)
+lat   = data2["lat"]
+lon   = data2["lon"]
+lev   = data2["plev"]
+
+sst_var     = data2["sst"]
+dims        = size(sst_var)
+
+#sst_tr_mean = Array{Union{Missing, Float64}, 1}(undef, dims2[3])
+agrid       = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+bgrid       = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+a_full      = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+b_full      = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+pi_high     = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+pi_low      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+enso_high   = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+enso_low    = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields);
+
+#-------------------------------------------------------------------------------
+# RONI:
+inpFile = file2 
+println("~~~~~~~~~~~~~~~~~~file 2b~~~~~~~~~~~~~~~~~~~~~~")
+println(" working on MPI calculation")
+println(inpFile)
+println("""~~~~~~~~~~~~~~~~~~>>>>>>~~~~~~~~~~~~~~~~~~~~~~""")
+
+# call function to process cmip data and compute RONI:
+calc_roni_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
+#prepare_cmip_ts(inpFile,timelen,lat1,lat2,lon34a,lon34b,lat34a,lat34b);
+ts_roni = ts_rmn
+
+# choose to use, or not, a running mean filter to smooth the timeseries.
+#smooth_12_ts(ts_roni,timelen)
+#ts_roni_sm = ts_12_sm
+ts_roni_sm = ts_roni
+
+# calculate the best fit line
+bb = collect(0:1031);
+ensoPlotp = zeros(1032) .+ ensoDef
+ensoPlotn = zeros(1032) .- ensoDef
+forest = find_best_fit(bb,ts_roni_sm)
+forNew = collect(bb).*forest[1] .+ forest[2]; # this is the slope that we want 
+# to save for each model
+
+println("**************************************")
+println("slope of time series is: ",forest[1])
+println("**************************************")
+
+## This method identifies a number of ENSO events and then the function 
+## padding selects 6 indices for each event.  
+local_max_indices = find_local_maxima(ts_roni_sm,ensoDef,numOfevents)
+local_min_indices = find_local_minima(ts_roni_sm,-ensoDef,numOfevents)
+
+pad_ind_nino = padding(local_max_indices)
+pad_ind_nina = padding(local_min_indices)
+println("pad_indices_Nina: ",pad_ind_nina[:])
+
+for i in 1:numfields
+  pi_low[:,:,i]  = vmax[:,:,pad_ind_nina[i]]    # La Nina months
+  pi_high[:,:,i] = vmax[:,:,pad_ind_nino[i]]   # El Nino months
+end   
+
+# compute the composite MPI field: 
+pi_high_mn = mean(pi_high, dims=3);
+pi_low_mn  = mean(pi_low, dims=3);
+PI_comp_mn = pi_high_mn .- pi_low_mn;
+
+#------------------------------------------------------------------------------------
+# relative humidity
+println(" working on relative humidity calculation")
+include("spec2relHumidity.jl") # output is relHcomp
+spec2relComp(lpath,file2,pad_ind_nino,pad_ind_nina)
+RelRH_comp_mn = relHcomp
+
+#------------------------------------------------------------------------------------
+# save fields from this model:
+Slope15         = forest[1]
+roni_ts15       = ts_roni_sm
+RoniSlope15     = forNew
+PI_comp_mn15    = PI_comp_mn
+RelRH_comp_mn15 = RelRH_comp_mn
+
+println("Done with the Fifteenth model: ",tag)
+println("**************************************")
+
+#------------------------------#
+
+println("**************************************")
+println("**************************************")
+println("slopes from each of the models: ")
+println("slope = ",Slope1)
+println("slope = ",Slope2)
+println("slope = ",Slope3)
+println("slope = ",Slope4)
+println("slope = ",Slope5)
+println("slope = ",Slope6)
+println("slope = ",Slope7)
+println("slope = ",Slope8)
+println("slope = ",Slope9)
+println("slope = ",Slope10)
+println("slope = ",Slope11)
+println("slope = ",Slope12)
+println("slope = ",Slope13)
+println("slope = ",Slope14)
+println("slope = ",Slope15)
+println("**************************************")
+
+total = Slope1 + Slope2 + Slope3 +  Slope4 +  Slope5 +  Slope6 +  Slope7 +  Slope8 +  Slope9 +  Slope10 +  Slope11 +  Slope12 +  Slope13 +  Slope14 +  Slope15
+
+mn_slope = total/15
+println("mean slope = ",mn_slope)
+println("**************************************")
+println("**************************************")
+
 #-------------------------------------------------------------------------------------------------------------------
+
+levs = range(-10, 10, length = 21) 
+tit="CMIP MPI composite (m/s)"
+fig = fig_anom_plot(PI_comp_mn[:,:,1],lon,lat,tit,levs)
+figname=tag*"_MPI.png"
+save(figname, fig)
+
 # figure showing the time series and trend of RONI:
 fig = Figure(;
     size = (900,1100), # width by height
