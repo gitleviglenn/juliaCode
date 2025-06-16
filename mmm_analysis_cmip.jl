@@ -2,10 +2,16 @@
 # mmm_analysis_cmip.jl
 #
 # read in SST (tos) and MPI(usually from scripts run on Casper)
-# compute a timeseries of RONI from the SST
-# compute the relative SST
 #
-# plot the roni ts, the relative SST, and the MPI
+# This script does a lot: 
+#
+# - compute a timeseries of RONI from the SST
+# - compute the relative SST
+# - select appropriate points for the positive and negative ENSO phases
+# - plot the composite RH field for each model
+# - plot the composite MPI field for each model
+# - compute the trend line (slope) of RONI, for each model
+# - compute the mean trend line for all models.   make plot.
 #
 # changes from tc_analysis_cmip.jl:  we now use the sst from within the 
 # model_full_output_##.nc file, rather than a separate sst file.  as a result
@@ -13,15 +19,15 @@
 # files, and that function now expects the sst variable name instead of the 
 # tos variable name.  
 # 
-# to run:  
-# >julia tc_analysis_cmip.jl
+# to run from a terminal window:  
+# >julia mmm_analysis_cmip.jl
 #
 # The work of Vecchi and Soden, 2007 focused on summer time, or NH TC season (June-November)
 # months.   We can do that.   But if we want to look at ENSO based composites it makes more
 # sense to start with the complete time series and then pick out the positive and negative
 # phases.  
 #
-# we need to output the MPI composite data as a netcdf file so that it can be 
+# ultimately it would be nice to output the MPI composite data as a netcdf file so that it can be 
 # averaged with the output from other models easily. 
 #
 # the nco ncrcat function can be used to subcycle through the full dataset:
@@ -38,10 +44,10 @@ using CairoMakie
 using GeoMakie
 using NCDatasets
 using Statistics
-#using GLM
 using DataFrames
 
 include("ensoFuncs.jl")
+include("spec2relHumidity.jl") # output is relHcomp
 
 # define parameters
 #
@@ -2124,7 +2130,6 @@ PI_comp_mn = pi_high_mn .- pi_low_mn;
 #------------------------------------------------------------------------------------
 # relative humidity
 println(" working on relative humidity calculation")
-include("spec2relHumidity.jl") # output is relHcomp
 spec2relComp(lpath,file2,pad_ind_nino,pad_ind_nina)
 RelRH_comp_mn = relHcomp
 
@@ -2220,7 +2225,6 @@ PI_comp_mn = pi_high_mn .- pi_low_mn;
 #------------------------------------------------------------------------------------
 # relative humidity
 println(" working on relative humidity calculation")
-include("spec2relHumidity.jl") # output is relHcomp
 spec2relComp(lpath,file2,pad_ind_nino,pad_ind_nina)
 RelRH_comp_mn = relHcomp
 
@@ -2316,7 +2320,6 @@ PI_comp_mn = pi_high_mn .- pi_low_mn;
 #------------------------------------------------------------------------------------
 # relative humidity
 println(" working on relative humidity calculation")
-include("spec2relHumidity.jl") # output is relHcomp
 spec2relComp(lpath,file2,pad_ind_nino,pad_ind_nina)
 RelRH_comp_mn = relHcomp
 
@@ -2412,7 +2415,6 @@ PI_comp_mn = pi_high_mn .- pi_low_mn;
 #------------------------------------------------------------------------------------
 # relative humidity
 println(" working on relative humidity calculation")
-include("spec2relHumidity.jl") # output is relHcomp
 spec2relComp(lpath,file2,pad_ind_nino,pad_ind_nina)
 RelRH_comp_mn = relHcomp
 
