@@ -80,8 +80,8 @@ function fig_anom_plot(inpv,d1,d2,tit,levs)
              #colormap = :batlow,
              #colormap = :bam, # default for shear plot (greens and pinks)
              #colormap = :seismic, # colors are a bit harsh
-             #colormap = :vik, # was default for redish bluish
-             colormap = :BrBg, # better for RH  browns and greens
+             colormap = :vik, # was default for redish bluish
+             #colormap = :BrBg, # better for RH  browns and greens
              #colormap = :roma,
              extendlow = :auto, extendhigh = :auto
         )

@@ -44,11 +44,11 @@ vmax       = data3["vmax"];
 # Create index lists for ENSO years, and grab the corresponding data from sst_var[]
 
 ## Northern Hemisphere
-ninoyears = [18 54 90 150 174 234 306 402]
-ninayears = [102 114 210 246 318 366 378 390]
+#ninoyears = [18 54 90 150 174 234 306 402]
+#ninayears = [102 114 210 246 318 366 378 390]
 # Southern Hemisphere
-# ninoyears = [23 35 59 96 155 239 311 347]
-# ninayears = [107 119 215 251 263 335 371 383]
+ninoyears = [23 35 59 96 155 239 311 347]
+ninayears = [107 119 215 251 263 335 371 383]
 
 function create_indices(years)
   ensoInd = Matrix{Int32}(undef, 8, 6)
@@ -191,11 +191,11 @@ levs = range(-10., 10., length = 21)
 # colormap = :vik, seems to work well for MPI
 mpiDiff = fig_anom_plot(mpi_comp_mn[:,:,1],lon,lat,"Composite MPI (m/s), El Nino - La Nina",levs)
 #mpiDiff = fig_anom_plot(mpi_comp[:,:,2],lon,lat,"Composite MPI (m/s), El Nino - La Nina",levs)
-save("era5_mpiDiff_NH.png", mpiDiff, px_per_unit=6.0)
+save("era5_mpiDiff_SH.png", mpiDiff, px_per_unit=6.0)
 
 levs = range(-2., 2., length = 21)
 sstDiff = fig_anom_plot(sst_comp_mn[:,:,1],lon,lat,"Composite MPI (m/s), El Nino - La Nina",levs)
-save("era5_sstDiff_NH.png", sstDiff, px_per_unit=6.0)
+save("era5_sstDiff_SH.png", sstDiff, px_per_unit=6.0)
 
 
 
