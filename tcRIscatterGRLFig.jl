@@ -1,21 +1,27 @@
-# plot the points where RI first occurs
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# plot the points where RI first occurs on a global map between +/-40 degrees lat
+#
+# this script was used to create panel Figure 2, panel a in 
+# Silvers and Klotzbach et al., 2025, GRL
+#
+# see various projection options here: 
+# https://proj.org/en/9.4/operations/projections/index.html
+#
+# run with: 
+# /Users/silvers/.juliaup/bin/julia tcRIscatterGRLFig.jl
+#
+# levi silvers                                                                      june 2025
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# /Users/silvers/data/hurricane_data/AtlanticTCACE18512023.csv 
+
 using DataFrames
 using CSV
 using CairoMakie
 using LaTeXStrings
 using GeoMakie
-#using Statistics
-
-# see various projection options here: 
-# https://proj.org/en/9.4/operations/projections/index.html
-
-# run with: 
-# /Users/silvers/.juliaup/bin/julia tcStatsCSV.jl
-
-# /Users/silvers/data/hurricane_data/AtlanticTCACE18512023.csv 
 
 # incoming file: 
-#filein = "/Users/silvers/data/hurricane_data/FirstRILocationbyStorm.csv"
 filein = "/Users/C823281551/data/hurricane_data/FirstRILocationbyStorm.csv"
 file2in = "/Users/C823281551/data/hurricane_data/RI_Episodes.csv"
 

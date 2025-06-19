@@ -2,12 +2,12 @@
 # test functions, mostly taken from juliadatascience.pdf
 #
 # run with: 
-# /Users/silvers/.juliaup/bin/julia functest.jl
+# /Users/silvers/.juliaup/bin/julia myfunc.jl
 #
 # to run from within a juila REPL: 
-# include("/Users/silvers/code/juliaCode/functest.jl")
+# include("/Users/silvers/code/juliaCode/myfunc.jl")
 #
-# once functest.jl has been run in the REPL, then these functions can be
+# once myfunc.jl has been run in the REPL, then these functions can be
 # accessed within the REPL, e.g.: 
 # add_numbers(2, 3) --> 5
 # figure_canvas()   --> creates and opens a png figure.
