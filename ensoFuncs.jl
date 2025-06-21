@@ -78,9 +78,9 @@ function fig_anom_plot(inpv,d1,d2,tit,levs)
         bb = contourf!(ax, d1, d2, inpv,
              levels = levs,
              #colormap = :batlow,
-             #colormap = :bam, # default for shear plot (greens and pinks)
+             colormap = :bam, # default for shear plot (greens and pinks)
              #colormap = :seismic, # colors are a bit harsh
-             colormap = :vik, # was default for redish bluish
+             #colormap = :vik, # default for redish bluish for relative SST
              #colormap = :BrBg, # better for RH  browns and greens
              #colormap = :roma,
              extendlow = :auto, extendhigh = :auto
@@ -780,4 +780,32 @@ function find_local_minima(data,ensoDef,numOfmax)
         
     return local_minima
 end
+#
+function test_num_enso(data,ensoDef)
+    # need to indicate time period of interest with the goal of looking at the 
+    # early and late periods
+    num_maxima  = 0
+    for i in 4:(length(data) -1)
+        #if data[i-1] < data[i] && data[i] > ensoDef
+        if data[i-1] < ensoDef && data[i] > ensoDef
+            num_maxima = num_maxima + 1
+        end
+        #switch = 0
+        #num_maxima2 = num_maxima2 + 1
+    end
+    #return num_maxima, num_maxima2
+    return num_maxima
+end
+function test_num_nina(data,ensoDef)
+    # need to indicate time period of interest with the goal of looking at the 
+    # early and late periods
+    num_minima  = 0
+    for i in 4:(length(data) -1)
+        if data[i-1] > ensoDef && data[i] < ensoDef
+            num_minima = num_minima + 1
+        end
+    end
+    return num_minima
+end
+
 #--------------------------------------------------------------------------------

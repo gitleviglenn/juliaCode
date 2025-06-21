@@ -247,7 +247,7 @@ function fig_tot_plot(inpv,d1,d2,tit)
     return f2
 end
 tit="dummy"
-levs = range(-20., 20, length = 21)
+levs = range(-10., 10, length = 21)
 fig2name = tag*"_vShear_nino_comp_SH.png"
 #fig = fig_tot_plot(data_2_plot_tot[:,:,1],lon,lat,tit)
 #fig = fig_anom_plot(data_2_plot_anom[:,:,1],lon,lat,tit)

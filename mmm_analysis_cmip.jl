@@ -96,14 +96,14 @@ lpath="/Users/C823281551/data/cmip6/potInt/"
 #file1   = lpath*"MIROC6_full_output_summer.nc"
 #file2   = lpath*"MIROC6_full_output_record.nc"
 
-# CESM2            Third Model
+# CESM2            Third Model                                      4.
 #file1   = "/Users/C823281551/data/cmip6/CESM2/potInt/CESM_full_output.nc"
 # ensemble member r10i1p1f1, computed on luft
 #file2   = "/Users/C823281551/data/cmip6/CESM2/potInt/CESM_full_output.nc"
 # ensemble member r4i1p1f1, computed on casper
 #file2   = lpath*"CESM2_full_output.nc"
 
-# Access-CM2       Fourth Model
+# Access-CM2       Fourth Model                                     1.
 #file1   = lpath*"ACCESS_CM2_full_output_summer.nc"
 #file2   = lpath*"ACCESS_CM2_full_output_record.nc"
 
@@ -111,33 +111,33 @@ lpath="/Users/C823281551/data/cmip6/potInt/"
 #file1   = lpath*"MPI_MRI-ESM2_full_output_summer.nc"
 #file2   = lpath*"MPI_MRI-ESM2_full_output_record.nc"
 
-# GFDL             Sixth Model
+# GFDL-ESM4        Sixth Model                                     10.
 #file1   = lpath*"GFDL-ESM4_full_output_nohalo_summer.nc"
 #file2   = lpath*"GFDL-ESM4_full_output_nohalo_record.nc"
 
-# IPSL-CM6A        Seventch Model
+# IPSL-CM6A        Seventch Model                                  9.
 #file1   = lpath*"MPI_IPSL-CM6A_full_output_summer.nc"
 #file2   = lpath*"MPI_IPSL-CM6A_full_output_record.nc"
 
-# FGOALS-f3-L      Eighth Model
+# FGOALS-f3-L      Eighth Model                                    8.
 #file2    = lpath*"FGOALS-f3-L_full_output.nc"
 
 # MIROC6-ES2L      Ninth Model
 #file2    = lpath*"MPI_MIROC-ES2L_full_output.nc"
 
-# CanESM5          Tenth Model
+# CanESM5          Tenth Model                                     3.
 #file2    = lpath*"CanESM5_full_output_sethaloTOS.nc"
 
-# CESM2-WACCM      Eleventh Model
+# CESM2-WACCM      Eleventh Model                                  6.
 #file2    = lpath*"MPI_CESM2-WACCM_full_output.nc"
 
-# CESM2-FV2        Twelfth Model
+# CESM2-FV2        Twelfth Model                                   5.
 #file2   = lpath*""
 
-# EC-Earth3        Thirteenth Model
+# EC-Earth3        Thirteenth Model                                7.
 #file2   = lpath*"ECEarth3_full_output.nc"
 
-# Access-ESMl-5    Fourteenth Model
+# Access-ESMl-5    Fourteenth Model                                 2.
 #file2   = lpath*"ACCESS_ESM15_full_output.nc"
 
 # UKESM1-0-LL      Fifteenth Model
@@ -147,6 +147,8 @@ lpath="/Users/C823281551/data/cmip6/potInt/"
 #file2   =  lpath*"CNRM_ESM2_full_output.nc"
 
 # HadGEM3-GC31-LL  Seventeenth Model
+
+# GFDL-CM4                                                        11.                 
 
 # NorESM2-LM --> still need to run analysis on casper
 
