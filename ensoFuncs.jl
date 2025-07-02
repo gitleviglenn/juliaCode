@@ -476,7 +476,7 @@ function calc_roni_cmip_ts(inpFile,len,troplat1,troplat2,ln1,ln2,lt1,lt2)
     sst1 = ds1["sst"] # what are the dimensions here?   Should be +/-20 degrees
     nclat = ds1["lat"]
     nclon = ds1["lon"]
-    nctime = ds1["time"]
+    #nctime = ds1["time"]
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     println("~~~~~ nino34 long points: ~~~~~~~~~~~~~~~~")
     println(nclon[ln1:ln2])
