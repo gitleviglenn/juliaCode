@@ -18,24 +18,33 @@ path2 = "/Users/C823281551/data/fromExcel/"
 
 filein  = path*"era5_sst_1990th2023_360x180.nc"
 file2   = path*"MPI_ERA5_full_output.nc"
-file3   = path2*"NA_RI_storms_1990th2023.csv"
+file3   = path*"era5_rh_1990to2023_360x180.nc"
+filein  = path*"era5_uv_1990th2023_360x80.nc"
+#file3   = path*"era5_rh_1990th2023_360x180.nc"
+file4   = path2*"NA_RI_storms_1990th2023.csv"
 tag = "ERA5"
 data   = NCDataset(filein);
 data2  = NCDataset(file2);
-data3  = CSV.read(file3, DataFrame)
+data3  = NCDataset(file3);
+data4  = NCDataset(filein);
+data5  = CSV.read(file4, DataFrame)
 
 lat = data["lat"]
 lon = data["lon"]
+lev = data3["pressure_level"]
 tme = data["valid_time"]
 timeAxis1 = collect(1.083333:1/12:35);
 timeAxis2 = collect(1.083333:1/6:35);
 timeAxis3 = collect(1.:1:204);
 timeENSO  = collect(1.:1:48);
 
+# read variables into arrayes/dataframes:
 sst_var    = data["sst"];
 vmax       = data2["vmax"];
-
-ri_events  = data3.NumStorms
+rh_var     = data3["r"];
+u_var      = data4["u"];
+v_var      = data4["v"];
+ri_events  = data5.NumStorms
 
 function create_indices(years)
   ensoInd = Matrix{Int32}(undef, 34, 6)
@@ -65,6 +74,7 @@ sst_trm      = Array{Union{Missing, Float64}, 1}(undef, endIndex)
 #sst_trm     = Array{Union{Missing, Float64}, 3}(undef, dims[1], 80, 6)
 sst_rel      = Array{Union{Missing, Float64}, 3}(undef, dims[1], 81, endIndex)
 mpi          = Array{Union{Missing, Float64}, 3}(undef, dims[1], 81, endIndex)
+rh           = Array{Union{Missing, Float64}, 3}(undef, dims[1], 81, endIndex)
 
 print("size of yearsArray is: ",size(yearsArray))
 print("size of yearsInd is: ",size(yearsInd))
@@ -73,35 +83,45 @@ print("size of full sst_var array is: ",size(sst_var))
 print("size of ri_events: ", ri_events)
 
 println("yearsInd is: ",yearsInd)
-# compute tropical mean
-for i in 1:endIndex
-    #sst_trm_nino[i] = mean(skipmissing(sst_nino[:,lat1:lat2,i]))
-    #sst_trm_nina[i] = mean(skipmissing(sst_nina[:,lat1:lat2,i]))
-    #sst_trm_nina[i] = mean(skipmissing(sst_var[:,latS:latN,ninaInd[i]]))
-    sst_trm[i] = mean(skipmissing(sst_var[:,latS:latN,yearsInd[i]]))
-end
-
-for i in 1:endIndex
-  #sst_rel[:,lat1:lat2,i]  = sst_var[:,lat1:lat2,yearsInd[i]] .- sst_trm[i]
-  #mpi[:,lat1:lat2,i]      = vmax[:,lat1:lat2,yearsInd[i]]
-  sst_rel[:,:,i]  = sst_var[:,lat1:lat2,yearsInd[i]] .- sst_trm[i]
-  mpi[:,:,i]      = vmax[:,lat1:lat2,yearsInd[i]]
-end
+## compute tropical mean
+#for i in 1:endIndex
+#    sst_trm[i] = mean(skipmissing(sst_var[:,latS:latN,yearsInd[i]]))
+#end
+#
+#for i in 1:endIndex
+#  #sst_rel[:,lat1:lat2,i]  = sst_var[:,lat1:lat2,yearsInd[i]] .- sst_trm[i]
+#  #mpi[:,lat1:lat2,i]      = vmax[:,lat1:lat2,yearsInd[i]]
+#  sst_rel[:,:,i]  = sst_var[:,lat1:lat2,yearsInd[i]] .- sst_trm[i]
+#  mpi[:,:,i]      = vmax[:,lat1:lat2,yearsInd[i]]
+#  rh[:,:,i]       = rh_var[:,lat1:lat2,level,yearsInd[i]]
+#end
 
 dims = size(sst_var)
 
-#mpi_nino          = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
-mpi_yr     = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 34)
-mpi_1yr    = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
-
+mpi_yr      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 34)
+rsst_yr     = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 34)
+rh_yr       = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 34)
+vws_yr      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 34)
 
 # another way...
 sst_trm_b      = Array{Union{Missing, Float64}, 1}(undef, endIndex)
-sst_rel_b      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], endIndex)
+sst_rel_b      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 6)
 mpi_b          = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 6)
+rh_b           = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 6)
+
+level=2 # level 2 should correspond to the 700 hPa pressure level. 
+
+println("------------------------------------")
+print("size of vmax is: ",size(vmax))
+print("size of rh_var is: ",size(rh_var))
+print("size of rh is: ",size(rh))
+println("------------------------------------")
 
 for i in 1:34
   mpi_test       = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 1)
+  rsst_test      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 1)
+  rh_test        = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 1)
+  vws_test       = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 1)
   ii = i
   for j in 1:6 # compute tropical mean for each month of interest
     sst_trm_b[j] = mean(skipmissing(sst_var[:,latS:latN,yearsInd[i,j]]))
@@ -109,12 +129,51 @@ for i in 1:34
   for j in 1:6
     sst_rel_b[:,lat1:lat2,j]  = sst_var[:,lat1:lat2,yearsInd[i,j]] .- sst_trm_b[j]
     mpi_b[:,lat1:lat2,j]      = vmax[:,lat1:lat2,yearsInd[i,j]]
+    rh_b[:,lat1:lat2,j]         = rh_var[:,lat1:lat2,level,yearsInd[i,j]]
     #println("j value is: ",j,", and yearsInd is: ",yearsInd[i,j])
   end
   #println("ii value is: ",ii)
+  # MPI values:
   mpi_test = mean(mpi_b, dims=3)
   mpi_yr[:,:,i] = mpi_test #should be the average of 6 fields...mpi_b[:,:,]
+  # relative sst: rsst
+  rsst_test = mean(sst_rel_b, dims=3)
+  rsst_yr[:,:,i] = rsst_test #should be the average of 6 fields...mpi_b[:,:,]
+  # RH values:
+  rh_test = mean(rh_b, dims=3)
+  rh_yr[:,:,i] = rh_test #should be the average of 6 fields...mpi_b[:,:,]
 end
+
+agrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+bgrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+cgrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+cgrid2 = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+cgrid3 = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+
+for i in 1:dims[1]
+  for j in 1:dims[2]
+    agrid[i,j],bgrid[i,j] = find_best_fit(ri_events[:],mpi_yr[i,j,:])
+    cgrid[i,j]            = cor(ri_events[:],mpi_yr[i,j,:])
+    cgrid2[i,j]           = cor(ri_events[:],rsst_yr[i,j,:])
+    cgrid3[i,j]           = cor(ri_events[:],rh_yr[i,j,:])
+  end
+end
+
+levs = range(-2., 2., length = 21)
+mpiReg = fig_anom_plot(agrid[:,:],lon,lat,"mpi linear regression with RI events",levs)
+save("era5_mpi_reg.png", mpiReg, px_per_unit=6.0)
+
+levs = range(-1., 1., length = 21)
+mpiCorr = fig_anom_plot(cgrid[:,:],lon,lat,"mpi correlation with RI events",levs)
+save("era5_mpi_cor.png", mpiCorr, px_per_unit=6.0)
+
+levs = range(-1., 1., length = 21)
+sstCorr = fig_anom_plot(cgrid2[:,:],lon,lat,"rsst correlation with RI events",levs)
+save("era5_sst_cor.png", sstCorr, px_per_unit=6.0)
+
+levs = range(-1., 1., length = 21)
+rhCorr = fig_anom_plot(cgrid3[:,:],lon,lat,"RH correlation with RI events",levs)
+save("era5_rh_cor.png", rhCorr, px_per_unit=6.0)
 
 levs = range(60., 90., length = 21)
 # colormap = :vik, seems to work well for MPI
