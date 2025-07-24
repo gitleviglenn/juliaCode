@@ -143,6 +143,7 @@ end
 #mpi_nino_mn = mean(mpi_nino, dims=3)
 #mpi_nina_mn = mean(mpi_nina, dims=3)
 
+print("size of full vmax array is: ",size(vmax))
 print("size of MPI Nina mean is: ",size(mpi_nina))
 
 mpi_comp    = mpi_nino .- mpi_nina
@@ -179,10 +180,6 @@ if regThres > 1
     end
     # timeAxis2 consists of monthly values over 204 timesteps taken from 34 years.  So our trend values should be
     # Degrees/34 years right?  Then to convert to degrees per century 'agrid1' could be multiplied by # 2.94
-    
-    
-    
-    
     
     #levs = range(-2., 2., length = 21)
     #blah = fig_1_anom(agrid1.*600,lon,lat,levs,"linear trends C per Century")
