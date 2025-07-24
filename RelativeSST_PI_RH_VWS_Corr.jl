@@ -9,18 +9,20 @@ using GeoMakie
 using NCDatasets
 using Statistics
 using DataFrames
+using CSV
 
 include("ensoFuncs.jl")
 
 path="/Users/C823281551/data/ERA5/"
+path2 = "/Users/C823281551/data/fromExcel/"
 
 filein  = path*"era5_sst_1990th2023_360x180.nc"
-file2   = path*"era5_sst_1990th2023_360x180_summer.nc"
-file3   = path*"MPI_ERA5_full_output.nc"
+file2   = path*"MPI_ERA5_full_output.nc"
+file3   = path2*"NA_RI_storms_1990th2023.csv"
 tag = "ERA5"
 data   = NCDataset(filein);
 data2  = NCDataset(file2);
-data3  = NCDataset(file3);
+data3  = CSV.read(file3, DataFrame)
 
 lat = data["lat"]
 lon = data["lon"]
@@ -31,8 +33,9 @@ timeAxis3 = collect(1.:1:204);
 timeENSO  = collect(1.:1:48);
 
 sst_var    = data["sst"];
-sst_summer = data2["sst"];
-vmax       = data3["vmax"];
+vmax       = data2["vmax"];
+
+ri_events  = data3.NumStorms
 
 function create_indices(years)
   ensoInd = Matrix{Int32}(undef, 34, 6)
@@ -40,14 +43,13 @@ function create_indices(years)
     si = years[i]
     ensoInd[i,:] = si:si+5
   end
-  #o1=years[1]:years[1]+5
-  #ensoInd = [o1 o2 o3 o4 o5 o6 o7 o8]
   return ensoInd
 end
 
-#yearsArray = [6 18 30 42 54 66 78]
+# create an array for the initial index of June for each year
 yearsArray = collect(6:12:408)
 
+# create an array with 6 columns (months) for each year
 yearsInd = create_indices(yearsArray[:])
 
 # define our region of interest to be +/- 40?
@@ -68,6 +70,7 @@ print("size of yearsArray is: ",size(yearsArray))
 print("size of yearsInd is: ",size(yearsInd))
 print("size of full sst_var array is: ",size(sst_var))
 
+print("size of ri_events: ", ri_events)
 
 println("yearsInd is: ",yearsInd)
 # compute tropical mean
@@ -95,25 +98,20 @@ mpi_1yr    = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 # another way...
 sst_trm_b      = Array{Union{Missing, Float64}, 1}(undef, endIndex)
 sst_rel_b      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], endIndex)
-#mpi_b          = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], endIndex)
 mpi_b          = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 6)
-mpi_test       = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 1)
 
-#for i in 1:yearsArray[-1]
 for i in 1:34
-#  i = 1
+  mpi_test       = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 1)
   ii = i
   for j in 1:6 # compute tropical mean for each month of interest
     sst_trm_b[j] = mean(skipmissing(sst_var[:,latS:latN,yearsInd[i,j]]))
   end
-  #for j in ii:ii+5
   for j in 1:6
     sst_rel_b[:,lat1:lat2,j]  = sst_var[:,lat1:lat2,yearsInd[i,j]] .- sst_trm_b[j]
     mpi_b[:,lat1:lat2,j]      = vmax[:,lat1:lat2,yearsInd[i,j]]
-    println("j value is: ",j,", and yearsInd is: ",yearsInd[i,j])
+    #println("j value is: ",j,", and yearsInd is: ",yearsInd[i,j])
   end
-  println("ii value is: ",ii)
-  #mpi_1yr = mean(mpi, dims=3)
+  #println("ii value is: ",ii)
   mpi_test = mean(mpi_b, dims=3)
   mpi_yr[:,:,i] = mpi_test #should be the average of 6 fields...mpi_b[:,:,]
 end
