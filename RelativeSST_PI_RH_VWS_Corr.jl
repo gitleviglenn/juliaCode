@@ -19,15 +19,15 @@ path2 = "/Users/C823281551/data/fromExcel/"
 filein  = path*"era5_sst_1990th2023_360x180.nc"
 file2   = path*"MPI_ERA5_full_output.nc"
 file3   = path*"era5_rh_1990to2023_360x180.nc"
-filein  = path*"era5_uv_1990th2023_360x80.nc"
+file4  = path*"era5_uv_1990th2023_360x180.nc"
 #file3   = path*"era5_rh_1990th2023_360x180.nc"
-file4   = path2*"NA_RI_storms_1990th2023.csv"
+file5   = path2*"NA_RI_storms_1990th2023.csv"
 tag = "ERA5"
 data   = NCDataset(filein);
 data2  = NCDataset(file2);
 data3  = NCDataset(file3);
-data4  = NCDataset(filein);
-data5  = CSV.read(file4, DataFrame)
+data4  = NCDataset(file4);
+data5  = CSV.read(file5, DataFrame)
 
 lat = data["lat"]
 lon = data["lon"]
@@ -108,6 +108,9 @@ sst_trm_b      = Array{Union{Missing, Float64}, 1}(undef, endIndex)
 sst_rel_b      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 6)
 mpi_b          = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 6)
 rh_b           = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 6)
+u_tot_b        = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 6)
+v_tot_b        = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 6)
+VWS_tot_b      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 6)
 
 level=2 # level 2 should correspond to the 700 hPa pressure level. 
 
@@ -116,6 +119,13 @@ print("size of vmax is: ",size(vmax))
 print("size of rh_var is: ",size(rh_var))
 print("size of rh is: ",size(rh))
 println("------------------------------------")
+
+#for i in 1:408
+#  # calculate the shear for all times
+#  u_tot[:,lat1:lat2,i]   = u_var[:,lat1:lat2,2,i] - u_var[:,lat1:lat2,1,i]
+#  v_tot[:,lat1:lat2,i]   = v_var[:,lat1:lat2,2,i] - v_var[:,lat1:lat2,1,i]
+#  VWS_tot[:,lat1:lat2,i] = sqrt.(u_tot[:,lat1:lat2,i].^2 .+ v_tot[:,lat1:lat2,i].^2)
+#end
 
 for i in 1:34
   mpi_test       = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 1)
@@ -129,7 +139,10 @@ for i in 1:34
   for j in 1:6
     sst_rel_b[:,lat1:lat2,j]  = sst_var[:,lat1:lat2,yearsInd[i,j]] .- sst_trm_b[j]
     mpi_b[:,lat1:lat2,j]      = vmax[:,lat1:lat2,yearsInd[i,j]]
-    rh_b[:,lat1:lat2,j]         = rh_var[:,lat1:lat2,level,yearsInd[i,j]]
+    rh_b[:,lat1:lat2,j]       = rh_var[:,lat1:lat2,level,yearsInd[i,j]]
+    u_tot_b[:,lat1:lat2,j]    = u_var[:,lat1:lat2,2,yearsInd[i,j]] - u_var[:,lat1:lat2,1,yearsInd[i,j]]
+    v_tot_b[:,lat1:lat2,j]    = v_var[:,lat1:lat2,2,yearsInd[i,j]] - v_var[:,lat1:lat2,1,yearsInd[i,j]]
+    VWS_tot_b[:,lat1:lat2,j]  = sqrt.(u_tot_b[:,lat1:lat2,j].^2 .+ v_tot_b[:,lat1:lat2,j].^2)
     #println("j value is: ",j,", and yearsInd is: ",yearsInd[i,j])
   end
   #println("ii value is: ",ii)
@@ -142,6 +155,9 @@ for i in 1:34
   # RH values:
   rh_test = mean(rh_b, dims=3)
   rh_yr[:,:,i] = rh_test #should be the average of 6 fields...mpi_b[:,:,]
+  # VWS values:
+  vws_test = mean(VWS_tot_b, dims=3)
+  vws_yr[:,:,i] = vws_test #should be the average of 6 fields...mpi_b[:,:,]
 end
 
 agrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
@@ -149,6 +165,7 @@ bgrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 cgrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 cgrid2 = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 cgrid3 = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+cgrid4 = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 
 for i in 1:dims[1]
   for j in 1:dims[2]
@@ -156,12 +173,17 @@ for i in 1:dims[1]
     cgrid[i,j]            = cor(ri_events[:],mpi_yr[i,j,:])
     cgrid2[i,j]           = cor(ri_events[:],rsst_yr[i,j,:])
     cgrid3[i,j]           = cor(ri_events[:],rh_yr[i,j,:])
+    cgrid4[i,j]           = cor(ri_events[:],vws_yr[i,j,:])
   end
 end
 
 levs = range(-2., 2., length = 21)
 mpiReg = fig_anom_plot(agrid[:,:],lon,lat,"mpi linear regression with RI events",levs)
 save("era5_mpi_reg.png", mpiReg, px_per_unit=6.0)
+
+levs = range(-1., 1., length = 21)
+vwsReg = fig_anom_plot(cgrid4[:,:],lon,lat,"vws linear regression with RI events",levs)
+save("era5_vws_cor.png", vwsReg, px_per_unit=6.0)
 
 levs = range(-1., 1., length = 21)
 mpiCorr = fig_anom_plot(cgrid[:,:],lon,lat,"mpi correlation with RI events",levs)
@@ -181,31 +203,31 @@ levs = range(60., 90., length = 21)
 mpiDiff = fig_1_plot(mpi_b[:,:,1],lon,lat,"MPI (m/s), index 1",levs)
 save("era5_mpi_1.png", mpiDiff, px_per_unit=6.0)
 
-mpiDiff = fig_1_plot(mpi_b[:,:,2],lon,lat,"MPI (m/s), index 1",levs)
-save("era5_mpi_2.png", mpiDiff, px_per_unit=6.0)
+#mpiDiff = fig_1_plot(mpi_b[:,:,2],lon,lat,"MPI (m/s), index 1",levs)
+#save("era5_mpi_2.png", mpiDiff, px_per_unit=6.0)
+##
+#mpiDiff = fig_1_plot(mpi_b[:,:,3],lon,lat,"MPI (m/s), index 1",levs)
+#save("era5_mpi_3.png", mpiDiff, px_per_unit=6.0)
+##
+#mpiDiff = fig_1_plot(mpi_b[:,:,4],lon,lat,"MPI (m/s), index 1",levs)
+#save("era5_mpi_4.png", mpiDiff, px_per_unit=6.0)
+##
+#mpiDiff = fig_1_plot(mpi_b[:,:,5],lon,lat,"MPI (m/s), index 1",levs)
+#save("era5_mpi_5.png", mpiDiff, px_per_unit=6.0)
+##
+#mpiDiff = fig_1_plot(mpi_b[:,:,6],lon,lat,"MPI (m/s), index 1",levs)
+#save("era5_mpi_6.png", mpiDiff, px_per_unit=6.0)
 #
-mpiDiff = fig_1_plot(mpi_b[:,:,3],lon,lat,"MPI (m/s), index 1",levs)
-save("era5_mpi_3.png", mpiDiff, px_per_unit=6.0)
+#mpiDiff = fig_1_plot(mpi_yr[:,:,1],lon,lat,"MPI (m/s), index 1",levs)
+##mpiDiff = fig_1_plot(mpi_test[:,:,1],lon,lat,"MPI (m/s), index 1",levs)
+#save("era5_mpi_yr_1.png", mpiDiff, px_per_unit=6.0)
 #
-mpiDiff = fig_1_plot(mpi_b[:,:,4],lon,lat,"MPI (m/s), index 1",levs)
-save("era5_mpi_4.png", mpiDiff, px_per_unit=6.0)
-#
-mpiDiff = fig_1_plot(mpi_b[:,:,5],lon,lat,"MPI (m/s), index 1",levs)
-save("era5_mpi_5.png", mpiDiff, px_per_unit=6.0)
-#
-mpiDiff = fig_1_plot(mpi_b[:,:,6],lon,lat,"MPI (m/s), index 1",levs)
-save("era5_mpi_6.png", mpiDiff, px_per_unit=6.0)
+#mpiDiff = fig_1_plot(mpi_yr[:,:,2],lon,lat,"MPI (m/s), index 1",levs)
+##mpiDiff = fig_1_plot(mpi_test[:,:,1],lon,lat,"MPI (m/s), index 1",levs)
+#save("era5_mpi_yr_2.png", mpiDiff, px_per_unit=6.0)
 
-mpiDiff = fig_1_plot(mpi_yr[:,:,1],lon,lat,"MPI (m/s), index 1",levs)
-#mpiDiff = fig_1_plot(mpi_test[:,:,1],lon,lat,"MPI (m/s), index 1",levs)
-save("era5_mpi_yr_1.png", mpiDiff, px_per_unit=6.0)
-
-mpiDiff = fig_1_plot(mpi_yr[:,:,2],lon,lat,"MPI (m/s), index 1",levs)
-#mpiDiff = fig_1_plot(mpi_test[:,:,1],lon,lat,"MPI (m/s), index 1",levs)
-save("era5_mpi_yr_2.png", mpiDiff, px_per_unit=6.0)
-
-mpiDiff = fig_1_plot(mpi_yr[:,:,12],lon,lat,"MPI (m/s), index 1",levs)
-save("era5_mpi_yr_12.png", mpiDiff, px_per_unit=6.0)
+#mpiDiff = fig_1_plot(mpi_yr[:,:,12],lon,lat,"MPI (m/s), index 1",levs)
+#save("era5_mpi_yr_12.png", mpiDiff, px_per_unit=6.0)
 
 
 
