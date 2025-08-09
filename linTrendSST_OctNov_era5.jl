@@ -54,6 +54,7 @@ end
 path="/Users/C823281551/data/ERA5/"
 
 filein1  = path*"era5_sst_1979th2024_OctNov_360x180.nc"
+filein1b = path*"era5_sst_1979th2024_OctNov.nc"
 filein   = path*"MPI_ERA5_OctNov_full_output.nc"
 filein2  = path*"era5_hur_OctNov_1979th2024_360x180.nc"
 filein3  = path*"era5_uWind_OctNov_1979th2024_360x180.nc"
@@ -61,6 +62,7 @@ filein4  = path*"era5_vWind_OctNov_1979th2024_360x180.nc"
 
 tag = "ERA5"
 data1  = NCDataset(filein1)
+data1b = NCDataset(filein1b)
 data2  = NCDataset(filein2)
 data3  = NCDataset(filein3)
 data4  = NCDataset(filein4)
@@ -71,14 +73,19 @@ data   = NCDataset(filein)
 lat = data["lat"]
 lon = data["lon"]
 tme = data["valid_time"]
+latb = data1b["latitude"]
+lonb = data1b["longitude"]
  
-dim_var = data1["sst"]
+dim_var  = data1["sst"]
+dim_varb = data1b["sst"]
 
 timeAxis1 = collect(1:1:92);
 
-#sst_var = data["sst"];
-sst_var = data["vmax"];
+sst_var = data["sst"];
+sst_var_b = data1b["sst"];
+pi_var  = data["vmax"];
 dims    = size(dim_var)
+dim_high= size(dim_varb)
 rh_var  = data2["r"];
 u_var   = data3["u"];
 v_var   = data4["v"];
@@ -135,12 +142,23 @@ bgrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 # loop over longitude and latitude:
 for i in 1:dims[1]
     for j in 1:dims[2]
-        #agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],pi_var[i,j,:])
-        agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],sst_var[i,j,:])
+        agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],pi_var[i,j,:])
+        #agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],sst_var[i,j,:])
     end
 end
 
 #levs = range(-.5, .5, length = 21)
+
+agrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+for i in 1:dims[1]
+    for j in 1:dims[2]
+        agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],sst_var[i,j,:])
+    end
+end
+levs = range(-0.5, 0.5, length = 21)
+blah = local_fig(agrid.*20,lon,lat,"sst linear trends October-November (%/decade)",levs)
+save("era5_sst_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
+
 levs = range(-2.5, 2.5, length = 21)
 blah = local_fig(agrid.*20,lon,lat,"PI linear trends October-November (m/s)/decade",levs)
 save("era5_PI_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
@@ -165,6 +183,17 @@ levs = range(-2.5, 2.5, length = 21)
 blah = local_fig(agrid.*20,lon,lat,"VWS linear trends October-November (m/s)/decade",levs)
 save("era5_VWS_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
 
+agrid  = Array{Union{Missing, Float64}, 2}(undef, dim_high[1], dim_high[2])
+bgrid  = Array{Union{Missing, Float64}, 2}(undef, dim_high[1], dim_high[2])
+# loop over longitude and latitude:
+for i in 1:dim_high[1]
+    for j in 1:dim_high[2]
+        agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],sst_var_b[i,j,:])
+    end
+end
+levs = range(-0.5, 0.5, length = 21)
+blah = local_fig(agrid.*20,lonb,latb,"sst linear trends October-November (%/decade)",levs)
+save("era5_sst_LinTrend_OctThNov_1979th2024_region_highres.png", blah, px_per_unit=6.0)
 
 
 
