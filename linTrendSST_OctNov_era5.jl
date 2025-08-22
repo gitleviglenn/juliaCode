@@ -8,6 +8,7 @@ using NCDatasets
 using Statistics
 using GLM
 using Polynomials
+using ShiftedArrays
 
 include("ensoFuncs.jl")
 
@@ -16,20 +17,22 @@ function local_fig(inpv,d1,d2,tit,levs)
         figure_padding=(5,5,10,10),
         #figure_padding=(10,15,10,10),
         backgroundcolor=:white,
-        size=(600,400),
+        size=(900,700),
         #size=(900,400),
         #size=(600,300), # this increases tickfont size, but doesn't print -30S!!#$%
         )   
     ax = GeoAxis(f2[1,1];
+        aspect = 3,
+        #dest="+proj=latlon +lon_0=180",
         dest="+proj=latlon",
         #xticks = -180:30:180,
-        xticks = -110:10:-10, 
-        #yticks = -90:30:90,
-        yticks = 0:10:30,
+        xticks = -160:20:180, 
+        yticks = -30:20:30,
+        #yticks = -50:20:50,
         xlabel="longitude",
         ylabel="latitude",
-        #limits=(-180,180,-90,90),
-        limits=(-110,-10,0,30),
+        limits=(-160,180,-30,30),
+        #limits=(-180,180,-50,50),
         title=tit,
         #xticklabelsize = 22, # 14,16 are pretty reasonable sizes
         #yticklabelsize = 22, # 22 used for 8 panel figure that needs larger font
@@ -72,6 +75,7 @@ data   = NCDataset(filein)
 #lon = data["longitude"]
 lat = data["lat"]
 lon = data["lon"]
+plev = data2["pressure_level"]
 tme = data["valid_time"]
 latb = data1b["latitude"]
 lonb = data1b["longitude"]
@@ -91,7 +95,7 @@ u_var   = data3["u"];
 v_var   = data4["v"];
 
 # relative humidity
-level=1 # level 2 should correspond to the 700 hPa pressure level. 
+level=2 # level 2 should correspond to the 700 hPa pressure level. 
 lat1 = 1
 lat2 = 180
 
@@ -100,7 +104,12 @@ u_tot        = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], dims[3
 v_tot        = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], dims[3])
 VWS_tot      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], dims[3])
 
+lon2         = Array{Union{Missing, Float64}, 1}(undef, dims[1])
+
 println("size of rh_lev is: ",size(rh_lev))
+
+println("p level 1 is: ",plev[1])
+println("p level 2 is: ",plev[2])
 
 for i in 1:dims[3]
   #rsst_test      = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 1)
@@ -113,7 +122,7 @@ end
 
 #  octNovInd = Matrix{Int32}(undef, 92)
 octNovInd = Array{Union{Missing, Float64}, 1}(undef, dims[3])
-pi_var = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], dims[3])
+#pi_var = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], dims[3])
 #
 ## save i and i+1, jump 12, do again
 #for i in 10:12:408
@@ -134,7 +143,7 @@ pi_var = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], dims[3])
 
 print("size of sst Array is: ",size(dim_var))
 print("size of PI Array is: ",size(sst_var))
-
+print("size of lon Array is: ",size(lon))
 #print(octNovInd[:])
 
 agrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
@@ -143,9 +152,15 @@ bgrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 for i in 1:dims[1]
     for j in 1:dims[2]
         agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],pi_var[i,j,:])
-        #agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],sst_var[i,j,:])
+#        #agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],sst_var[i,j,:])
     end
 end
+#
+levs = range(-2.0, 2.0, length = 21)
+blah = local_fig(agrid.*20,lon,lat,"PI linear trends October-November (m/s)/decade",levs)
+save("era5_PI_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
+#save("era5_PI_LinTrend_OctThNov_1979th2024.png", blah, px_per_unit=6.0)
+#
 
 #levs = range(-.5, .5, length = 21)
 
@@ -158,10 +173,11 @@ end
 levs = range(-0.5, 0.5, length = 21)
 blah = local_fig(agrid.*20,lon,lat,"sst linear trends October-November (%/decade)",levs)
 save("era5_sst_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
+#save("era5_sst_LinTrend_OctThNov_1979th2024.png", blah, px_per_unit=6.0)
 
-levs = range(-2.5, 2.5, length = 21)
-blah = local_fig(agrid.*20,lon,lat,"PI linear trends October-November (m/s)/decade",levs)
-save("era5_PI_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
+#levs = range(-0.5, 0.5, length = 21)
+#blah = local_fig(agrid.*20,lon,lat,"PI linear trends October-November (m/s)/decade",levs)
+#save("era5_PI_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
 
 agrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 for i in 1:dims[1]
@@ -169,9 +185,10 @@ for i in 1:dims[1]
         agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],rh_lev[i,j,:])
     end
 end
-levs = range(-1.0, 1.0, length = 21)
+levs = range(-2.0, 2.0, length = 21)
 blah = local_fig(agrid.*20,lon,lat,"RH linear trends October-November %/decade",levs)
 save("era5_RH850_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
+#save("era5_RH850_LinTrend_OctThNov_1979th2024.png", blah, px_per_unit=6.0)
 
 agrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 for i in 1:dims[1]
@@ -179,21 +196,32 @@ for i in 1:dims[1]
         agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],VWS_tot[i,j,:])
     end
 end
-levs = range(-2.5, 2.5, length = 21)
+
+agrid2 = ShiftedArrays.circshift(agrid, (180,0,0))
+#lon2   = ShiftedArrays.circshift(lon, (-180,))
+lon2 = collect(0:359.)
+
+println("***********************")
+println("lon vector is: ",lon[:])
+println("***********************")
+println("lon2 vector is: ",lon2[:])
+
+levs = range(-2.0, 2.0, length = 21)
 blah = local_fig(agrid.*20,lon,lat,"VWS linear trends October-November (m/s)/decade",levs)
 save("era5_VWS_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
+#save("era5_VWS_LinTrend_OctThNov_1979th2024.png", blah, px_per_unit=6.0)
 
-agrid  = Array{Union{Missing, Float64}, 2}(undef, dim_high[1], dim_high[2])
-bgrid  = Array{Union{Missing, Float64}, 2}(undef, dim_high[1], dim_high[2])
-# loop over longitude and latitude:
-for i in 1:dim_high[1]
-    for j in 1:dim_high[2]
-        agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],sst_var_b[i,j,:])
-    end
-end
-levs = range(-0.5, 0.5, length = 21)
-blah = local_fig(agrid.*20,lonb,latb,"sst linear trends October-November (%/decade)",levs)
-save("era5_sst_LinTrend_OctThNov_1979th2024_region_highres.png", blah, px_per_unit=6.0)
+#agrid  = Array{Union{Missing, Float64}, 2}(undef, dim_high[1], dim_high[2])
+#bgrid  = Array{Union{Missing, Float64}, 2}(undef, dim_high[1], dim_high[2])
+## loop over longitude and latitude:
+#for i in 1:dim_high[1]
+#    for j in 1:dim_high[2]
+#        agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],sst_var_b[i,j,:])
+#    end
+#end
+#levs = range(-0.5, 0.5, length = 21)
+#blah = local_fig(agrid.*20,lonb,latb,"sst linear trends October-November (%/decade)",levs)
+#save("era5_sst_LinTrend_OctThNov_1979th2024_region_highres.png", blah, px_per_unit=6.0)
 
 
 
