@@ -23,16 +23,17 @@ debugSwitch = 0
 #file2 = "/Users/C823281551/data/obs/oni.noaa.csv"
 #file3 = "/Users/C823281551/Downloads/cmip5mean_nino3.4.txt"
 # using Excel, I opened the cmip5mean_nino3.4.txt file and then saved it as a csv file.
+# do not save csv files as the UTF-8 version, just the basic .csv
 #file3 = "/Users/C823281551/Downloads/cmip5mean_nino3.4test.csv"
 #file4 = "/Users/C823281551/Downloads/cmip5mean_tropicalmean.csv"
 path="/Users/C823281551/"
 #path="/Users/silvers"
-file1 = path*"data/enso/nino34.noaa.csv"
-file2 = path*"data/enso/oni.noaa.csv"
-file3 = path*"data/enso/cmip5_nino3.4.csv"
-file4 = path*"data/enso/cmip5_tropicalmean.csv"
-file5 = path*"data/enso/cmip6_nino3.4.csv"
-file6 = path*"data/enso/cmip6_tropicalmean.csv"
+file1 = path*"dataB/enso/nino34.noaa.csv"
+file2 = path*"dataB/enso/oni.noaa.csv"
+file3 = path*"dataB/enso/cmip5_nino3.4.csv"
+file4 = path*"dataB/enso/cmip5_tropicalmean.csv"
+file5 = path*"dataB/enso/cmip6_nino3.4.csv"
+file6 = path*"dataB/enso/cmip6_tropicalmean.csv"
 file7 = path*"data/tos_GFDL_hist/tos_Omon_GFDL-ESM4_historical_r1i1p1f1_gr_18500116-20141216.nc"
 file8 = path*"data/obs/observed_tropicalmean.csv"
 
