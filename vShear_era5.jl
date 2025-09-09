@@ -91,6 +91,9 @@ using CairoMakie
 using GeoMakie
 using NCDatasets
 using Statistics
+using HypothesisTests
+using TypedTables
+using DataFrames
 
 include("ensoFuncs.jl")
 
@@ -102,8 +105,8 @@ include("ensoFuncs.jl")
 # SH
 ####ninoyears = [30 42 66 102 162 246 318 354]
 ninoyears = [23 35 59 96 155 239 311 347]
-####ninayears = [114 126 222 258 270 342 378 390]
 ninayears = [107 119 215 251 263 335 371 383]
+#####ninayears = [114 126 222 258 270 342 378 390]
 function create_indices(years)
   ensoInd = Matrix{Int64}(undef, 8, 6)
   for i in 1:8
@@ -135,7 +138,9 @@ v_var = data["v"]
 
 numfields = 48
 numall    = 408
-# probably will be spanning +/-40 degrees
+timeENSO  = collect(1.:1:numfields);
+era5_sst_1990th2023_360x180timeENSO  = collect(1.:1:48);
+# span +/-40 degrees
 lat1=1
 lat2=81
 
@@ -150,15 +155,11 @@ v_1            = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, n
 v_2            = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
 vSh_tmp        = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 VWS_low_full   = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
-#VWS_low_a      = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
-#VWS_high_a     = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 VWS_high_full  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 VWS_high       = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 
 endi = 48
 # low should be an array that contains the timesteps representing the negative phase of ENSO
-#low = 1:1:400
-#high = 1:1:400
 low = ninaInd
 high = ninoInd
 # for low values of ENSO timeseries.   Also compute for high values.  
@@ -186,71 +187,162 @@ for i in 1:endi
   vSh_tmp[:,lat1:lat2,i] = v_2[:,lat1:lat2,1,i] - v_1[:,lat1:lat2,1,i]
   VWS_high_full[:,lat1:lat2,i] = sqrt.(uSh_tmp[:,lat1:lat2,i].^2 .+ vSh_tmp[:,lat1:lat2,i].^2)
 end
-# when should i take the time average? 
-#VWS_tot[:,lat1:lat2]  = sqrt.(u_tot[:,lat1:lat2,i].^2 .+ v_tot[:,lat1:lat2,i].^2)
-#
-#VWS_low_a[:,lat1:lat2]  = sqrt.(uSh_tmp[:,lat1:lat2,2].^2 .+ vSh_tmp[:,lat1:lat2,2].^2)
-#VWS_high_a[:,lat1:lat2] = sqrt.(uSh_tmp[:,lat1:lat2,5].^2 .+ vSh_tmp[:,lat1:lat2,5].^2)
+# when should i take the time average?    It doesn't seem to matter.
 
 VWS_high_tmn = mean(VWS_high_full, dims=3)
 VWS_low_tmn = mean(VWS_low_full, dims=3)
 
-#VWS_total[:,lat1:lat2]  = sqrt.(u_2[:,lat1:lat2,1,i].^2 .+ vSh_tmp[:,lat1:lat2,2].^2)
-
-#VWS_high_a[:,lat1:lat2] = sqrt.(uSh_tmp[:,lat1:lat2,5].^2 .+ vSh_tmp[:,lat1:lat2,5].^2)
-#nino34_ts_mn = mean(filter(!isnan, skipmissing(nino34_full)))
-
-#VWS_low  = mean(VWS_low_full, dims =3)
-#VWS_high = mean(VWS_high_full, dims =3)
+vws_ninoMnina = VWS_high_full .- VWS_low_full
+vws_comp_mn   = mean(vws_ninoMnina, dims=3)
+println("size of vsw_ninoMnina",size(vws_ninoMnina))
 
 VWS_tot_tm = mean(VWS_tot, dims = 3)
-
-#VWS_high = mean(filter(!isnan, skipmissing(VWS_high_full)), dims =3)
-#VWS_high = mean(skipmissing(VWS_high_full), dims =3)
-#tropmn_ts[i]=mean(skipmissing(trop_full[:,:,i]))-tropmn_ts_mn
-#data_2_plot = VWS_high - VWS_low
-#
-#data_2_plot_anom = VWS_high_a - VWS_low_a
 
 data_2_plot_anom = VWS_high_tmn - VWS_low_tmn
 data_2_plot_tot = VWS_tot_tm
 
-##
-function fig_tot_plot(inpv,d1,d2,tit)
-    f2 = Figure(;
-        figure_padding=(5,5,10,10),
-        backgroundcolor=:white,
-        size=(600,300),
-        )
-    #ax = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
-    ax = GeoAxis(f2[1,1];
-        xticks = -180:30:180, 
-        #xticks = 0:30:360, 
-        yticks = -90:30:90,
-        ylabel="latitude",
-        xlabel="longitude",
-        limits=(-180,180,-40,40),
-        title=tit,
-        )
-        bb = contourf!(ax, d1, d2, inpv, 
-             #levels = range(0, 50, length = 25), # tos
-             levels = range(0, 50, length = 20), # rh
-             #colormap = :Blues_8,
-             #colormap = :broc,
-             colormap = :bam,
-             #colormap = :batlow,
-             #colormap = :vik,
-             extendlow = :auto, extendhigh = :auto
-        )
-        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
-        Colorbar(f2[1,2], bb)
-    return f2
+#--------------------------------------------------------------------------------
+# calculate significance:
+X2 = Float64.(timeENSO);
+d1 = 360
+d2 = 81
+pvalgrid  = Array{Union{Missing, Float64}, 2}(undef, d1, d2)
+pvallow   = Array{Union{Missing, Float64}, 2}(undef, d1, d2)
+pvalhigh  = Array{Union{Missing, Float64}, 2}(undef, d1, d2)
+intVal    = Array{Union{Missing, Float64}, 2}(undef, d1, d2)
+
+for i in 1:360 # dims[1] longitudes
+    for j in 1:81 # dims[2] latitudes
+        Yind = vws_ninoMnina[i,j,:];
+        if any(ismissing, Yind)
+            #println("missing value found ")
+        else
+        # need to somehow check if Yind contains missing data, and if so, then don't proceed to the lm step.  
+            Ytemp = Float64.(Yind)
+            tab   = Table(X = X2, Y = Ytemp);
+            ols_temp = OneSampleTTest(Ytemp)
+            pvalgrid[i,j] = pvalue(ols_temp)
+            rang = confint(ols_temp, level = 0.95, tail = :both);
+            pvallow[i,j]  = rang[1]
+            pvalhigh[i,j] = rang[2]
+            # test to make sure that 0 is not contained between the upper/lower 95% range
+            intVal[i,j] = sign(pvalhigh[i,j]) + sign(pvallow[i,j])
+        end
+    end
 end
-tit="dummy"
-levs = range(-10., 10, length = 21)
-fig2name = tag*"_vShear_nino_comp_SH.png"
-#fig = fig_tot_plot(data_2_plot_tot[:,:,1],lon,lat,tit)
-#fig = fig_anom_plot(data_2_plot_anom[:,:,1],lon,lat,tit)
-fig = fig_anom_plot(data_2_plot_anom[:,:],lon,lat,tit,levs)
-#fig = fig_anom_plot(data_2_plot_anom[:,:],lon,lat,tit)
-save(fig2name, fig)
+
+arrN = reshape(pvalgrid, (d1*d2));
+sortedP = sort(arrN)
+
+lengthP = d1*d2
+pAxis = collect(1:1:lengthP);
+wilks0p05 = (0.05/lengthP) .* pAxis
+wilks0p1 = (0.1/lengthP) .* pAxis
+p0p05 = zeros(lengthP) .+ 0.05;
+wilksArray = zeros(lengthP);
+#---------------------------------
+fig3 = Figure(;
+    size = (400,400),
+    )
+ax = Axis(fig3[1,1];
+    xlabel = "p-value rank i",
+    ylabel = "p-value",
+    title  = "Significance?",
+    limits=(0,20000,0,0.1),
+    )
+#lines!(C,ts_roni_sm, linestyle = :solid)
+lines!(ax,pAxis[:],sortedP[:], color = :black)
+lines!(ax,pAxis[:],p0p05[:])
+lines!(ax,pAxis[:],wilks0p05[:])
+fig3
+save("sig_vws_Wilks.png", fig3, px_per_unit=6.0)
+#---------------------------------
+
+for i in 1:20000
+    wilksArray[i] = sortedP[i] - wilks0p05[i]
+end
+
+#psign = sign.(sortedP)
+psign = sign.(wilksArray)
+diffs = diff(psign)
+psign_ind = findall(!iszero, diffs)
+println("change of sign should be intersection point of sortedP and wilks0p05: ",psign_ind)
+println("pvalue at intersection of sorted pvalues and Wilks FDR pvalue is: ",sortedP[psign_ind[1]])
+
+# this is the p-value based on the FDR (false detection rate) described in Wilkes, 2016
+pFDR = sortedP[psign_ind[1]]
+
+# create a boolean array of points that indicate statistical significance
+woman      = falses(d1,d2);
+c1 = coalesce.(pvalgrid, false);
+c2 = coalesce.(intVal, false);
+for i in 1:d1
+    for j in 1:d2
+        #woman[i,j] = c1[i,j] < 0.05 && c2[i,j] != 0.0
+        woman[i,j] = c1[i,j] < pFDR && c2[i,j] != 0.0
+    end
+end
+# grab all the points that are labelled as 'true' or 1.  
+points = findall(x -> x == 1, woman);
+# points is now a CartesianIndex object, which cannot be directly used with scatter.  
+# we have to create coordinate arrays from points: 
+x_coords = [idx.I[1] for idx in points];
+y_coords = [idx.I[2] for idx in points];
+
+# shift index arrays to correspond to trad lat/lon defs
+x_lats = x_coords .- 180;
+#x_lats = x_coords
+#y_lons = y_coords .- 90; # shifting the south point from 0 to -90
+y_lons = y_coords .- 40; # shifting the south point from 0 to -40
+
+println("=========================")
+#println("x_lats are: ",x_lats[:])
+println("=========================")
+#println("y_lons are: ",y_lons[:])
+println("=========================")
+#println("lons are: ",lon[:])
+println("=========================")
+#println("lats are: ",lat[:])
+println("=========================")
+
+#--------------------------------------------------------------------------------
+
+##
+
+#--------------------------------------------
+f4 = Figure(;
+    figure_padding=(5,5,10,10),
+    backgroundcolor=:white,
+    size=(900,400),
+    )
+ax = GeoAxis(f4[1,1];
+    xticks = -180:30:180, 
+    #xticks = 0:30:360, 
+    yticks = -90:30:90,
+    ylabel="latitude",
+    xlabel="longitude",
+    limits=(-180,180,-40,40),
+    title="VWS[m/s] composite El Nino - La Nina",
+    xticklabelsize = 22, # 14,16 are pretty reasonable sizes
+    yticklabelsize = 22, # 22 used for 8 panel figure that needs larger font
+    )
+    bb = contourf!(ax, lon, lat, vws_comp_mn[:,:,1], 
+         #levels = range(0, 50, length = 25), # tos
+         levels = range(-10, 10, length = 21), # rh
+         #colormap = :Blues_8,
+         #colormap = :broc,
+         colormap = :bam,
+         #colormap = :batlow,
+         #colormap = :vik,
+         extendlow = :auto, extendhigh = :auto
+    )
+    lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
+    Colorbar(f4[1,2], bb)
+scatter!(ax, x_lats, y_lons, marker = :circle, markersize=2, color = :black)
+f4
+
+#vws_comp_mn
+#fig = fig_anom_plot(vws_comp_mn[:,:],lon,lat,tit,levs)
+save("vws_fig_SH_Wilks.png", f4, px_per_unit=6.0)
+
+

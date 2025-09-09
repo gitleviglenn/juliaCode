@@ -4,9 +4,6 @@
 # Compute the relative SST change by using a linear regression calculation
 # data: ERA5
 #
-# Default behavior is not to compute the linear regression sst change of each 
-# grid point to change this set regThres > 2
-#
 # levi silvers                                                    June 2025
 #-------------------------------------------------------------------------------
 
@@ -14,31 +11,33 @@ using CairoMakie
 using GeoMakie
 using NCDatasets
 using Statistics
-#using GLM
+using HypothesisTests
 using DataFrames
+using TypedTables
 
 include("ensoFuncs.jl")
 
 path="/Users/C823281551/data/ERA5/"
 
 filein  = path*"era5_sst_1990th2023_360x180.nc"
-file2   = path*"era5_sst_1990th2023_360x180_summer.nc"
+#file2   = path*"era5_sst_1990th2023_360x180_summer.nc"
 file3   = path*"MPI_ERA5_full_output.nc"
 tag = "ERA5"
 data   = NCDataset(filein);
-data2  = NCDataset(file2);
+#data2  = NCDataset(file2);
 data3  = NCDataset(file3);
 
 lat = data["lat"]
 lon = data["lon"]
 tme = data["valid_time"]
-timeAxis1 = collect(1.083333:1/12:35);
+#timeAxis1 = collect(1.083333:1/12:35);
 timeAxis2 = collect(1.083333:1/6:35);
-timeAxis3 = collect(1.:1:204);
+#timeAxis3 = collect(1.:1:204);
+#timeAxis4 = collect(1.:1:408);
 timeENSO  = collect(1.:1:48);
 
 sst_var    = data["sst"];
-sst_summer = data2["sst"];
+#sst_summer = data2["sst"];
 vmax       = data3["vmax"];
 
 # Create index lists for ENSO years, and grab the corresponding data from sst_var[]
@@ -60,8 +59,6 @@ function create_indices(years)
   #ensoInd = [o1 o2 o3 o4 o5 o6 o7 o8]
   return ensoInd
 end
-
-
 
 ninoInd = create_indices(ninoyears)
 ninaInd = create_indices(ninayears)
@@ -87,6 +84,7 @@ println("Nina indices are: ",ninaInd[8,:])
 println("-----------------------------------------------------------------------------------")
 
 dims = size(sst_var)
+println("size of sst_var is: ",size(sst_var))
 dimh = Int.(dims[3]/2)
 numfields = 48
 ensoEnd = 48
@@ -106,10 +104,8 @@ latS = 60
 latN = 120
 
 for i in 1:ensoEnd
-    #sst_trm_nino[i] = mean(skipmissing(sst_nino[:,lat1:lat2,i]))
-    #sst_trm_nina[i] = mean(skipmissing(sst_nina[:,lat1:lat2,i]))
-    sst_trm_nina[i] = mean(skipmissing(sst_var[:,latS:latN,ninaInd[i]]))
-    sst_trm_nino[i] = mean(skipmissing(sst_var[:,latS:latN,ninoInd[i]]))
+  sst_trm_nina[i] = mean(skipmissing(sst_var[:,latS:latN,ninaInd[i]]))
+  sst_trm_nino[i] = mean(skipmissing(sst_var[:,latS:latN,ninoInd[i]]))
 end
 
 for i in 1:48
@@ -129,22 +125,13 @@ end
 #sst_mn = mean(sst_var, dims=3)
 #sst_tr_mn = mean.(skipmissing(sst_var[:,lat1:lat2,:]));
 
-# i don't think we need these time averages any more...
-#for i in 1:408
-#    sst_tr_mean_full[i] = mean(skipmissing(sst_var[:,lat1:lat2,i]))
-#end
-#for i in 1:204
-#    sst_tr_mean[i] = mean(skipmissing(sst_summer[:,lat1:lat2,i]))
-#end
-
-
 #nino_mn = mean(sst_nino, dims=3)
 #nina_mn = mean(sst_nina, dims=3)
 #mpi_nino_mn = mean(mpi_nino, dims=3)
 #mpi_nina_mn = mean(mpi_nina, dims=3)
 
-print("size of full vmax array is: ",size(vmax))
-print("size of MPI Nina mean is: ",size(mpi_nina))
+println("size of full vmax array is: ",size(vmax))
+println("size of MPI Nina mean is: ",size(mpi_nina))
 
 mpi_comp    = mpi_nino .- mpi_nina
 mpi_comp_mn = mean(mpi_comp, dims=3)
@@ -152,44 +139,154 @@ mpi_comp_mn = mean(mpi_comp, dims=3)
 sst_comp    = sst_nino .- sst_nina
 sst_comp_mn = mean(sst_comp, dims=3)
 
+println("size of sst_comp is: ",size(sst_comp))
+println("size of sst_comp_mn is: ",size(sst_comp_mn))
+
 # begin work on the relative SST composite figure: 
 #--------------------------------------------------------------------------------------------------------------
 
-# if linear regression is desired as the means of computing relative sst change at a 
-# grid point then set regThres > 1
-
-regThres = 0
-
-if regThres > 1
-    # use linear regression to model the trend at each grid point.
-    agrid1  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
-    bgrid1  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
-    anino   = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
-    bnino   = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
-    anina   = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
-    bnina   = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
-    # loop over longitude and latitude:
-    for i in 1:dims[1]
-        for j in 1:dims[2]
-            agrid1[i,j],bgrid1[i,j] = find_best_fit(timeAxis3[:],sst_summer[i,j,:])
-            ##agrid1[i,j],bgrid1[i,j] = find_best_fit(timeENSO[:],sst_summer[i,j,:])
-            ##agrid1[i,j],bgrid1[i,j] = find_best_fit(timeAxis2[:],sst_summer[i,j,:].-297.03)
-            #anino[i,j],bnino[i,j] = find_best_fit(timeENSO[:],sst_nino[i,j,:])
-            #anina[i,j],bnina[i,j] = find_best_fit(timeENSO[:],sst_nina[i,j,:])
-        end
-    end
-    # timeAxis2 consists of monthly values over 204 timesteps taken from 34 years.  So our trend values should be
-    # Degrees/34 years right?  Then to convert to degrees per century 'agrid1' could be multiplied by # 2.94
-    
-    #levs = range(-2., 2., length = 21)
-    #blah = fig_1_anom(agrid1.*600,lon,lat,levs,"linear trends C per Century")
-    ## is this the equivalent of Figure 3a in Vecchi and Soden, 2007 but for ERA5 over a different time period?
-    #save("era5_test.png", blah, px_per_unit=6.0)
+#  # use linear regression to model the trend at each grid point.
+#  agrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+#  bgrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+#endTime = 60
+#    for i in 1:dims[1]
+#        for j in 1:dims[2]
+#   ##         agrid[i,j],bgrid[i,j] = find_best_fit(timeENSO[:],sst_comp[i,j,:])
+#   #         agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis4[1:endTime],sst_var[i,j,1:endTime])
+#        end
+#    end
+#    # timeAxis2 consists of monthly values over 204 timesteps taken from 34 years.  So our trend values should be
+#    # Degrees/34 years right?  Then to convert to degrees per century 'agrid1' could be multiplied by # 2.94
+#    #println("agrid: ",agrid[50:100,50:100])
+#    levs = range(-0.1, 0.1, length = 21)
+#    blah = fig_anom_plot(agrid,lon,lat,"linear trends C per Century",levs)
+#    ## is this the equivalent of Figure 3a in Vecchi and Soden, 2007 but for ERA5 over a different time period?
+#    save("era5_sstlintrend.png", blah, px_per_unit=6.0)
     
     # subtract off tropical mean.
-    relSST = agrid1*600 .- 1.55; # 1.55 C/century, estimated from the slope of the linear trend of ERA5 tropical mean.
+#    relSST = agrid1*600 .- 1.55; # 1.55 C/century, estimated from the slope of the linear trend of ERA5 tropical mean.
 
+#end
+
+#X2 = Float64.(timeENSO);
+#X2 = Float64.(timeAxis4[1:endTime]);
+
+d1 = 360
+d2 = 81
+pvalgrid  = Array{Union{Missing, Float64}, 2}(undef, d1, d2)
+pvallow   = Array{Union{Missing, Float64}, 2}(undef, d1, d2)
+pvalhigh  = Array{Union{Missing, Float64}, 2}(undef, d1, d2)
+intVal    = Array{Union{Missing, Float64}, 2}(undef, d1, d2)
+
+for i in 1:360 # dims[1] longitudes
+    #for j in 1:180 # dims[2] latitudes
+    for j in 50:130 # dims[2] latitudes
+        Yind = sst_comp[i,j,:];
+        #Yind = mpi_comp[i,j,:];
+        if any(ismissing, Yind)
+            #println("missing value found ")
+        else
+        # need to somehow check if Yind contains missing data, and if so, then don't proceed to the lm step.  
+          Ytemp = Float64.(Yind)
+          ols_temp = OneSampleTTest(Ytemp)
+          pvalgrid[i,j-49] = pvalue(ols_temp)
+          rang = confint(ols_temp, level = 0.95, tail = :both);
+          pvallow[i,j-49]  = rang[1]
+          pvalhigh[i,j-49] = rang[2]
+          intVal[i,j-49] = sign(pvalhigh[i,j-49]) + sign(pvallow[i,j-49])
+        end
+    end
 end
+
+arrN = reshape(pvalgrid, (d1*d2));
+sortedP = sort(arrN)
+
+lengthP = 81*360;
+#arrN = reshape(pvalgrid, (lengthP));
+#testSort = sort(arrN)
+
+pAxis = collect(1:1:lengthP);
+wilks0p05 = (0.05/(lengthP)) .* pAxis
+wilks0p1 = (0.1/(lengthP)) .* pAxis
+p0p05 = zeros(lengthP) .+ 0.05;
+wilksArray = zeros(lengthP);
+fig3 = Figure(;
+    size = (400,400),
+    )
+ax = Axis(fig3[1,1];
+    xlabel = "p-value rank i",
+    ylabel = "p-value",
+    title  = "Significance?",
+    limits=(0,20000,0,0.1),
+    )
+#lines!(C,ts_roni_sm, linestyle = :solid)
+lines!(ax,pAxis[:],sortedP[:], color = :black)
+lines!(ax,pAxis[:],p0p05[:])
+lines!(ax,pAxis[:],wilks0p05[:])
+
+#blab = where(testSort = wilks0p05)
+# blah = maximum (testSort <= wilks0p05)
+for i in 1:20000
+    #wilksArray[i] = testSort[i] <= wilks0p05[i]
+    wilksArray[i] = sortedP[i] - wilks0p05[i]
+end
+#println(wilks0p05[1:500])
+#println("*******************")
+#println(testSort[1:500])
+#println("wilks threshold: ",maximum(wilksArray))
+
+#lines!(ax,pAxis[:],wilks0p1[:])
+fig3
+save("sig_Wilks.png", fig3, px_per_unit=6.0)
+
+fig3 = Figure(;
+    size = (400,400),
+    )
+ax = Axis(fig3[1,1];
+    xlabel = "p-value rank i",
+    ylabel = "p-value",
+    title  = "Significance?",
+    limits=(0,20000,-0.1,0.1),
+    )
+#lines!(C,ts_roni_sm, linestyle = :solid)
+lines!(ax,pAxis[:],wilksArray[:], color = :black)
+fig3
+save("sig_WilksArray.png", fig3, px_per_unit=6.0)
+
+
+#psign = sign.(sortedP)
+psign = sign.(wilksArray)
+diffs = diff(psign)
+psign_ind = findall(!iszero, diffs)
+println("change of sign should be intersection point of sortedP and wilks0p05: ",psign_ind)
+println("pvalue at intersection of sorted pvalues and Wilks FDR pvalue is: ",sortedP[psign_ind[1]])
+
+# this is the p-value based on the FDR (false detection rate) described in Wilkes, 2016
+pFDR = sortedP[psign_ind[1]]
+
+# create a boolean array of points that indicate statistical significance
+woman      = falses(d1,d2);
+c1 = coalesce.(pvalgrid, false);
+c2 = coalesce.(intVal, false);
+for i in 1:d1
+    #for j in 50:130
+    for j in 1:d2
+        #woman[i,j] = c1[i,j] < 0.05 && c2[i,j] != 0.0
+        woman[i,j] = c1[i,j] < pFDR && c2[i,j] != 0.0
+    end
+end
+
+# grab all the points that are labelled as 'true' or 1.  
+points = findall(x -> x == 1, woman);
+# points is now a CartesianIndex object, which cannot be directly used with scatter.  
+# we have to create coordinate arrays from points: 
+x_coords = [idx.I[1] for idx in points];
+y_coords = [idx.I[2] for idx in points];
+
+# shift index arrays to correspond to trad lat/lon defs
+x_lats = x_coords .- 180;
+#y_lons = y_coords .- 90;
+y_lons = y_coords .- 40;
 
 #levs = range(-2., 2., length = 21)
 #tropTrend = fig_1_anom(relSST,lon,lat,levs,"linear trends C per century, minus trop mean")
@@ -204,21 +301,96 @@ end
 ## is this the equivalent of Figure 3b in Vecchi and Soden, 2007 but for ERA5 over a different time period?
 #save("era5_mpi_nina.png", mpiNina, px_per_unit=6.0)
 
-levs = range(-10., 10., length = 21)
-#mpiDiff = fig_1_anom(mpi_comp[:,:,1],lon,lat,levs,"Composite MPI (m/s), El Nino - La Nina")
+#levs = range(-10., 10., length = 21)
+##mpiDiff = fig_1_anom(mpi_comp[:,:,1],lon,lat,levs,"Composite MPI (m/s), El Nino - La Nina")
+#
+## colormap = :vik, seems to work well for MPI
+#mpiDiff = fig_anom_plot(mpi_comp_mn[:,:,1],lon,lat,"Composite MPI (m/s), El Nino - La Nina",levs)
+##mpiDiff = fig_anom_plot(mpi_comp[:,:,2],lon,lat,"Composite MPI (m/s), El Nino - La Nina",levs)
+#save("era5_mpiDiff_NHb.png", mpiDiff, px_per_unit=6.0)
 
-# colormap = :vik, seems to work well for MPI
-mpiDiff = fig_anom_plot(mpi_comp_mn[:,:,1],lon,lat,"Composite MPI (m/s), El Nino - La Nina",levs)
-#mpiDiff = fig_anom_plot(mpi_comp[:,:,2],lon,lat,"Composite MPI (m/s), El Nino - La Nina",levs)
-save("era5_mpiDiff_NH.png", mpiDiff, px_per_unit=6.0)
+#levs = range(-2., 2., length = 21)
+#sstDiff = fig_anom_plot(sst_comp_mn[:,:,1],lon,lat,"Composite SST, El Nino - La Nina",levs)
+#save("era5_sstDiff_NHb.png", sstDiff, px_per_unit=6.0)
 
+
+
+# range for SST: 
 levs = range(-2., 2., length = 21)
-sstDiff = fig_anom_plot(sst_comp_mn[:,:,1],lon,lat,"Composite MPI (m/s), El Nino - La Nina",levs)
-save("era5_sstDiff_NH.png", sstDiff, px_per_unit=6.0)
 
+# range for MPI: 
+#levs = range(-10., 10., length = 21)
+    f3 = Figure(;
+        figure_padding=(5,5,10,10),
+        backgroundcolor=:white,                                                                     
+        size=(900,400),                                                                             
+        )   
+    ax = GeoAxis(f3[1,1];
+        #aspect = 3,
+        #dest="+proj=latlon",                                                                        
+        xticks = -180:30:180,                                                                       
+        yticks = -90:30:90,                                                                         
+        xlabel="longitude",
+        ylabel="latitude",
+        limits=(-180,180,-40,40),
+        #title="Relative SST Composite", 
+        title="Potential Intensity Composite", 
+        xticklabelsize = 22, # 14,16 are pretty reasonable sizes                                    
+        yticklabelsize = 22, # 22 used for 8 panel figure that needs larger font                    
+        )                                                                                           
+        bb = contourf!(ax, lon, lat, sst_comp_mn[:,:,1],                                                            
+        #bb = contourf!(ax, lon, lat, mpi_comp_mn[:,:,1],                                                            
+             levels = levs,
+             #colormap = :batlow,
+             #colormap = :bam, # default for shear plot (greens and pinks)
+             #colormap = :seismic, # colors are a bit harsh                                         
+             colormap = :vik, # default for redish bluish for relative SST                          
+             #colormap = :BrBg, # better for RH  browns and greens                                  
+             #colormap = :roma,
+             extendlow = :auto, extendhigh = :auto                                                  
+        )       
+        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)                           
+        Colorbar(f3[1,2], bb)                                                                       
+scatter!(ax, x_lats, y_lons, marker = :circle, markersize=2, color = :black)
+f3
 
+save("era5_sstDiff_NH_statWilks.png", f3, px_per_unit=6.0)
 
-
-
+#levs = range(-0.1, 0.1, length = 21)
+#    f3 = Figure(;
+#        figure_padding=(5,5,10,10),
+#        backgroundcolor=:white,                                                                     
+#        size=(900,400),                                                                             
+#        )   
+#    ax = GeoAxis(f3[1,1];
+#        aspect = 3,
+#        dest="+proj=latlon", # what projections corresponds to 1:1?
+#        xticks = -180:20:180,                                                                       
+#        yticks = -40:20:40,                                                                         
+#        xlabel="longitude",
+#        ylabel="latitude",
+#        limits=(-180,180,-40,40),
+#        title="Relative SST Composite", 
+#        #title="Potential Intensity Composite", 
+#        xticklabelsize = 14, # 14,16 are pretty reasonable sizes                                    
+#        yticklabelsize = 14, # 22 used for 8 panel figure that needs larger font                    
+#        )                                                                                           
+#        #bb = contourf!(ax, lon, lat, sst_comp_mn[:,:,1],                                                            
+#        bb = contourf!(ax, lon, lat, agrid[:,:],                                                            
+#             levels = levs,
+#             #colormap = :batlow,
+#             #colormap = :bam, # default for shear plot (greens and pinks)
+#             #colormap = :seismic, # colors are a bit harsh                                         
+#             colormap = :vik, # default for redish bluish for relative SST                          
+#             #colormap = :BrBg, # better for RH  browns and greens                                  
+#             #colormap = :roma,
+#             extendlow = :auto, extendhigh = :auto                                                  
+#        )       
+#        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)                           
+#        Colorbar(f3[1,2], bb)                                                                       
+#scatter!(ax, x_lats, y_lons, marker = :utriangle, markersize=4, color = :black)
+#f3
+#
+#save("era5_sstLinTrend_statWilks.png", f3, px_per_unit=6.0)
 
 

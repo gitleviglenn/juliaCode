@@ -67,13 +67,16 @@ function fig_anom_plot(inpv,d1,d2,tit,levs)
     ax = GeoAxis(f2[1,1];
         xticks = -180:30:180,
         #xticks = 0:30:360, 
-        yticks = -90:30:90,
+        #yticks = -90:30:90,
+        yticks = -40:20:40,
         xlabel="longitude",
         ylabel="latitude",
-        limits=(-180,180,-40,40),
+        limits=(-180,180,-90,90),
         title=tit,
-        xticklabelsize = 22, # 14,16 are pretty reasonable sizes
-        yticklabelsize = 22, # 22 used for 8 panel figure that needs larger font
+        #xticklabelsize = 22, # 14,16 are pretty reasonable sizes
+        #yticklabelsize = 22, # 22 used for 8 panel figure that needs larger font
+        xticklabelsize = 16, # 14,16 are pretty reasonable sizes
+        yticklabelsize = 16, # 22 used for 8 panel figure that needs larger font
         )
         bb = contourf!(ax, d1, d2, inpv,
              levels = levs,
@@ -109,7 +112,8 @@ function fig_1_plot(inpv,d1,d2,tit,levs)
         bb = contourf!(ax, d1, d2, inpv,
              #levels = range(-20, 20, length = 21), # rh
              levels = levs,
-             colormap = :batlow,
+             #colormap = :batlow,
+             colormap = :seismic,
              extendlow = :auto, extendhigh = :auto
         )
         lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
