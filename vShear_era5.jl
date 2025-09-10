@@ -100,12 +100,12 @@ include("ensoFuncs.jl")
 #
 # create the indices that correspond to Nino and Nina years/months
 # NH
-#ninoyears = [18 54 90 150 174 234 306 402]
-#ninayears = [102 114 210 246 318 366 378 390]
+ninoyears = [18 54 90 150 174 234 306 402]
+ninayears = [102 114 210 246 318 366 378 390]
 # SH
 ####ninoyears = [30 42 66 102 162 246 318 354]
-ninoyears = [23 35 59 96 155 239 311 347]
-ninayears = [107 119 215 251 263 335 371 383]
+#ninoyears = [23 35 59 96 155 239 311 347]
+#ninayears = [107 119 215 251 263 335 371 383]
 #####ninayears = [114 126 222 258 270 342 378 390]
 function create_indices(years)
   ensoInd = Matrix{Int64}(undef, 8, 6)
@@ -157,6 +157,8 @@ vSh_tmp        = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numf
 VWS_low_full   = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 VWS_high_full  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 VWS_high       = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+vws_enso_yrs_high = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 8)
+vws_enso_yrs_low  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 8)
 
 endi = 48
 # low should be an array that contains the timesteps representing the negative phase of ENSO
@@ -187,6 +189,27 @@ for i in 1:endi
   vSh_tmp[:,lat1:lat2,i] = v_2[:,lat1:lat2,1,i] - v_1[:,lat1:lat2,1,i]
   VWS_high_full[:,lat1:lat2,i] = sqrt.(uSh_tmp[:,lat1:lat2,i].^2 .+ vSh_tmp[:,lat1:lat2,i].^2)
 end
+
+#j = 1
+#for i in 1:6:endi-5
+#    test  = rh_low[:,lat1:lat2,i:i+5];
+#    test2 = rh_high[:,lat1:lat2,i:i+5];
+#    rh_enso_yrs_low[:,lat1:lat2,j]  = mean(test, dims=3)
+#    rh_enso_yrs_high[:,lat1:lat2,j] = mean(test2, dims=3)
+#    j += 1
+#end
+jj = 1
+for i in 1:6:endi-5
+    #println("i index is: ",i)
+    #println("j index is: ",j)
+    test  = VWS_low_full[:,lat1:lat2,i:i+5];
+    test2 = VWS_high_full[:,lat1:lat2,i:i+5];
+    vws_enso_yrs_low[:,lat1:lat2,jj]  = mean(test, dims=3)
+    vws_enso_yrs_high[:,lat1:lat2,jj] = mean(test2, dims=3)
+    global jj += 1
+end
+
+
 # when should i take the time average?    It doesn't seem to matter.
 
 VWS_high_tmn = mean(VWS_high_full, dims=3)
@@ -195,6 +218,8 @@ VWS_low_tmn = mean(VWS_low_full, dims=3)
 vws_ninoMnina = VWS_high_full .- VWS_low_full
 vws_comp_mn   = mean(vws_ninoMnina, dims=3)
 println("size of vsw_ninoMnina",size(vws_ninoMnina))
+
+vws_ninoMnina_8dof = vws_enso_yrs_high .- vws_enso_yrs_low
 
 VWS_tot_tm = mean(VWS_tot, dims = 3)
 
@@ -213,7 +238,8 @@ intVal    = Array{Union{Missing, Float64}, 2}(undef, d1, d2)
 
 for i in 1:360 # dims[1] longitudes
     for j in 1:81 # dims[2] latitudes
-        Yind = vws_ninoMnina[i,j,:];
+        #Yind = vws_ninoMnina[i,j,:];
+        Yind = vws_ninoMnina_8dof[i,j,:];
         if any(ismissing, Yind)
             #println("missing value found ")
         else
@@ -255,7 +281,7 @@ lines!(ax,pAxis[:],sortedP[:], color = :black)
 lines!(ax,pAxis[:],p0p05[:])
 lines!(ax,pAxis[:],wilks0p05[:])
 fig3
-save("sig_vws_Wilks.png", fig3, px_per_unit=6.0)
+save("sig_vws_Wilks_8dof.png", fig3, px_per_unit=6.0)
 #---------------------------------
 
 for i in 1:20000
@@ -343,6 +369,6 @@ f4
 
 #vws_comp_mn
 #fig = fig_anom_plot(vws_comp_mn[:,:],lon,lat,tit,levs)
-save("vws_fig_SH_Wilks.png", f4, px_per_unit=6.0)
+save("vws_fig_NH_Wilks_8dof.png", f4, px_per_unit=6.0)
 
 

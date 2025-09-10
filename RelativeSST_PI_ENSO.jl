@@ -49,6 +49,17 @@ ninayears = [102 114 210 246 318 366 378 390]
 #ninoyears = [23 35 59 96 155 239 311 347]
 #ninayears = [107 119 215 251 263 335 371 383]
 
+#----------
+# Parameters for SST: 
+#figname = "era5_sstDiff_SH_statWilks_8dof.png"
+#maintit="Relative SST Composite" 
+#levs = range(-2., 2., length = 21)
+#----------
+# Parameters for MPI: 
+figname = "era5_MPI_NH_statWilks_8dof.png"
+maintit="Potential Intensity Composite"
+levs = range(-10., 10., length = 21)
+
 function create_indices(years)
   ensoInd = Matrix{Int32}(undef, 8, 6)
   for i in 1:8
@@ -95,6 +106,10 @@ mpi_nino          = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], n
 mpi_nina          = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], numfields)
 sst_trm_nino      = Array{Union{Missing, Float64}, 1}(undef, ensoEnd)
 sst_trm_nina      = Array{Union{Missing, Float64}, 1}(undef, ensoEnd)
+sst_enso_yrs_high = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 8)
+sst_enso_yrs_low  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 8)
+mpi_enso_yrs_high = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 8)
+mpi_enso_yrs_low  = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 8)
 
 # define our region of interest to be +/- 40?
 lat1 = 50
@@ -113,6 +128,21 @@ for i in 1:48
   sst_nina[:,lat1:lat2,i] = sst_var[:,lat1:lat2,ninaInd[i]] .- sst_trm_nina[i]
   mpi_nino[:,lat1:lat2,i] = vmax[:,lat1:lat2,ninoInd[i]]
   mpi_nina[:,lat1:lat2,i] = vmax[:,lat1:lat2,ninaInd[i]]
+end
+
+jj = 1
+for i in 1:6:48-5
+    #println("i index is: ",i)
+    #println("j index is: ",j)
+    test  = sst_nina[:,lat1:lat2,i:i+5];
+    test2 = sst_nino[:,lat1:lat2,i:i+5];
+    sst_enso_yrs_low[:,lat1:lat2,jj]  = mean(test, dims=3)
+    sst_enso_yrs_high[:,lat1:lat2,jj] = mean(test2, dims=3)
+    test3 = mpi_nina[:,lat1:lat2,i:i+5];
+    test4 = mpi_nino[:,lat1:lat2,i:i+5];
+    mpi_enso_yrs_low[:,lat1:lat2,jj]  = mean(test3, dims=3)
+    mpi_enso_yrs_high[:,lat1:lat2,jj] = mean(test4, dims=3)
+    global jj += 1
 end
 
 # Compute time averages
@@ -138,6 +168,9 @@ mpi_comp_mn = mean(mpi_comp, dims=3)
 
 sst_comp    = sst_nino .- sst_nina
 sst_comp_mn = mean(sst_comp, dims=3)
+
+sst_comp_8dof = sst_enso_yrs_high .- sst_enso_yrs_low
+mpi_comp_8dof = mpi_enso_yrs_high .- mpi_enso_yrs_low
 
 println("size of sst_comp is: ",size(sst_comp))
 println("size of sst_comp_mn is: ",size(sst_comp_mn))
@@ -181,8 +214,10 @@ intVal    = Array{Union{Missing, Float64}, 2}(undef, d1, d2)
 for i in 1:360 # dims[1] longitudes
     #for j in 1:180 # dims[2] latitudes
     for j in 50:130 # dims[2] latitudes
-        Yind = sst_comp[i,j,:];
+        #Yind = sst_comp[i,j,:];
+        #Yind = sst_comp_8dof[i,j,:];
         #Yind = mpi_comp[i,j,:];
+        Yind = mpi_comp_8dof[i,j,:];
         if any(ismissing, Yind)
             #println("missing value found ")
         else
@@ -284,9 +319,9 @@ x_coords = [idx.I[1] for idx in points];
 y_coords = [idx.I[2] for idx in points];
 
 # shift index arrays to correspond to trad lat/lon defs
-x_lats = x_coords .- 180;
+x_lats = x_coords .- 181;
 #y_lons = y_coords .- 90;
-y_lons = y_coords .- 40;
+y_lons = y_coords .- 42;
 
 #levs = range(-2., 2., length = 21)
 #tropTrend = fig_1_anom(relSST,lon,lat,levs,"linear trends C per century, minus trop mean")
@@ -316,8 +351,7 @@ y_lons = y_coords .- 40;
 
 
 # range for SST: 
-levs = range(-2., 2., length = 21)
-
+#levs = range(-2., 2., length = 21)
 # range for MPI: 
 #levs = range(-10., 10., length = 21)
     f3 = Figure(;
@@ -334,12 +368,13 @@ levs = range(-2., 2., length = 21)
         ylabel="latitude",
         limits=(-180,180,-40,40),
         #title="Relative SST Composite", 
-        title="Potential Intensity Composite", 
+        #title="Potential Intensity Composite",
+        title=maintit, 
         xticklabelsize = 22, # 14,16 are pretty reasonable sizes                                    
         yticklabelsize = 22, # 22 used for 8 panel figure that needs larger font                    
         )                                                                                           
-        bb = contourf!(ax, lon, lat, sst_comp_mn[:,:,1],                                                            
-        #bb = contourf!(ax, lon, lat, mpi_comp_mn[:,:,1],                                                            
+        #bb = contourf!(ax, lon, lat, sst_comp_mn[:,:,1],                                                            
+        bb = contourf!(ax, lon, lat, mpi_comp_mn[:,:,1],                                                            
              levels = levs,
              #colormap = :batlow,
              #colormap = :bam, # default for shear plot (greens and pinks)
@@ -354,7 +389,8 @@ levs = range(-2., 2., length = 21)
 scatter!(ax, x_lats, y_lons, marker = :circle, markersize=2, color = :black)
 f3
 
-save("era5_sstDiff_NH_statWilks.png", f3, px_per_unit=6.0)
+save(figname, f3, px_per_unit=6.0)
+#save("era5_sstDiff_SH_statWilks_8dof.png", f3, px_per_unit=6.0)
 
 #levs = range(-0.1, 0.1, length = 21)
 #    f3 = Figure(;
