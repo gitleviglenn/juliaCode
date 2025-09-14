@@ -6,18 +6,21 @@ using CairoMakie
 using GeoMakie
 using NCDatasets
 using Statistics
+#using HypothesisTests
 using GLM
+using TypedTables
 using Polynomials
 using ShiftedArrays
 
 include("ensoFuncs.jl")
 
-function local_fig(inpv,d1,d2,tit,levs)
+function local_fig(inpv,dim1,dim2,tit,levs,cm)
     f2 = Figure(;
+        fontsize = 20,
         figure_padding=(5,5,10,10),
         #figure_padding=(10,15,10,10),
         backgroundcolor=:white,
-        size=(900,700),
+        size=(900,400),
         #size=(900,400),
         #size=(600,300), # this increases tickfont size, but doesn't print -30S!!#$%
         )   
@@ -27,24 +30,25 @@ function local_fig(inpv,d1,d2,tit,levs)
         dest="+proj=latlon",
         #xticks = -180:30:180,
         xticks = -160:20:180, 
-        yticks = -30:20:30,
+        yticks = -50:20:50,
         #yticks = -50:20:50,
         xlabel="longitude",
         ylabel="latitude",
         limits=(-160,180,-30,30),
         #limits=(-180,180,-50,50),
         title=tit,
-        #xticklabelsize = 22, # 14,16 are pretty reasonable sizes
-        #yticklabelsize = 22, # 22 used for 8 panel figure that needs larger font
-        xticklabelsize = 14, # 14,16 are pretty reasonable sizes
-        yticklabelsize = 14, # 22 used for 8 panel figure that needs larger font
+        xticklabelsize = 20, # 14,16 are pretty reasonable sizes
+        yticklabelsize = 20, # 22 used for 8 panel figure that needs larger font
+        #xticklabelsize = 14, # 14,16 are pretty reasonable sizes
+        #yticklabelsize = 14, # 22 used for 8 panel figure that needs larger font
         )   
-        bb = contourf!(ax, d1, d2, inpv,
+        bb = contourf!(ax, dim1, dim2, inpv,
              levels = levs,
              #colormap = :batlow,
              #colormap = :bam, # default for shear plot (greens and pinks)
              #colormap = :seismic, # colors are a bit harsh
-             colormap = :vik, # default for redish bluish for relative SST
+             colormap = cm,
+             #colormap = :vik, # default for redish bluish for relative SST
              #colormap = :BrBg, # better for RH  browns and greens
              #colormap = :roma,
              extendlow = :auto, extendhigh = :auto
@@ -57,7 +61,7 @@ end
 path="/Users/C823281551/data/ERA5/"
 
 filein1  = path*"era5_sst_1979th2024_OctNov_360x180.nc"
-filein1b = path*"era5_sst_1979th2024_OctNov.nc"
+#filein1b = path*"era5_sst_1979th2024_OctNov.nc"
 filein   = path*"MPI_ERA5_OctNov_full_output.nc"
 filein2  = path*"era5_hur_OctNov_1979th2024_360x180.nc"
 filein3  = path*"era5_uWind_OctNov_1979th2024_360x180.nc"
@@ -65,7 +69,7 @@ filein4  = path*"era5_vWind_OctNov_1979th2024_360x180.nc"
 
 tag = "ERA5"
 data1  = NCDataset(filein1)
-data1b = NCDataset(filein1b)
+#data1b = NCDataset(filein1b)
 data2  = NCDataset(filein2)
 data3  = NCDataset(filein3)
 data4  = NCDataset(filein4)
@@ -77,19 +81,19 @@ lat = data["lat"]
 lon = data["lon"]
 plev = data2["pressure_level"]
 tme = data["valid_time"]
-latb = data1b["latitude"]
-lonb = data1b["longitude"]
+#latb = data1b["latitude"]
+#lonb = data1b["longitude"]
  
 dim_var  = data1["sst"]
-dim_varb = data1b["sst"]
+#dim_varb = data1b["sst"]
 
 timeAxis1 = collect(1:1:92);
 
 sst_var = data["sst"];
-sst_var_b = data1b["sst"];
+#sst_var_b = data1b["sst"];
 pi_var  = data["vmax"];
 dims    = size(dim_var)
-dim_high= size(dim_varb)
+#dim_high= size(dim_varb)
 rh_var  = data2["r"];
 u_var   = data3["u"];
 v_var   = data4["v"];
@@ -148,17 +152,18 @@ print("size of lon Array is: ",size(lon))
 
 agrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 bgrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+
 # loop over longitude and latitude:
 for i in 1:dims[1]
     for j in 1:dims[2]
         agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],pi_var[i,j,:])
-#        #agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],sst_var[i,j,:])
     end
 end
 #
 levs = range(-2.0, 2.0, length = 21)
-blah = local_fig(agrid.*20,lon,lat,"PI linear trends October-November (m/s)/decade",levs)
-save("era5_PI_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
+#blah = local_fig(agrid.*20,lon,lat,"PI linear trends October-November (m/s)/decade",levs)
+#save("era5_PI_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
+
 #save("era5_PI_LinTrend_OctThNov_1979th2024.png", blah, px_per_unit=6.0)
 #
 
@@ -171,9 +176,9 @@ for i in 1:dims[1]
     end
 end
 levs = range(-0.5, 0.5, length = 21)
-blah = local_fig(agrid.*20,lon,lat,"sst linear trends October-November (%/decade)",levs)
-save("era5_sst_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
-#save("era5_sst_LinTrend_OctThNov_1979th2024.png", blah, px_per_unit=6.0)
+#blah = local_fig(agrid.*20,lon,lat,"sst linear trends October-November (%/decade)",levs)
+#save("era5_sst_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
+##save("era5_sst_LinTrend_OctThNov_1979th2024.png", blah, px_per_unit=6.0)
 
 #levs = range(-0.5, 0.5, length = 21)
 #blah = local_fig(agrid.*20,lon,lat,"PI linear trends October-November (m/s)/decade",levs)
@@ -186,9 +191,9 @@ for i in 1:dims[1]
     end
 end
 levs = range(-2.0, 2.0, length = 21)
-blah = local_fig(agrid.*20,lon,lat,"RH linear trends October-November %/decade",levs)
-save("era5_RH850_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
-#save("era5_RH850_LinTrend_OctThNov_1979th2024.png", blah, px_per_unit=6.0)
+#blah = local_fig(agrid.*20,lon,lat,"RH linear trends October-November %/decade",levs)
+#save("era5_RH850_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
+##save("era5_RH850_LinTrend_OctThNov_1979th2024.png", blah, px_per_unit=6.0)
 
 agrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 for i in 1:dims[1]
@@ -198,30 +203,184 @@ for i in 1:dims[1]
 end
 
 agrid2 = ShiftedArrays.circshift(agrid, (180,0,0))
-#lon2   = ShiftedArrays.circshift(lon, (-180,))
 lon2 = collect(0:359.)
 
-println("***********************")
-println("lon vector is: ",lon[:])
-println("***********************")
-println("lon2 vector is: ",lon2[:])
+#----------------------------------------------------------------------------
+# work on significance
+#----------------------------------------------------------------------------
+#d1 = 360
+d1 = dims[1]
+d2 = 81
+pvalgrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+pvallow   = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+pvalhigh  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
+intVal    = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 
-levs = range(-2.0, 2.0, length = 21)
-blah = local_fig(agrid.*20,lon,lat,"VWS linear trends October-November (m/s)/decade",levs)
-save("era5_VWS_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
-#save("era5_VWS_LinTrend_OctThNov_1979th2024.png", blah, px_per_unit=6.0)
+println("sst_var values at 1 grid point are: ",sst_var[10,90,:])
 
-#agrid  = Array{Union{Missing, Float64}, 2}(undef, dim_high[1], dim_high[2])
-#bgrid  = Array{Union{Missing, Float64}, 2}(undef, dim_high[1], dim_high[2])
-## loop over longitude and latitude:
-#for i in 1:dim_high[1]
-#    for j in 1:dim_high[2]
-#        agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis1[:],sst_var_b[i,j,:])
-#    end
-#end
-#levs = range(-0.5, 0.5, length = 21)
-#blah = local_fig(agrid.*20,lonb,latb,"sst linear trends October-November (%/decade)",levs)
-#save("era5_sst_LinTrend_OctThNov_1979th2024_region_highres.png", blah, px_per_unit=6.0)
+# why is the lm model needed here, but the OneSampleTTest needed for the 
+# composite figures?  
+
+for i in 1:360 # dims[1] longitudes
+  for j in 1:180 # dims[2] latitudes
+  #for j in 50:130 # dims[2] latitudes
+    X2 = Float64.(timeAxis1);
+    Yind = VWS_tot[i,j,:];
+    #Yind = rh_lev[i,j,:];
+    #Yind = sst_var[i,j,:];
+    if any(ismissing, Yind)
+      println("missing value found ")
+    else
+      # need to somehow check if Yind contains missing data, and if so, then don't proceed to the lm step.  
+      Ytemp = Float64.(Yind)
+      #ols_temp = OneSampleTTest(Ytemp)
+      #pvalgrid[i,j-49] = pvalue(ols_temp)
+      #rang = confint(ols_temp, level = 0.95, tail = :both);
+      #pvallow[i,j-49]  = rang[1]
+      #pvalhigh[i,j-49] = rang[2]
+      #intVal[i,j-49] = sign(pvalhigh[i,j-49]) + sign(pvallow[i,j-49])
+      ##
+      tab   = Table(X = X2, Y = Ytemp);
+      ols_temp = lm(@formula(Y ~ X), tab)
+      testVals = coeftable(ols_temp)
+      #pvaltemp = testVals.cols[4][2]
+      pvalgrid[i,j] = testVals.cols[4][2]
+      pvallow[i,j]  = testVals.cols[5][2]
+      pvalhigh[i,j] = testVals.cols[6][2]
+      intVal[i,j] = sign(pvalhigh[i,j]) + sign(pvallow[i,j])
+    end
+  end
+end
+
+#arrN = reshape(pvalgrid, (d1*d2));
+arrN = reshape(pvalgrid, (dims[1]*dims[2]));
+sortedP = sort(arrN)
+
+#println("pvalues are: ",sortedP[1:2000])
+
+lengthP = 81*360;
+#fullength = dims[1]*dims[2]
+fullength = 360*180
+#println("dims 1 is: ",dims[1])
+#println("dims 2 is: ",dims[2])
+
+pAxis = collect(1:1:fullength);
+wilks0p05 = (0.05/(lengthP)) .* pAxis
+wilks0p1 = (0.1/(lengthP)) .* pAxis
+p0p05 = zeros(fullength) .+ 0.05;
+wilksArray = zeros(fullength);
+fig3 = Figure(;
+    size = (400,400),
+    )
+ax = Axis(fig3[1,1];
+    xlabel = "p-value rank i",
+    ylabel = "p-value",
+    title  = "Significance?",
+    limits=(0,20000,0,0.1),
+    )
+#lines!(C,ts_roni_sm, linestyle = :solid)
+lines!(ax,pAxis[:],sortedP[:], color = :black)
+lines!(ax,pAxis[:],p0p05[:])
+lines!(ax,pAxis[:],wilks0p05[:])
+fig3
+#blab = where(testSort = wilks0p05)
+# blah = maximum (testSort <= wilks0p05)
+for i in 1:20000
+    #wilksArray[i] = testSort[i] <= wilks0p05[i]
+    wilksArray[i] = sortedP[i] - wilks0p05[i]
+end
+
+#println(wilks0p05[1:500])
+#println("*******************")
+#println(testSort[1:500])
+#println("wilks threshold: ",maximum(wilksArray))
+
+#lines!(ax,pAxis[:],wilks0p1[:])
+fig3
+save("sig_Wilks_vws.png", fig3, px_per_unit=6.0)
+
+#psign = sign.(sortedP)
+psign = sign.(wilksArray)
+diffs = diff(psign)
+psign_ind = findall(!iszero, diffs)
+println("change of sign should be intersection point of sortedP and wilks0p05: ",psign_ind)
+println("pvalue at intersection of sorted pvalues and Wilks FDR pvalue is: ",sortedP[psign_ind[1]])
+
+# this is the p-value based on the FDR (false detection rate) described in Wilkes, 2016
+pFDR = sortedP[psign_ind[1]]
+
+# create a bitmatrix to identify statistically significane grid points
+woman      = falses(dims[1],dims[2]);
+c1 = coalesce.(pvalgrid, false);
+c2 = coalesce.(intVal, false);
+for i in 1:360
+    for j in 1:180
+        #woman[i,j] = pvalgrid[i,j] < 0.05 #&& intVal[i,j] != 0.0
+        #woman[i,j] = c1[i,j] < 0.05 && c2[i,j] != 0.0
+        woman[i,j] = c1[i,j] < pFDR && c2[i,j] != 0.0
+    end
+end
+
+# grab all the points that are labelled as 'true' or 1.  
+points = findall(x -> x == 1, woman); # points has dims of (24065,)
+# points is now a CartesianIndex object, which cannot be directly used with scatter.  
+# we have to create coordinate arrays from points: 
+x_coords = [idx.I[1] for idx in points]; # x_coords has dims of (24065,)
+y_coords = [idx.I[2] for idx in points];
+
+# shift index arrays to correspond to trad lat/lon defs
+x_lats = x_coords .- 181;
+y_lons = y_coords .- 92;
+#x_lats = x_coords .- 180;
+#y_lons = y_coords .- 90;
+
+# end of statistical analysis
+#println("***********************")
+
+#levs = range(-2.0, 2.0, length = 21)
+##blah = local_fig(agrid.*20,lon,lat,"VWS linear trends October-November (m/s)/decade",levs)
+#blah = local_fig(agrid.*20,lon,lat,"VWS linear trends October-November (m/s)/decade",levs,:vik)
+#save("era5_VWS_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
+##save("era5_VWS_LinTrend_OctThNov_1979th2024.png", blah, px_per_unit=6.0)
+
+f4 = Figure(;
+    figure_padding=(5,5,10,10),
+    backgroundcolor=:white,
+    size=(900,400),
+    )
+ax = GeoAxis(f4[1,1];
+    source = "+proj=latlong",
+    dest = "+proj=eqearth",
+    #xticks = -180:30:180, 
+    xticks = -180:20:180, 
+    #xticks = 0:30:360, 
+    yticks = -40:20:40,
+    #yticks = -20:20:40,
+    ylabel="latitude",
+    xlabel="longitude",
+    #limits=(-180,180,-40,40),
+    limits=(-160,20,-20,40),
+    title="VWS October-November",
+    xticklabelsize = 16, # 14,16 are pretty reasonable sizes
+    yticklabelsize = 16, # 22 used for 8 panel figure that needs larger font
+    )
+    #bb = contourf!(ax, lon, lat, rh_comp_mn[:,:,1], 
+    bb = contourf!(ax, lon, lat, agrid[:,:,1].*20, 
+         #levels = range(0, 50, length = 25), # tos
+         levels = range(-2, 2, length = 21), # rh
+         #colormap = :Blues_8,
+         #colormap = :broc,
+         #colormap = :bam,
+         #colormap = :BrBg,
+         #colormap = :batlow,
+         colormap = :vik,
+         extendlow = :auto, extendhigh = :auto
+    )
+    lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
+    Colorbar(f4[1,2], bb)
+scatter!(ax, x_lats, y_lons, marker = :utriangle, markersize=4, color = :black)
+f4
+save("era5_VWS_LinTrend_OctThNov_1979th2024_region.png", f4, px_per_unit=6.0)
 
 
 

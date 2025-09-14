@@ -130,6 +130,8 @@ for i in 1:48
   mpi_nina[:,lat1:lat2,i] = vmax[:,lat1:lat2,ninaInd[i]]
 end
 
+# average the months for each year to result in arrays with 8 time stamps for 8 years.
+# this allows for statistically testing with 7 degrees of freedome instead of 47.
 jj = 1
 for i in 1:6:48-5
     #println("i index is: ",i)
