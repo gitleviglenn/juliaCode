@@ -343,45 +343,89 @@ y_lons = y_coords .- 92;
 #save("era5_VWS_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
 ##save("era5_VWS_LinTrend_OctThNov_1979th2024.png", blah, px_per_unit=6.0)
 
-f4 = Figure(;
-    figure_padding=(5,5,10,10),
-    backgroundcolor=:white,
-    size=(900,400),
-    )
-ax = GeoAxis(f4[1,1];
-    source = "+proj=latlong",
-    dest = "+proj=eqearth",
-    #xticks = -180:30:180, 
-    xticks = -180:20:180, 
-    #xticks = 0:30:360, 
-    yticks = -40:20:40,
-    #yticks = -20:20:40,
-    ylabel="latitude",
-    xlabel="longitude",
-    #limits=(-180,180,-40,40),
-    limits=(-160,20,-20,40),
-    title="VWS October-November",
-    xticklabelsize = 16, # 14,16 are pretty reasonable sizes
-    yticklabelsize = 16, # 22 used for 8 panel figure that needs larger font
-    )
-    #bb = contourf!(ax, lon, lat, rh_comp_mn[:,:,1], 
-    bb = contourf!(ax, lon, lat, agrid[:,:,1].*20, 
-         #levels = range(0, 50, length = 25), # tos
-         levels = range(-2, 2, length = 21), # rh
-         #colormap = :Blues_8,
-         #colormap = :broc,
-         #colormap = :bam,
-         #colormap = :BrBg,
-         #colormap = :batlow,
-         colormap = :vik,
-         extendlow = :auto, extendhigh = :auto
-    )
-    lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
-    Colorbar(f4[1,2], bb)
-scatter!(ax, x_lats, y_lons, marker = :utriangle, markersize=4, color = :black)
-f4
-save("era5_VWS_LinTrend_OctThNov_1979th2024_region.png", f4, px_per_unit=6.0)
+#f4 = Figure(;
+#    figure_padding=(5,5,10,10),
+#    backgroundcolor=:white,
+#    size=(900,400),
+#    )
+#ax = GeoAxis(f4[1,1];
+#    #source = "+proj=latlong",
+#    dest = "+proj=cea",
+#    #dest = "+proj=eqearth",
+#    #xticks = -180:30:180, 
+#    xticks = -180:20:180, 
+#    #xticks = 0:30:360, 
+#    yticks = -40:20:40,
+#    #yticks = -20:20:40,
+#    ylabel="latitude",
+#    xlabel="longitude",
+#    #limits=(-180,180,-40,40),
+#    limits=(-160,20,-20,40),
+#    title="VWS October-November",
+#    xticklabelsize = 16, # 14,16 are pretty reasonable sizes
+#    yticklabelsize = 16, # 22 used for 8 panel figure that needs larger font
+#    )
+#    #bb = contourf!(ax, lon, lat, rh_comp_mn[:,:,1], 
+#    bb = contourf!(ax, lon, lat, agrid[:,:,1].*20, 
+#         #levels = range(0, 50, length = 25), # tos
+#         levels = range(-2, 2, length = 21), # rh
+#         #colormap = :Blues_8,
+#         #colormap = :broc,
+#         #colormap = :bam,
+#         #colormap = :BrBg,
+#         #colormap = :batlow,
+#         colormap = :vik,
+#         extendlow = :auto, extendhigh = :auto
+#    )
+#    lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
+#    Colorbar(f4[1,2], bb)
+#scatter!(ax, x_lats, y_lons, marker = :utriangle, markersize=4, color = :black)
+#f4
+#save("era5_VWS_LinTrend_OctThNov_1979th2024_region.png", f4, px_per_unit=6.0)
 
+function fig_plot_stats(inpv,d1,d2,tit,levs,cbar,xPts,yPts)
+    funfig = Figure(;
+        figure_padding=(5,5,10,10),
+        #figure_padding=(10,15,10,10),
+        backgroundcolor=:white,
+        size=(900,400),
+        #size=(600,300), # this increases tickfont size, but doesn't print -30S!!#$%
+        )
+    ax = GeoAxis(funfig[1,1];
+        dest = "+proj=cea",
+        #xticks = -180:20:180,
+        xticks = -170:20:170,
+        #xticks = 0:30:360, 
+        #yticks = -90:30:90,
+        yticks = -40:20:40,
+        xlabel="longitude",
+        ylabel="latitude",
+        limits=(-160,20,-20,40),
+        title=tit,
+        #xticklabelsize = 22, # 14,16 are pretty reasonable sizes
+        #yticklabelsize = 22, # 22 used for 8 panel figure that needs larger font
+        xticklabelsize = 16, # 14,16 are pretty reasonable sizes
+        yticklabelsize = 16, # 22 used for 8 panel figure that needs larger font
+        )
+        bb = contourf!(ax, d1, d2, inpv,
+             levels = levs,
+             #colormap = :batlow,
+             colormap = cbar,
+             #colormap = :bam, # default for shear plot (greens and pinks)
+             #colormap = :seismic, # colors are a bit harsh
+             #colormap = :vik, # default for redish bluish for relative SST
+             #colormap = :BrBg, # better for RH  browns and greens
+             #colormap = :roma,
+             extendlow = :auto, extendhigh = :auto
+        )
+        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
+        Colorbar(funfig[1,2], bb)
+        scatter!(ax, xPts, yPts, marker = :utriangle, markersize=4, color = :black)
+    return funfig
+end
+
+blah = fig_plot_stats(agrid.*20,lon,lat,"VWS linear trends October-November (m/s)/decade",levs,:bam, x_lats, y_lons)
+save("era5_VWS_LinTrend_OctThNov_1979th2024_region.png", blah, px_per_unit=6.0)
 
 
 
