@@ -263,6 +263,15 @@ intVal    = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 
 println("sst_var values at 1 grid point are: ",sst_var[10,90,:])
 
+#println("the arms of the ocean are carrying me ","frac{\sin(x)}{\sqrt{x}}")
+
+    #degree_symbol_string = "25\\u00B0C"
+    #degree_symbol_string = "25 \degree"
+    #degree_symbol_string = "25" \degree
+    #println("New string is: ",degree_symbol_string)
+
+
+
 # why is the lm model needed here, but the OneSampleTTest needed for the 
 # composite figures?  
 
@@ -367,10 +376,8 @@ xshift = 181
 #yshift = 92
 yshift = 91
 
-x_lats = x_coords .- xshift;
-y_lons = y_coords .- yshift;
-#x_lats = x_coords .- 180;
-#y_lons = y_coords .- 90;
+x_lats_sst = x_coords .- xshift;
+y_lons_sst = y_coords .- yshift;
 
 #println("***********************")
 #println("***********************")
@@ -625,26 +632,27 @@ y_lons_vws = y_coords .- yshift;
 ##save("era5_VWS_LinTrend_OctThNov_1979th2024.png", blah, px_per_unit=6.0)
 
 levs = range(-5.0, 5.0, length = 21)
-blah = fig_plot_stats(agrid3.*20,lon,lat,"RH linear trends October-November (m/s)/decade",levs,:BrBg, x_lats_rh, y_lons_rh)
+blah = fig_plot_stats(agrid3.*20,lon,lat,"700 hPa Relative Humidity linear trends October-November (%)/decade",levs,:BrBg, x_lats_rh, y_lons_rh)
 save("era5_RH_LinTrend_OctThNov_1979th2024_region_46dof.png", blah, px_per_unit=6.0)
 
 ## sst levels
 levs = range(-0.5, 0.5, length = 21)
-blah = fig_plot_stats(agrid2.*20,lon,lat,"SST linear trends October-November (m/s)/decade",levs,:vik, x_lats, y_lons)
+blah = fig_plot_stats(agrid2.*20,lon,lat,"SST linear trends October-November ( C)/decade",levs,:vik, x_lats_sst, y_lons_sst)
 save("era5_SST_LinTrend_OctThNov_1979th2024_region_46dof.png", blah, px_per_unit=6.0)
 #
 ## VWS levels
 levs = range(-3.0, 3.0, length = 21)
-blah = fig_plot_stats(agrid1.*20,lon,lat,"VWS linear trends October-November (m/s)/decade",levs,:bam, x_lats_vws, y_lons_vws)
+blah = fig_plot_stats(agrid1.*20,lon,lat,"Vertical Wind Shear linear trends October-November (m/s)/decade",levs,:bam, x_lats_vws, y_lons_vws)
 save("era5_VWS_LinTrend_OctThNov_1979th2024_region_46dof.png", blah, px_per_unit=6.0)
 
 ## PI levels
-levs = range(-2.0, 2.0, length = 21)
-blah = fig_plot_stats(agrid2.*20,lon,lat,"SST linear trends October-November (m/s)/decade",levs,:vik, x_lats, y_lons)
+levs = range(-5.0, 5.0, length = 21)
+blah = fig_plot_stats(agrid4.*20,lon,lat,"Potential Intensity linear trends October-November (m/s)/decade",levs,:vik, x_lats_pi, y_lons_pi)
 save("era5_PI_LinTrend_OctThNov_1979th2024_region_46dof.png", blah, px_per_unit=6.0)
 
 #blah = fig_plot_stats(agrid1.*20,lon,lat,"VWS linear trends October-November (m/s)/decade",levs,:bam, x_lats, y_lons)
 #save("era5_VWS_LinTrend_OctThNov_1979th2024_region_46dof.png", blah, px_per_unit=6.0)
+
 
 
 
