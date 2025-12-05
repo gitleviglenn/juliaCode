@@ -1,6 +1,22 @@
-# plot linear sst trend from October and November over 1979-2024
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# linTrendSST_OctNov_era5.jl
 #
-# levi silvers
+# plot regional maps of linear trends from October and November over 1979-2024
+# variables plotted are from ERA5 and include the SST, vertical wind shear, relative humidity
+# at 700 hPa, and the maximum potential intensity.   
+#
+# the maximum potential intensity is computed in a different set of scripts and the data file is 
+# imported here.   the values were computed using ERA5 data as input.
+#
+# Statistical significance is plotted as black dots indicating grid points with statistical 
+# significance at the 0.05 level after controlling for the false discovery rate following Wilks, 2016.
+#
+# These panels are very similar to what was used for figure 1 in Silvers et al., 2025, GRL and 
+# figure 3 of Klotzbach et al., Recent Increasing Trend in October-November Caribbean Tropical Cyclone
+# Activity (submitted to GRL in October, 2025)
+#
+# levi silvers                                                                  sep 2025
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 using CairoMakie
 using GeoMakie
@@ -59,7 +75,7 @@ path="/Users/C823281551/data/ERA5/"
 
 filein1  = path*"era5_sst_1979th2024_OctNov_360x180.nc"
 #filein1b = path*"era5_sst_1979th2024_OctNov.nc"
-filein   = path*"MPI_ERA5_OctNov_full_output.nc"
+filein   = path*"MPI_ERA5_OctNov_raw_output.nc"
 filein2  = path*"era5_hur_OctNov_1979th2024_360x180.nc"
 filein3  = path*"era5_uWind_OctNov_1979th2024_360x180.nc"
 filein4  = path*"era5_vWind_OctNov_1979th2024_360x180.nc"

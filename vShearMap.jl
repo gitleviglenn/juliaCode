@@ -75,7 +75,7 @@ plev=2
 ##vSh      = data_hi - data_low
 
 # numfields is normally defined outside of this script.
-# numfields = 50
+numfields = 50
 
 dims = size(u_var)
 u_2            = Array{Union{Missing, Float64}, 4}(undef, dims[1], dims[2], 1, numfields)
