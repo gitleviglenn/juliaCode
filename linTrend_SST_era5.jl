@@ -10,6 +10,12 @@
 # label grid points that have trends with statistical significance at the 0.05 level following Wilks,
 # 2016.
 #
+# when changing the data used with this script, think carefully about the units.  currently the 
+# data is scaled by a factor of 10 to give C/decade.   this is because each time step is one year. 
+# if the data is monthly then a scaling factor of 120 is necessary.   for october november data, 
+# which is monthly, but for which each 'year' only contains 2 months, the scaling factor for units
+# of C/decade is 20.  
+# 
 # currently it is assumed that each time step is 1 degree of freedom.   If this is not the case then 
 # look at the code block labelled 'DOF' and adjust accordingly.
 #
@@ -131,11 +137,29 @@ println("size of timeAxis is: ",size(timeAxis))
 bgrid   = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 agrid  = Array{Union{Missing, Float64}, 2}(undef, dims[1], dims[2])
 
+#sst_trop = Array{Union{Missing, Float64}, 2}(undef, dims[1], 41)
+sst_trop_mn = Array{Union{Missing, Float64}, 1}(undef, 35)
+
+#    sst_yrs[:,:,jj]  = mean(test1, dims=3)
 for i in 1:dims[1]
     for j in 1:dims[2]
         agrid[i,j],bgrid[i,j] = find_best_fit(timeAxis[:],sst_yrs[i,j,:])
     end
 end
+
+#for t in 1:35
+# sst_trop_mn[t] = mean(skipmissing(agrid[:,:,t]))
+#end 
+sst_trend_mn = mean(skipmissing(agrid))
+
+println("tropical mean SST trends are: ",sst_trend_mn*10)
+
+#sst_mn_v1 = mean(sst_yrs, dims = 1)
+#println("size of sst_mn_v1 is: ",size(sst_mn_v1))
+#sst_mn_v2 = mean(sst_mn_v1, dims = 2)
+#println("size of sst_mn_v2 is: ",size(sst_mn_v2))
+#sst_mn_v3 = mean(sst_mn_v2, dims = 3)
+#println("size of sst_mn_v3 is: ",size(sst_mn_v3))
 
 #----------------------------------------------------------------------------
 # work on significance
@@ -165,7 +189,7 @@ for i in 1:360 # dims[1] longitudes
     if any(ismissing, Yind)
       #println("missing value found ")
     else
-      println("missing value not found ")
+      #println("missing value not found ")
       # need to somehow check if Yind contains missing data, and if so, then don't proceed to the lm step.  
       Ytemp = Float64.(Yind)
       #ols_temp = OneSampleTTest(Ytemp)
@@ -274,8 +298,10 @@ y_lons_sst = y_coords .- yshift;
 # print figure panels
 
 ## sst levels
-levs = range(-0.5, 0.5, length = 21)
-blah = fig_plot_stats(agrid.*20,lon,lat,"SST linear trends October-November ( C)/decade",levs,:vik, x_lats_sst, y_lons_sst)
+#levs = range(-0.5, 0.5, length = 21)
+levs = range(-0.3, 0.3, length = 19)
+#blah = fig_plot_stats(agrid.*20,lon,lat,"Annual SST linear trends (C)/decade",levs,:vik, x_lats_sst, y_lons_sst)
+blah = fig_plot_stats(agrid.*10,lon,lat,"Annual SST linear trends (C)/decade",levs,:vik, x_lats_sst, y_lons_sst)
 save("era5_SST_LinTrend_Test_AnnMn_1979th2024_region_46dof.png", blah, px_per_unit=6.0)
 #
 ## VWS levels
