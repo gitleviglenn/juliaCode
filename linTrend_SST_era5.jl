@@ -3,8 +3,15 @@
 #    --> modified from linTrendSST_OctNov_era5.jl
 # plot regional map of linear trend of SST
 #
+# a plot of the statistical significance according to the methodology of Wilks, 2016 is also created.
+# the default behavior is to use a p value of 0.05.  0.1 can also be used if desired.   look for the 
+# code labelled as: Wilks threshold
+#
 # label grid points that have trends with statistical significance at the 0.05 level following Wilks,
 # 2016.
+#
+# currently it is assumed that each time step is 1 degree of freedom.   If this is not the case then 
+# look at the code block labelled 'DOF' and adjust accordingly.
 #
 # levi silvers                                                                  dec 2025
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,7 +70,12 @@ end
 
 path="/Users/C823281551/data/ERA5/"
 
-filein1  = path*"era5_sst_1979th2024_OctNov_360x180.nc"
+# this file contains ERA5 data, two months per year.
+#filein1  = path*"era5_sst_1979th2024_OctNov_360x180.nc"
+
+# this file contains ERA5 data, the yearly mean has already been computed with NCO
+# so each timestep corresponds to 1 year.   
+filein1  = path*"era5_sst_annmn_1990th2024_360x180.nc"
 
 tag = "ERA5"
 data  = NCDataset(filein1)
@@ -74,8 +86,11 @@ tme = data["valid_time"]
  
 dim_var  = data["sst"]
 
-timeAxis1 = collect(1:1:92);
-timeAxis  = collect(1:1:46);
+timelen = 35 
+#timelen = 46 
+##timeAxis1 = collect(1:1:92);
+#timeAxis  = collect(1:1:46);
+timeAxis  = collect(1:1:timelen);
 
 sst_var = data["sst"];
 dims    = size(dim_var)
@@ -88,15 +103,28 @@ print("size of sst Array is: ",size(dim_var))
 # average the months for each year to result in arrays with 8 time stamps for 8 years.
 # this allows for statistically testing with 7 degrees of freedome instead of 47.
 
-sst_yrs    = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], 46)
+sst_yrs    = Array{Union{Missing, Float64}, 3}(undef, dims[1], dims[2], timelen)
 
-jj = 1
-#for i in 1:6:48-5
-for i in 1:2:dims[3]-1 # assume each year is an independant degree of freedom
-    test1 = sst_var[:,:,i:i+1];
-    sst_yrs[:,:,jj]  = mean(test1, dims=3)
-    global jj += 1
-end
+# the code below is very important for specifying the degrees of freedom.  for example
+# with the case of looking at variables during October and November, we assumed that 
+# each year was independent, but not each month.   So we averaged over the two months
+# of each year
+#
+# DOF : degrees of freedom
+#jj = 1
+#for i in 1:2:dims[3]-1 # assume each year is an independant degree of freedom
+##for i in 1:2:timelen-1 # assume each year is an independant degree of freedom
+#    test1 = sst_var[:,:,i:i+1];
+#    sst_yrs[:,:,jj]  = mean(test1, dims=3)
+#    global jj += 1
+#end
+
+sst_yrs = sst_var
+
+println("dims[1] and dims[2] are: ",dims[1]," and ",dims[2])
+println("the size of sst_yrs is: ",size(sst_yrs))
+println("size of timeAxis is: ",size(timeAxis))
+
 # -----------------------------------------
 
 # these arrays store the linear regression values at each grid point
@@ -135,8 +163,9 @@ for i in 1:360 # dims[1] longitudes
     #Yind = rh_lev[i,j,:];
     #Yind = sst_var[i,j,:];
     if any(ismissing, Yind)
-      println("missing value found ")
+      #println("missing value found ")
     else
+      println("missing value not found ")
       # need to somehow check if Yind contains missing data, and if so, then don't proceed to the lm step.  
       Ytemp = Float64.(Yind)
       #ols_temp = OneSampleTTest(Ytemp)
@@ -170,29 +199,37 @@ wilks0p1 = (0.1/(lengthP)) .* pAxis
 p0p05 = zeros(fullength) .+ 0.05;
 wilksArray = zeros(fullength);
 
-println("Wilks value for 0.05 is: ",wilks0p05)
-println("Wilks value for 0.1 is: ",wilks0p1)
+#println("Wilks value for 0.05 is: ",wilks0p05)
+#println("Wilks value for 0.1 is: ",wilks0p1)
 
 #----------------------
+xmax = 40000
+
 fig3 = Figure(;
-    size = (400,400),
+    size = (600,400),
     )
 ax = Axis(fig3[1,1];
     xlabel = "p-value rank i",
     ylabel = "p-value",
     title  = "Significance?",
-    limits=(0,20000,0,0.1),
+    limits=(0,xmax,0,0.1),
     )
-lines!(ax,pAxis[:],sortedP[:], color = :black)
-lines!(ax,pAxis[:],p0p05[:])
-lines!(ax,pAxis[:],wilks0p05[:])
+lines!(ax,pAxis[:],sortedP[:], label = "sorted p-vales", color = :black)
+lines!(ax,pAxis[:],p0p05[:], label = "p = 0.05")
+lines!(ax,pAxis[:],wilks0p05[:], label = "Wilks 0.05")
+lines!(ax,pAxis[:],wilks0p1[:], label = "Wilks 0.1")
+fig3[1,2] = Legend(fig3, ax, " ", framevisible = false)
 fig3
 save("sig_Wilks_sst.png", fig3, px_per_unit=6.0)
 #----------------------
 
-for i in 1:20000
-    wilksArray[i] = sortedP[i] - wilks0p05[i]
-    #wilksArray[i] = sortedP[i] - wilks0p1[i]
+println("size of sortedP is: ",size(sortedP))
+println("size of wilks0p05is: ",size(wilks0p05))
+
+# Wilks Threshold:
+for i in 1:xmax
+    wilksArray[i] = sortedP[i] - wilks0p05[i] # using a p value of 0.05
+    #wilksArray[i] = sortedP[i] - wilks0p1[i]  # using a p value of 0.1
 end
 
 #psign = sign.(sortedP)
@@ -239,7 +276,7 @@ y_lons_sst = y_coords .- yshift;
 ## sst levels
 levs = range(-0.5, 0.5, length = 21)
 blah = fig_plot_stats(agrid.*20,lon,lat,"SST linear trends October-November ( C)/decade",levs,:vik, x_lats_sst, y_lons_sst)
-save("era5_SST_LinTrend_Test_p0p05_1979th2024_region_46dof.png", blah, px_per_unit=6.0)
+save("era5_SST_LinTrend_Test_AnnMn_1979th2024_region_46dof.png", blah, px_per_unit=6.0)
 #
 ## VWS levels
 
