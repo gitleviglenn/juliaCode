@@ -51,17 +51,19 @@ function fig_plot_stats(inpv,d1,d2,tit,levs,cbar,xPts,yPts)
         )
     ax = GeoAxis(funfig[1,1];
         dest = "+proj=cea",
-        #xticks = -180:20:180,
-        xticks = -170:20:170,
+        xticks = -180:20:180,
+        #xticks = -160:20:180,
         #xticks = 0:30:360, 
-        #yticks = -90:30:90,
-        yticks = -60:20:60,
+        yticks = -90:20:90,
+        #yticks = -60:20:60,
+        #yticks = -60:20:60,
         xlabel="longitude",
         ylabel="latitude",
-        limits=(-160,20,-20,40),
+        #limits=(-160,20,-20,40),
+        limits=(-180,180,-60,60),
         title=tit,
-        xticklabelsize = 16, # 14,16 are pretty reasonable sizes
-        yticklabelsize = 16, # 22 used for 8 panel figure that needs larger font
+        xticklabelsize = 12, # 14,16 are pretty reasonable sizes
+        yticklabelsize = 15, # 22 used for 8 panel figure that needs larger font
         )
         bb = contourf!(ax, d1, d2, inpv,
           levels = levs,
@@ -70,7 +72,7 @@ function fig_plot_stats(inpv,d1,d2,tit,levs,cbar,xPts,yPts)
         )
         lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
         Colorbar(funfig[1,2], bb)
-        scatter!(ax, xPts, yPts, marker = :utriangle, markersize=4, color = :black)
+        scatter!(ax, xPts, yPts, marker = :utriangle, markersize=2, color = :black)
     return funfig
 end
 
@@ -214,7 +216,8 @@ end
 arrN = reshape(pvalgrid, (dims[1]*dims[2]));
 sortedP = sort(arrN)
 
-lengthP = 81*360;
+#lengthP = 81*360;
+lengthP = 121*360;
 fullength = 360*180
 
 pAxis = collect(1:1:fullength);
@@ -302,7 +305,7 @@ y_lons_sst = y_coords .- yshift;
 levs = range(-0.3, 0.3, length = 19)
 #blah = fig_plot_stats(agrid.*20,lon,lat,"Annual SST linear trends (C)/decade",levs,:vik, x_lats_sst, y_lons_sst)
 blah = fig_plot_stats(agrid.*10,lon,lat,"Annual SST linear trends (C)/decade",levs,:vik, x_lats_sst, y_lons_sst)
-save("era5_SST_LinTrend_Test_AnnMn_1979th2024_region_46dof.png", blah, px_per_unit=6.0)
+save("era5_SST_LinTrend_Test_AnnMn_1979th2024_35dof.png", blah, px_per_unit=6.0)
 #
 ## VWS levels
 
