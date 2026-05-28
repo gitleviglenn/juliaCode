@@ -11,6 +11,11 @@
 # 
 # this script also plots the rsst on a regional domain (North Atlantic)
 #
+# in the Atlantic basin, the main development region is defined to be from 
+# 10-20N and 85-20W.
+#
+# it looks like the first longitude point is at the prime meridian.
+#
 # to see a catolog of colormaps: 
 # https://juliagraphics.github.io/ColorSchemes.jl/dev/catalogue/
 #
@@ -42,7 +47,11 @@ sst_var  = data["sst"]
 sst_var2 = data2["sst"]
 sst_var3 = data3["sst"]
 
+println("attributes of sst_var are: ",sst_var.attrib)
+
 dims = size(sst_var)
+
+println("dims of sst_var are: ",dims)
 
 lat1 = 50
 lat2 = 130
@@ -51,6 +60,7 @@ latS = 70
 latN = 110
 
 endt = dims[3]
+println("number of time steps is: ",endt)
 
 sst_trm            = Array{Union{Missing, Float64}, 1}(undef, endt)
 sst_trm2           = Array{Union{Missing, Float64}, 1}(undef, endt)
@@ -111,14 +121,63 @@ println("2013: $(round(regional_avg_2013_c, digits=2)) °C")
 println("2024: $(round(regional_avg_2024_c, digits=2)) °C")
 
 
+# testing of mean values: 
+tit="why?"
+#temp1 = sst_var[240:359,0,40]
+temp1 = sst_mn[240:359,90:130]
+
+xx = range(1, stop=size(temp1, 1), length = size(temp1,1))
+yy = range(1, stop=size(temp1, 2), length = size(temp1,2))
+
+print("xx: ",xx)
+
+#------------------------------------------------------
+# functions to make plots: 
+#
+function fig_basic_plot(inpv,tit)
+    f2 = Figure(;
+        figure_padding=(5,5,10,10),
+        backgroundcolor=:white,
+        size=(600,300),
+        )
+    ax = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
+        #xticks = -180:30:180, 
+        ##xticks = 0:30:360, 
+        #yticks = -90:30:90,
+        #ylabel="latitude",
+        #xlabel="longitude",
+        #limits=(-120,0,0,40),
+        title=tit,
+        )
+        bb = contourf!(ax, :, :, inpv, 
+             #levels = range(0, 50, length = 25), # tos
+             levels = range(-3, 3, length = 21), # rh
+             #colormap = :Blues_8,
+             #colormap = :broc,
+             #colormap = :bam,
+             #colormap = :batlow,
+             colormap = :vik,
+             extendlow = :auto, extendhigh = :auto
+        )
+        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
+        Colorbar(f2[1,2], bb)
+    return f2
+end
+##fig = fig_basic_plot(temp1[Int(xx),Int(yy)],tit)
+#xxx = Int(xx)
+#yyy = Int(yy)
+#fig = fig_basic_plot(temp1[xxx,yyy],tit)
+#fig1name=tag*"_mornignbell.png"
+#save(fig1name, fig)
+## plots only a region, defined by 'limits'
 function fig_anom_reg_plot(inpv,d1,d2,tit)
     f2 = Figure(;
         figure_padding=(5,5,10,10),
         backgroundcolor=:white,
         size=(600,300),
         )
-    #ax = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
-    ax = GeoAxis(f2[1,1];
+    ax = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
+    #ax = GeoAxis(f2[1,1];
         xticks = -180:30:180, 
         #xticks = 0:30:360, 
         yticks = -90:30:90,
