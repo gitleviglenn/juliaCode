@@ -85,6 +85,31 @@ data_2_plot  = sst_mn[:,:].-273.15
 data_2_plot2 = sst2_mn[:,:].-273.15
 data_2_plot3 = sst3_mn[:,:].-273.15
 
+# Regional average computation
+lat_min = 10
+lat_max = 20
+lon_min = -85
+lon_max = -20
+
+# Find indices corresponding to the region
+lat_idx = findall(x -> x >= lat_min && x <= lat_max, Array(lat))
+lon_idx = findall(x -> x >= lon_min && x <= lon_max, Array(lon))
+
+# Compute regional average for each year
+regional_avg_2005 = mean(skipmissing(sst_var[lon_idx, lat_idx, :]))
+regional_avg_2013 = mean(skipmissing(sst_var2[lon_idx, lat_idx, :]))
+regional_avg_2024 = mean(skipmissing(sst_var3[lon_idx, lat_idx, :]))
+
+# Convert to Celsius
+regional_avg_2005_c = regional_avg_2005 - 273.15
+regional_avg_2013_c = regional_avg_2013 - 273.15
+regional_avg_2024_c = regional_avg_2024 - 273.15
+
+println("Regional Average SST ($(lat_min)°N to $(lat_max)°N, $(lon_min)°E to $(lon_max)°E):")
+println("2005: $(round(regional_avg_2005_c, digits=2)) °C")
+println("2013: $(round(regional_avg_2013_c, digits=2)) °C")
+println("2024: $(round(regional_avg_2024_c, digits=2)) °C")
+
 
 function fig_anom_reg_plot(inpv,d1,d2,tit)
     f2 = Figure(;
@@ -179,6 +204,34 @@ function fig_tot_plot(inpv,d1,d2,tit)
         Colorbar(f2[1,2], bb)
     return f2
 end
+function fig_tot_plot_with_region(inpv, d1, d2, tit, lon_min, lon_max, lat_min, lat_max)
+    f2 = Figure(;
+        figure_padding=(5,5,10,10),
+        backgroundcolor=:white,
+        size=(600,300),
+        )
+    ax = GeoAxis(f2[1,1];
+        xticks = -180:30:180, 
+        yticks = -90:30:90,
+        ylabel="latitude",
+        xlabel="longitude",
+        limits=(-180,180,-40,40),
+        title=tit,
+        )
+        bb = contourf!(ax, d1, d2, inpv, 
+             levels = range(10, 30, length = 40),
+             colormap = :batlow,
+             extendlow = :auto, extendhigh = :auto
+        )
+        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
+        # Draw rectangle for the region of interest
+        lines!(ax, [lon_min, lon_max, lon_max, lon_min, lon_min], 
+                   [lat_min, lat_min, lat_max, lat_max, lat_min],
+               color = :red, linewidth = 2.0, label = "Region of Interest")
+        axislegend(ax, position = :lt)
+        Colorbar(f2[1,2], bb)
+    return f2
+end
 tit="2005 ERA5 SST"
 fig = fig_anom_plot(rsst1_mn[:,:],lon,lat,tit)
 #fig = fig_tot_plot(data_2_plot[:,:],lon,lat,tit)
@@ -227,5 +280,11 @@ save(fig1name, fig)
 tit="ERA5 SST 2013"
 fig = fig_tot_plot(data_2_plot2[:,:],lon,lat,tit)
 fig1name=tag*"_sst_2013.png"
+save(fig1name, fig)
+
+# Plot 2013 SST with region of interest marked
+tit="ERA5 SST 2013 with Region of Interest"
+fig = fig_tot_plot_with_region(data_2_plot2[:,:], lon, lat, tit, lon_min, lon_max, lat_min, lat_max)
+fig1name=tag*"_sst_2013_with_region.png"
 save(fig1name, fig)
 
