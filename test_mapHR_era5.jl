@@ -1,3 +1,4 @@
+# simple script to map high res ERA5
 #-----------------------------------------------------------------------------------------------
 # sst_era5_ace2.jl
 #
@@ -127,35 +128,6 @@ println("2024: $(round(regional_avg_2024_c, digits=2)) °C")
 #------------------------------------------------------
 # functions to make plots: 
 #
-function fig_basic_plot(inpv,tit)
-    f2 = Figure(;
-        figure_padding=(5,5,10,10),
-        backgroundcolor=:white,
-        size=(600,300),
-        )
-    ax = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
-        #xticks = -180:30:180, 
-        ##xticks = 0:30:360, 
-        #yticks = -90:30:90,
-        #ylabel="latitude",
-        #xlabel="longitude",
-        #limits=(-120,0,0,40),
-        title=tit,
-        )
-        bb = contourf!(ax, :, :, inpv, 
-             #levels = range(0, 50, length = 25), # tos
-             levels = range(-3, 3, length = 21), # rh
-             #colormap = :Blues_8,
-             #colormap = :broc,
-             #colormap = :bam,
-             #colormap = :batlow,
-             colormap = :vik,
-             extendlow = :auto, extendhigh = :auto
-        )
-        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
-        Colorbar(f2[1,2], bb)
-    return f2
-end
 ## plots only a region, defined by 'limits'
 function fig_anom_reg_plot(inpv,d1,d2,tit)
     f2 = Figure(;
@@ -187,6 +159,7 @@ function fig_anom_reg_plot(inpv,d1,d2,tit)
         Colorbar(f2[1,2], bb)
     return f2
 end
+###
 function fig_anom_plot(inpv,d1,d2,tit)
     f2 = Figure(;
         figure_padding=(5,5,10,10),
@@ -217,86 +190,8 @@ function fig_anom_plot(inpv,d1,d2,tit)
         Colorbar(f2[1,2], bb)
     return f2
 end
-function fig_tot_plot(inpv,d1,d2,tit)
-    f2 = Figure(;
-        figure_padding=(5,5,10,10),
-        backgroundcolor=:white,
-        size=(600,300),
-        )
-    #ax = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
-    ax = GeoAxis(f2[1,1];
-        xticks = -180:30:180, 
-        #xticks = 0:30:360, 
-        yticks = -90:30:90,
-        ylabel="latitude",
-        xlabel="longitude",
-        limits=(-180,180,-40,40),
-        title=tit,
-        )
-        bb = contourf!(ax, d1, d2, inpv, 
-             #levels = range(0, 50, length = 25), # tos
-             levels = range(10, 30, length = 40), # rh
-             #colormap = :Blues_8,
-             #colormap = :broc,
-             #colormap = :bam,
-             colormap = :batlow,
-             #colormap = :lajolla,
-             #colormap = :matter,
-             #colormap = :batlowS,
-             #colormap = :vik,
-             extendlow = :auto, extendhigh = :auto
-        )
-        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
-        Colorbar(f2[1,2], bb)
-    return f2
-end
-function fig_tot_plot_with_region(inpv, d1, d2, tit, lon_min, lon_max, lat_min, lat_max)
-    f2 = Figure(;
-        figure_padding=(5,5,10,10),
-        backgroundcolor=:white,
-        size=(600,300),
-        )
-    #ax = GeoAxis(f2[1,1];
-    ax = Axis(f2[1,1];
-        #xticks = -180:30:180, 
-        #yticks = -90:30:90,
-        ylabel="latitude",
-        xlabel="longitude",
-        #limits=(-180,180,-40,40),
-        limits=(-120,0,0,40),
-        title=tit,
-        )
-        bb = contourf!(ax, d1, d2, inpv, 
-             levels = range(-4, 4, length = 41), 
-             colormap = :vik,
-             #levels = range(10, 30, length = 40),
-             #colormap = :batlow,
-             extendlow = :auto, extendhigh = :auto
-        )
-        lines!(ax, GeoMakie.coastlines(), color = :black, linewidth=0.75)
-        # Draw rectangle for the region of interest
-        lines!(ax, [lon_min, lon_max, lon_max, lon_min, lon_min], 
-                   [lat_min, lat_min, lat_max, lat_max, lat_min],
-               color = :black, linewidth = 3.0, label = "MDR")
-        axislegend(ax, position = :lt)
-        Colorbar(f2[1,2], bb)
-    return f2
-end
-tit="2005 ERA5 SST"
-fig = fig_anom_plot(rsst1_mn[:,:],lon,lat,tit)
-#fig = fig_tot_plot(data_2_plot[:,:],lon,lat,tit)
-fig1name=tag*"_rsst_2005.png"
-save(fig1name, fig)
-tit="2013 ERA5 SST"
-fig = fig_anom_plot(rsst2_mn[:,:],lon,lat,tit)
-#fig = fig_tot_plot(data_2_plot2[:,:],lon,lat,tit)
-fig1name=tag*"_rsst_2013.png"
-save(fig1name, fig)
-tit="2024 ERA5 SST"
-fig = fig_anom_plot(rsst3_mn[:,:],lon,lat,tit)
-#fig = fig_tot_plot(data_2_plot3[:,:],lon,lat,tit)
-fig1name=tag*"_rsst_2024.png"
-save(fig1name, fig)
+###
+
 
 tit="2005 ERA5 SST"
 rsst1_m_rsst2 = rsst1_mn .- rsst2_mn
@@ -325,32 +220,5 @@ save(fig1name, fig)
 tit="ERA5 SST anom 2024 - 2013"
 fig = fig_anom_plot(data_anom2[:,:],lon,lat,tit) # plots high res correctly, but only half domain...
 fig1name=tag*"_sst_2024anom.png"
-save(fig1name, fig)
-
-# plots high res, but not correct
-tit="ERA5 SST 2013"
-fig = fig_tot_plot(data_2_plot2[:,:],lon,lat,tit)
-fig1name=tag*"_sst_2013.png"
-save(fig1name, fig)
-
-# below here is just nans for high res...
-# Plot 2013 SST with region of interest marked
-tit="ERA5 SST 2013 with Region of Interest"
-fig = fig_tot_plot_with_region(data_2_plot2[:,:], lon, lat, tit, lon_min, lon_max, lat_min, lat_max)
-fig1name=tag*"_sst_2013_with_region2.png"
-save(fig1name, fig)
-
-# Plot rsst with region of interest marked
-tit="Relative SST in 2005 and MDR"
-fig = fig_tot_plot_with_region(rsst1_mn[:,:], lon, lat, tit, lon_min, lon_max, lat_min, lat_max)
-fig1name=tag*"_rsst_2005_mdr3.png"
-save(fig1name, fig)
-tit="Relative SST in 2013 and MDR"
-fig = fig_tot_plot_with_region(rsst2_mn[:,:], lon, lat, tit, lon_min, lon_max, lat_min, lat_max)
-fig1name=tag*"_rsst_2013_mdr3.png"
-save(fig1name, fig)
-tit="Relative SST in 2024 and MDR"
-fig = fig_tot_plot_with_region(rsst3_mn[:,:], lon, lat, tit, lon_min, lon_max, lat_min, lat_max)
-fig1name=tag*"_rsst_2024_mdr3.png"
 save(fig1name, fig)
 
