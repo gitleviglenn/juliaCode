@@ -42,7 +42,7 @@ data2   = NCDataset(filein2)
 data3   = NCDataset(filein3)
 
 lat = data["latitude"]
-lon = data["longitude"]
+lon_orig = data["longitude"]
 #lat = data["lat"]
 #lon = data["lon"]
 tme = data["valid_time"]
@@ -52,6 +52,20 @@ sst_var2 = data2["sst"]
 sst_var3 = data3["sst"]
 
 println("attributes of sst_var are: ",sst_var.attrib)
+
+# Convert longitude from 0-360 to -180-180 convention
+lon = Float64.(Array(lon_orig))
+lon[lon .> 180] .-= 360
+# Find indices to reorder (0-180 goes to end, 180-360 goes to start)
+split_idx = findfirst(x -> x > 180, Array(lon_orig))
+reorder_idx = vcat(split_idx:length(lon), 1:(split_idx-1))
+
+# Reorder data and longitude
+sst_var = sst_var[reorder_idx, :, :]
+sst_var2 = sst_var2[reorder_idx, :, :]
+sst_var3 = sst_var3[reorder_idx, :, :]
+lon = lon[reorder_idx]
+lon = sort(lon)
 
 dims = size(sst_var)
 
@@ -95,6 +109,7 @@ sst_mn  = mean(sst_var, dims=3)
 sst2_mn = mean(sst_var2, dims=3)
 sst3_mn = mean(sst_var3, dims=3)
 
+# mean SST in Celcius
 data_2_plot  = sst_mn[:,:].-273.15
 data_2_plot2 = sst2_mn[:,:].-273.15
 data_2_plot3 = sst3_mn[:,:].-273.15
@@ -173,7 +188,7 @@ function fig_anom_plot(inpv,d1,d2,tit)
         yticks = -90:30:90,
         ylabel="latitude",
         xlabel="longitude",
-        #limits=(-180,180,-40,40),
+        limits=(-180,180,-40,40),
         title=tit,
         )
         bb = contourf!(ax, d1, d2, inpv, 
@@ -192,33 +207,32 @@ function fig_anom_plot(inpv,d1,d2,tit)
 end
 ###
 
-
 tit="2005 ERA5 SST"
 rsst1_m_rsst2 = rsst1_mn .- rsst2_mn
 fig = fig_anom_reg_plot(rsst1_m_rsst2[:,:],lon,lat,tit)
-fig1name=tag*"_rsst_reganom_2005.png"
+fig1name=tag*"_rsst_reganom_2005C.png"
 save(fig1name, fig)
 
 tit="2013 ERA5 SST"
 fig = fig_anom_reg_plot(rsst2_mn[:,:],lon,lat,tit)
-fig1name=tag*"_rsst_reg_2013.png"
+fig1name=tag*"_rsst_reg_2013C.png"
 save(fig1name, fig)
 
 rsst3_m_rsst2 = rsst3_mn .- rsst2_mn
 tit="2024 ERA5 SST"
 fig = fig_anom_reg_plot(rsst3_m_rsst2[:,:],lon,lat,tit)
 #fig = fig_anom_reg_plot(rsst3_mn[:,:],lon,lat,tit)
-fig1name=tag*"_rsst_reganom_2024.png"
+fig1name=tag*"_rsst_reganom_2024C.png"
 save(fig1name, fig)
 
 data_anom  = data_2_plot .- data_2_plot2
 data_anom2 = data_2_plot3 .- data_2_plot2
 tit="ERA5 SST anom 2005 - 2013"
-fig = fig_anom_plot(data_anom[:,:],lon,lat,tit) # plots correctly, but only half domain...
-fig1name=tag*"_sst_2005anom.png"
+fig = fig_anom_plot(data_anom[:,:],lon,lat,tit) 
+fig1name=tag*"_sst_2005anomC.png"
 save(fig1name, fig)
 tit="ERA5 SST anom 2024 - 2013"
-fig = fig_anom_plot(data_anom2[:,:],lon,lat,tit) # plots high res correctly, but only half domain...
-fig1name=tag*"_sst_2024anom.png"
+fig = fig_anom_plot(data_anom2[:,:],lon,lat,tit) 
+fig1name=tag*"_sst_2024anomC.png"
 save(fig1name, fig)
 
