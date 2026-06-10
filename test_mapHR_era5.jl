@@ -1,6 +1,5 @@
-# simple script to map high res ERA5
 #-----------------------------------------------------------------------------------------------
-# sst_era5_ace2.jl
+# test_mapHR_era5.jl
 #
 # plot sst from era5 for the years 2005, 2013, and 2024
 #
@@ -37,6 +36,8 @@ filein   = path*"era5_sst_june2nov_2005.nc"
 filein2  = path*"era5_sst_june2nov_2013.nc"
 filein3  = path*"era5_sst_june2nov_2024.nc"
 tag = "ERA5"
+# lr for low resolution; hr for high resolution
+res_tag="_hr"
 data    = NCDataset(filein)
 data2   = NCDataset(filein2)
 data3   = NCDataset(filein3)
@@ -71,11 +72,23 @@ dims = size(sst_var)
 
 println("dims of sst_var are: ",dims)
 
+println("whare the selected latitudes? ",lat[:])
+
 lat1 = 50
 lat2 = 130
 
 latS = 70
 latN = 110
+#latS = findfirst(x -> x == latS_int,lat)
+#latN = findfirst(x -> x == latN_int,lat)
+
+println("whare the selected latitudes? ",lat[latS:latN])
+
+println("dims of lat are: ",size(lat))
+println("central lat is: ",lat[359:361])
+println("tropics? lat is: ",lat[280:440])
+latS = 281
+latN = 441
 
 endt = dims[3]
 println("number of time steps is: ",endt)
@@ -133,12 +146,19 @@ regional_avg_2024 = mean(skipmissing(sst_var3[lon_idx, lat_idx, :]))
 regional_avg_2005_c = regional_avg_2005 - 273.15
 regional_avg_2013_c = regional_avg_2013 - 273.15
 regional_avg_2024_c = regional_avg_2024 - 273.15
+# Compute regional average of relative SST for each year
+regional_rsst_avg_2005 = mean(skipmissing(sst1[lon_idx, lat_idx, :]))
+regional_rsst_avg_2013 = mean(skipmissing(sst2[lon_idx, lat_idx, :]))
+regional_rsst_avg_2024 = mean(skipmissing(sst3[lon_idx, lat_idx, :]))
 
 println("Regional Average SST ($(lat_min)°N to $(lat_max)°N, $(lon_min)°E to $(lon_max)°E):")
 println("2005: $(round(regional_avg_2005_c, digits=2)) °C")
 println("2013: $(round(regional_avg_2013_c, digits=2)) °C")
 println("2024: $(round(regional_avg_2024_c, digits=2)) °C")
-
+println("Regional Average of Relative SST ($(lat_min)°N to $(lat_max)°N, $(lon_min)°E to $(lon_max)°E):")
+println("2005: $(round(regional_rsst_avg_2005, digits=2)) K")
+println("2013: $(round(regional_rsst_avg_2013, digits=2)) K")
+println("2024: $(round(regional_rsst_avg_2024, digits=2)) K")
 
 #------------------------------------------------------
 # functions to make plots: 
@@ -205,34 +225,116 @@ function fig_anom_plot(inpv,d1,d2,tit)
         Colorbar(f2[1,2], bb)
     return f2
 end
+function fig_3pan_plot(inp1,inp2,inp3,d1,d2,tit1,tit2,tit3, lon_min, lon_max, lat_min, lat_max)
+    f2 = Figure(;
+        #figure_padding=(5,5,10,10),
+        backgroundcolor=:white,
+        size=(300,1000),
+        )
+    ax1 = Axis(f2[1,1]; #--> default plot is rectangular equidistant 
+        xticks = -180:20:180, 
+        yticks = -90:10:90,
+        ylabel="latitude",
+        xticklabelsvisible = false,
+        yticklabelsize = 20,
+        ylabelsize = 20, #ylabelsize_bold = true,
+        limits=(-120,0,0,40),
+        title=tit1,
+        titlesize=21.0,
+        )
+        bb = contourf!(ax1, d1, d2, inp1, 
+             levels = range(-3, 3, length = 21), # rh
+             colormap = :vik,
+             extendlow = :auto, extendhigh = :auto
+        )
+        colsize!(f2.layout, 1, Aspect(1, 2.0))
+        #ax1.xlabelfont = :bold
+        #ax1.ylabelfont = :bold
+        lines!(ax1, GeoMakie.coastlines(), color = :black, linewidth=0.75)
+        # Draw rectangle for the region of interest
+        lines!(ax1, [lon_min, lon_max, lon_max, lon_min, lon_min], 
+                   [lat_min, lat_min, lat_max, lat_max, lat_min],
+               color = :black, linewidth = 3.0, label = "MDR")
+        Colorbar(f2[1,2], bb)
+    ax2 = Axis(f2[2,1]; #--> default plot is rectangular equidistant 
+        xticks = -180:20:180, 
+        yticks = -90:10:90,
+        ylabel="latitude",
+        yticklabelsize = 20,
+        xticklabelsvisible = false,
+        ylabelsize = 20, #ylabelsize_bold = true,
+        limits=(-120,0,0,40),
+        title=tit2,
+        titlesize=21.0,
+        )
+        bb = contourf!(ax2, d1, d2, inp2, 
+             levels = range(-3, 3, length = 21), # rh
+             colormap = :vik,
+             extendlow = :auto, extendhigh = :auto
+        )
+        #ax2.xlabelfont = :bold
+        #ax2.ylabelfont = :bold
+        lines!(ax2, GeoMakie.coastlines(), color = :black, linewidth=0.75)
+        Colorbar(f2[2,2], bb)
+    ax3 = Axis(f2[3,1]; #--> default plot is rectangular equidistant 
+        xticks = -180:20:180, 
+        yticks = -90:10:90,
+        ylabel="latitude",
+        xlabel="longitude",
+        yticklabelsize = 20,
+        xticklabelsize = 20,
+        xlabelsize = 20,
+        ylabelsize = 20, #ylabelsize_bold = true,
+        limits=(-120,0,0,40),
+        title=tit3,
+        titlesize=21.0,
+        )
+        #ax3.xlabelfont = :bold
+        #ax3.ylabelfont = :bold
+        bb = contourf!(ax3, d1, d2, inp3, 
+             levels = range(-3, 3, length = 21), # rh
+             colormap = :vik,
+             extendlow = :auto, extendhigh = :auto
+        )
+        lines!(ax3, GeoMakie.coastlines(), color = :black, linewidth=0.75)
+    resize_to_layout!(f2)
+    return f2
+end
 ###
 
-tit="2005 ERA5 SST"
+#tit="2005 ERA5 SST"
 rsst1_m_rsst2 = rsst1_mn .- rsst2_mn
-fig = fig_anom_reg_plot(rsst1_m_rsst2[:,:],lon,lat,tit)
-fig1name=tag*"_rsst_reganom_2005C.png"
-save(fig1name, fig)
-
-tit="2013 ERA5 SST"
-fig = fig_anom_reg_plot(rsst2_mn[:,:],lon,lat,tit)
-fig1name=tag*"_rsst_reg_2013C.png"
-save(fig1name, fig)
-
+#fig = fig_anom_reg_plot(rsst1_m_rsst2[:,:],lon,lat,tit)
+#fig1name=tag*"_rsst_reganom_2005C.png"
+#save(fig1name, fig)
+#
+#tit="2013 ERA5 SST"
+#fig = fig_anom_reg_plot(rsst2_mn[:,:],lon,lat,tit)
+#fig1name=tag*"_rsst_reg_2013C.png"
+#save(fig1name, fig)
+#
 rsst3_m_rsst2 = rsst3_mn .- rsst2_mn
-tit="2024 ERA5 SST"
-fig = fig_anom_reg_plot(rsst3_m_rsst2[:,:],lon,lat,tit)
-#fig = fig_anom_reg_plot(rsst3_mn[:,:],lon,lat,tit)
-fig1name=tag*"_rsst_reganom_2024C.png"
-save(fig1name, fig)
-
+#tit="2024 ERA5 SST"
+#fig = fig_anom_reg_plot(rsst3_m_rsst2[:,:],lon,lat,tit)
+##fig = fig_anom_reg_plot(rsst3_mn[:,:],lon,lat,tit)
+#fig1name=tag*"_rsst_reganom_2024C.png"
+#save(fig1name, fig)
+#
 data_anom  = data_2_plot .- data_2_plot2
 data_anom2 = data_2_plot3 .- data_2_plot2
-tit="ERA5 SST anom 2005 - 2013"
-fig = fig_anom_plot(data_anom[:,:],lon,lat,tit) 
-fig1name=tag*"_sst_2005anomC.png"
-save(fig1name, fig)
-tit="ERA5 SST anom 2024 - 2013"
-fig = fig_anom_plot(data_anom2[:,:],lon,lat,tit) 
-fig1name=tag*"_sst_2024anomC.png"
-save(fig1name, fig)
+#tit="ERA5 SST anom 2005 - 2013"
+#fig = fig_anom_plot(data_anom[:,:],lon,lat,tit) 
+#fig1name=tag*"_sst_2005anomC.png"
+#save(fig1name, fig)
+#tit="ERA5 SST anom 2024 - 2013"
+#fig = fig_anom_plot(data_anom2[:,:],lon,lat,tit) 
+#fig1name=tag*"_sst_2024anomC.png"
+#save(fig1name, fig)
 
+tit1="RSST 2013"
+tit2="Anomolous RSST 2005"
+tit3="Anomolous RSST 2024"
+fig = fig_3pan_plot(rsst2_mn[:,:],rsst1_m_rsst2[:,:],rsst3_m_rsst2[:,:], lon, lat, tit1, tit2, tit3, lon_min, lon_max, lat_min, lat_max)
+#function fig_tot_plot_with_region(inpv, d1, d2, tit, lon_min, lon_max, lat_min, lat_max)
+fig3panName=tag*"_3pan_blah"*res_tag*".png"
+save(fig3panName, fig)
